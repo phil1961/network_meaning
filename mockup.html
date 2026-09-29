@@ -1,0 +1,1371 @@
+<title>Network Meaning Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+/* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
+:root{
+  --paper:#EDF0F2;
+  --panel:#F8FAFB;
+  --ink:#18212E;
+  --muted:#586476;
+  --line:#C8D0D9;
+  --accent:#2346C8;
+  --accent-soft:#DDE4FA;
+  --reading:#80509A;
+  --open:#B56F0A;
+  --warn:#B3362B;
+  --ok:#2E7D4F;
+  --font-words:"Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-ui:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F141B; --panel:#161D27; --ink:#E4E9F0; --muted:#95A1B2; --line:#2B3645;
+    --accent:#8AA2FF; --accent-soft:#1E2A4D; --reading:#C9A0DE; --open:#E5A640; --warn:#EF7A6E; --ok:#6CC592;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F141B; --panel:#161D27; --ink:#E4E9F0; --muted:#95A1B2; --line:#2B3645;
+  --accent:#8AA2FF; --accent-soft:#1E2A4D; --reading:#C9A0DE; --open:#E5A640; --warn:#EF7A6E; --ok:#6CC592;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+
+.shell{display:flex;flex-direction:column;min-height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{margin:0;font-family:var(--font-words);font-weight:600;font-size:21px;letter-spacing:-.01em}
+.pill{font-family:var(--font-data);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:1px 8px}
+nav{display:flex;gap:4px;overflow-x:auto;max-width:100%}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:6px 10px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.count{font-family:var(--font-data);font-size:11px;background:var(--open);color:var(--panel);border-radius:99px;padding:0 6px;margin-left:4px}
+
+/* stream bar */
+.streambar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--paper)}
+.sb-group{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.sb-label{font-family:var(--font-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select,.input{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:100%}
+.scrub{display:flex;align-items:center;gap:10px;flex:1;min-width:240px}
+.scrub input{flex:1;accent-color:var(--accent);min-width:100px}
+.scrub output{font-family:var(--font-data);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.save{font-family:var(--font-data);font-size:11px;color:var(--muted)}
+.save.ok{color:var(--ok)} .save.bad{color:var(--warn)}
+.rewound{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 16px;background:var(--accent-soft);border-bottom:1px solid var(--line);font-size:13px}
+
+main{flex:1;padding-block:16px;padding-inline:16px}
+.view[hidden]{display:none!important}
+
+/* ---------- Map ---------- */
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+@media (max-width:920px){.mapgrid{grid-template-columns:minmax(0,1fr)}}
+.canvas{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:0}
+.canvasbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line)}
+.focuslabel{font-size:12px;color:var(--muted)}
+.focuslabel b{color:var(--ink);font-weight:600}
+.search{position:relative}
+.search input{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:5px 10px;width:220px;max-width:100%}
+.suggest{position:absolute;right:0;top:calc(100% + 4px);z-index:5;list-style:none;margin:0;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:6px;min-width:240px;box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.suggest button{display:block;width:100%;text-align:left;background:none;border:0;padding:5px 8px;border-radius:4px;cursor:pointer}
+.suggest button:hover,.suggest button:focus-visible{background:var(--accent-soft)}
+#map{display:block;width:100%;height:auto}
+#map .node{cursor:pointer}
+#map .node:focus{outline:none}
+#map .node:focus-visible .box{stroke-width:3}
+#map .fade-in{animation:fadein .28s ease-out}
+@keyframes fadein{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#map .fade-in{animation:none}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:18px;height:11px;border-radius:3px;border:1.5px solid var(--ink);background:var(--panel)}
+.sw.read{border:1.5px dashed var(--reading);background:transparent}
+.sw.anchor{border:3px double var(--ink)}
+.sw.slot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--open)}
+.sw.faded{opacity:.4}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel h2{margin:0;font-size:18px;line-height:1.3;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-family:var(--font-data);font-size:11px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--muted)}
+.chip.state-arriving{color:var(--accent);border-color:var(--accent)}
+.chip.state-fading,.chip.state-quiet{opacity:.75}
+.chip.replaced{color:var(--warn);border-color:var(--warn)}
+.chip.mine{color:var(--ink)}
+.chip.reading{color:var(--reading);border-color:var(--reading)}
+.sec h3{margin:0 0 6px;font-family:var(--font-data);font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.words{margin:0;font-family:var(--font-words);font-style:italic;font-size:17px;line-height:1.45;border-left:3px solid var(--ink);padding-left:12px;overflow-wrap:anywhere}
+.words.quote{border-left-color:var(--accent)}
+.reading-text{margin:0;font-style:italic;color:var(--reading);border-left:3px dashed var(--reading);padding-left:12px}
+.src{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px;font-family:var(--font-data);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.also{margin-top:10px;padding-left:12px;border-left:1px solid var(--line)}
+.also p{margin:0;font-family:var(--font-words);font-style:italic;font-size:15px}
+ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.slotq{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.slotq .dot{flex:none;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--open);margin-top:6px}
+.slotq p{margin:0;flex:1}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-align:left;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.small{font-size:12px;color:var(--muted)}
+.hist{margin:0;padding-left:16px;font-size:13px}
+.trace{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:13px}
+.trace .step{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 7px}
+.trace .step.anchor{border:3px double var(--ink)}
+.trace .via{font-family:var(--font-data);font-size:11px;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:500}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn.danger{color:var(--warn)}
+.btn.danger:hover:not(:disabled){border-color:var(--warn)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+
+/* ---------- Add text ---------- */
+.addgrid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start;max-width:1200px;margin:0 auto}
+@media (max-width:960px){.addgrid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h2{margin:0;font-size:18px}
+.card h3{margin:0;font-size:15px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;font-weight:500;color:var(--muted)}
+.drop{position:relative;border:1.5px dashed var(--line);border-radius:8px;background:var(--paper)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop textarea{display:block;width:100%;min-height:240px;resize:vertical;background:transparent;border:0;padding:12px;font-family:var(--font-words);font-size:16px;line-height:1.5}
+.drop textarea:focus{outline:none}
+.drop:focus-within{border-color:var(--accent)}
+.dropnote{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:6px 12px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.status{font-size:13px;color:var(--muted);min-height:1.5em}
+.status.bad{color:var(--warn)}
+.queue{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.queue li{display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:12px}
+.summary{border-left:3px solid var(--ok);padding-left:12px;display:flex;flex-direction:column;gap:6px}
+.summary p{margin:0}
+.qbox{border:1px solid var(--line);border-left:3px solid var(--open);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--paper)}
+.qbox .from{font-family:var(--font-data);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--open)}
+.qbox p{margin:0}
+.qbox textarea{width:100%;min-height:80px;resize:vertical;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px;font-family:var(--font-words);font-size:15px}
+.steplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.steplist li{border-top:1px solid var(--line)}
+.steplist li:last-child{border-bottom:1px solid var(--line)}
+.stepbtn{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;width:100%;text-align:left;background:none;border:0;padding:8px 4px;cursor:pointer}
+.stepbtn:hover{background:var(--paper)}
+.stepbtn .n{font-family:var(--font-data);font-size:12px;color:var(--muted);padding-top:1px}
+.stepbtn .s{display:block;font-weight:500;overflow-wrap:anywhere}
+.stepbtn .d{display:block;font-size:12px;color:var(--muted)}
+.steplist li.cur .stepbtn{background:var(--accent-soft)}
+.steplist li.future{opacity:.45}
+.steplist details{padding:0 4px 8px 42px;font-size:12px;color:var(--muted)}
+.steplist details pre{white-space:pre-wrap;font-family:var(--font-words);font-size:13px;color:var(--ink);max-height:200px;overflow:auto;margin:6px 0 0}
+
+/* ---------- Loose ends ---------- */
+.le-wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.le-head{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:baseline}
+.le-head h2{margin:0;font-size:20px}
+.le-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.le{display:grid;grid-template-columns:118px minmax(0,1fr);gap:4px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+@media (max-width:560px){.le{grid-template-columns:minmax(0,1fr)}}
+.le .type{font-family:var(--font-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding-top:3px}
+.le .type i{font-style:normal;display:inline-block;width:16px}
+.t-garble{color:var(--open)} .t-unanswered{color:var(--accent)} .t-echo{color:var(--reading)} .t-gap{color:var(--open)} .t-tension{color:var(--warn)} .t-bet{color:var(--muted)} .t-correction{color:var(--ok)}
+.le .body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.le .text{margin:0;font-weight:500;overflow-wrap:anywhere}
+.le .detail{margin:0;font-size:13px;color:var(--muted)}
+.le.done{opacity:.6}
+.outcome{margin:0;font-size:13px;color:var(--ok)}
+
+/* ---------- Timeline ---------- */
+.tl-wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.tl-wrap h2{margin:0;font-size:20px}
+.tl-scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+#timeline{display:block;min-width:720px;width:100%;height:auto}
+#timeline .lane{cursor:pointer}
+#timeline .lane:hover .lanebg,#timeline .lane:focus-visible .lanebg{fill:var(--accent-soft)}
+#timeline .lane:focus{outline:none}
+
+/* ---------- Talk ---------- */
+.talk{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;max-width:960px;margin:0 auto;align-items:start}
+@media (max-width:760px){.talk{grid-template-columns:minmax(0,1fr);justify-items:center}}
+.phone{width:340px;max-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.screen{border:1px solid var(--line);border-radius:20px;background:var(--paper);min-height:560px;display:flex;flex-direction:column;overflow:hidden}
+.pbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;font-size:13px;font-weight:600}
+.pbar .small{font-weight:400;font-family:var(--font-data)}
+.transcript{flex:1;padding:6px 16px;font-family:var(--font-words);font-size:17px;line-height:1.5;overflow-y:auto;max-height:300px}
+.transcript .hint{font-family:var(--font-ui);font-size:13px;color:var(--muted)}
+.garble{text-decoration:underline wavy var(--open);text-decoration-thickness:1px;text-underline-offset:3px;cursor:help}
+.microw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px}
+.mic{width:76px;height:76px;border-radius:50%;border:2px solid var(--ink);background:var(--panel);cursor:pointer;display:grid;place-items:center}
+.mic .core{width:26px;height:26px;border-radius:50%;background:var(--warn)}
+.mic.rec{border-color:var(--warn)}
+.mic.rec .core{border-radius:5px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.mic.rec .core{animation:none}}
+.qcard{margin:0 12px 12px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--open);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.qcard .from{font-family:var(--font-data);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--open)}
+.qcard p{margin:0;font-size:14px}
+.pipe h2{margin:0 0 4px;font-size:20px}
+.pipe > p{margin:0 0 14px;color:var(--muted);max-width:52ch}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;padding:8px 0;border-top:1px solid var(--line);color:var(--muted);transition:color .2s}
+.steps li:last-child{border-bottom:1px solid var(--line)}
+.steps li .n{font-family:var(--font-data);font-size:12px;padding-top:1px}
+.steps li b{font-weight:600}
+.steps li.on{color:var(--ink)}
+.steps li.on .n{color:var(--accent)}
+.steps li span.d{display:block;font-size:12px;color:var(--muted)}
+
+/* modal & toast */
+.scrim{position:fixed;inset:0;background:rgba(10,14,20,.45);display:grid;place-items:center;padding:16px;z-index:20}
+.modal{background:var(--panel);color:var(--ink);border-radius:10px;max-width:720px;width:100%;max-height:86vh;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.modal h2{margin:0;font-family:var(--font-words);font-size:24px;font-weight:600;text-wrap:balance}
+.draft p{margin:0 0 10px;max-width:65ch}
+.draft blockquote{margin:0 0 12px;font-family:var(--font-words);font-style:italic;font-size:17px;border-left:3px solid var(--ink);padding-left:12px}
+.draft blockquote cite{display:block;font-family:var(--font-data);font-style:normal;font-size:11px;color:var(--muted);margin-top:2px}
+.draft .mr{color:var(--reading);font-style:italic}
+.draft .gap{color:var(--open)}
+#draftmd{width:100%;min-height:120px;font-family:var(--font-data);font-size:12px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:13px;z-index:30;max-width:calc(100% - 32px)}
+</style>
+
+<div class="shell">
+  <header>
+    <div class="brand"><h1>Network Meaning</h1><span class="pill">prototype</span></div>
+    <nav role="tablist" aria-label="Views">
+      <button class="tab" role="tab" id="tab-map" data-view="map" aria-selected="true">Map</button>
+      <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
+      <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
+      <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
+      <button class="tab" role="tab" id="tab-talk" data-view="talk" aria-selected="false">Talk</button>
+    </nav>
+  </header>
+
+  <div class="streambar">
+    <div class="sb-group">
+      <label class="sb-label" for="streamsel">Stream</label>
+      <select id="streamsel"></select>
+      <button class="btn" id="newstream" title="Start over with an empty map">New empty stream</button>
+    </div>
+    <div class="scrub">
+      <label class="sb-label" for="scrub">Step</label>
+      <input type="range" id="scrub" min="0" max="0" value="0">
+      <output id="scrubout" for="scrub"></output>
+    </div>
+    <span class="save" id="savestate">Connecting…</span>
+  </div>
+  <div class="rewound" id="rewound" hidden>
+    <span id="rewoundtext"></span>
+    <button class="btn" id="tolatest">Back to latest</button>
+    <button class="btn primary" id="branch">Branch from here</button>
+  </div>
+
+  <main>
+    <!-- MAP -->
+    <section class="view" id="view-map" role="tabpanel" aria-labelledby="tab-map">
+      <div class="mapgrid">
+        <div class="canvas">
+          <div class="canvasbar">
+            <div class="focuslabel" id="focuslabel"></div>
+            <div class="search">
+              <input id="q" type="search" placeholder="Find an idea…" autocomplete="off" aria-label="Find an idea">
+              <ul class="suggest" id="suggest" hidden></ul>
+            </div>
+          </div>
+          <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas"></svg>
+          <div class="legend">
+            <span><i class="sw"></i>your words</span>
+            <span><i class="sw read"></i>my reading</span>
+            <span><i class="sw anchor"></i>anchor</span>
+            <span><i class="sw slot"></i>open question</span>
+            <span><i class="sw faded"></i>faded or replaced</span>
+            <span>+n: more connections beyond this view</span>
+          </div>
+        </div>
+        <aside class="panel" id="panel" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <!-- ADD TEXT -->
+    <section class="view" id="view-add" role="tabpanel" aria-labelledby="tab-add" hidden>
+      <div class="addgrid">
+        <div class="card">
+          <h2>Add text</h2>
+          <p class="small" style="margin:0">Paste, type, or drop text here: notes, a transcript, a chat export. Drop several .txt or .md files to add them one after another. Claude pulls out the ideas and links them into this stream's map. Each pass is saved as a step you can rewind to.</p>
+          <div class="field">
+            <label for="source">Where is this from?</label>
+            <input class="input" id="source" placeholder="e.g. Pure-Conscousness.md, or “car ride, Sep 29”">
+          </div>
+          <div class="drop" id="drop">
+            <textarea id="entry" aria-label="Text to ideaify" placeholder="Paste or drop text here…"></textarea>
+            <div class="dropnote"><span id="charcount">0 characters</span><span>Your words are kept exactly as written.</span></div>
+          </div>
+          <ul class="queue" id="queue" hidden></ul>
+          <div class="row">
+            <div class="field" style="flex-direction:row;align-items:center;gap:8px">
+              <label for="tier">Depth</label>
+              <select id="tier">
+                <option value="quick">Quick</option>
+                <option value="default" selected>Balanced</option>
+                <option value="complex">Thorough (slower)</option>
+              </select>
+            </div>
+            <div class="actions" id="addactions"></div>
+          </div>
+          <div class="status" id="status" role="status"></div>
+          <div class="summary" id="summary" hidden></div>
+          <div class="qbox" id="qbox" hidden>
+            <span class="from" id="qboxfrom">One question</span>
+            <p id="qboxtext"></p>
+            <label class="small" for="answer">Answer in your own words. Your answer is ideaified like any other text.</label>
+            <textarea id="answer"></textarea>
+            <div class="actions"><button class="btn primary" id="sendanswer">Ideaify my answer</button><button class="btn" id="skipq">Not now</button></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>This stream</h3>
+          <div class="field">
+            <label for="streamname">Name</label>
+            <input class="input" id="streamname">
+          </div>
+          <p class="small" style="margin:0" id="streaminfo"></p>
+          <ol class="steplist" id="steplist"></ol>
+          <div class="actions" id="streamactions"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOOSE ENDS -->
+    <section class="view" id="view-loose" role="tabpanel" aria-labelledby="tab-loose" hidden>
+      <div class="le-wrap">
+        <div class="le-head">
+          <h2>Loose Ends</h2>
+          <span class="small">Things the map noticed but won't decide for you. Each answer becomes a step in the stream.</span>
+        </div>
+        <ul class="le-list" id="lelist"></ul>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="view" id="view-timeline" role="tabpanel" aria-labelledby="tab-timeline" hidden>
+      <div class="tl-wrap">
+        <h2>Timeline</h2>
+        <p class="small" style="margin:0">The most active ideas, pass by pass. Ideas arrive, settle, and fade as new text comes in. Select a lane to open it on the map.</p>
+        <div class="tl-scroll"><svg id="timeline" role="img" aria-label="Attention per idea over the stream's passes"></svg></div>
+      </div>
+    </section>
+
+    <!-- TALK -->
+    <section class="view" id="view-talk" role="tabpanel" aria-labelledby="tab-talk" hidden>
+      <div class="talk">
+        <div class="phone">
+          <div class="screen">
+            <div class="pbar"><span>Network Meaning</span><span class="small" id="clock">0:00</span></div>
+            <div class="transcript" id="transcript"><p class="hint">Tap the mic to replay a sample voice session: Phil talking about faith on Sep 27. (Voice capture is simulated here.)</p></div>
+            <div class="qcard" id="qcard" hidden>
+              <span class="from" id="qfrom">One question</span>
+              <p id="qtext"></p>
+              <div class="actions"><button class="btn primary" id="qanswer">Answer</button><button class="btn" id="qlater">Later</button></div>
+            </div>
+            <div class="microw">
+              <button class="mic" id="mic" aria-label="Start talking"><span class="core"></span></button>
+              <span class="small" id="miclabel">Tap to talk</span>
+            </div>
+          </div>
+        </div>
+        <div class="pipe">
+          <h2>After you stop talking</h2>
+          <p>What happens underneath while the phone waits. The goal is one good question, delivered before the moment passes.</p>
+          <ol class="steps" id="steps"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="drafttitle">
+    <h2 id="drafttitle"></h2>
+    <p class="small" style="margin:0">A draft built from this part of your map. Your words are quoted exactly. My readings are marked. Open questions stay open.</p>
+    <div class="draft" id="draftbody"></div>
+    <label class="small" for="draftmd">As markdown</label>
+    <textarea id="draftmd" readonly></textarea>
+    <div class="actions"><button class="btn primary" id="copymd">Copy markdown</button><button class="btn" id="closedraft">Close</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+/* =====================================================================
+   SAMPLE STREAM (built in, read-only). Ideas and quotes are from Phil's
+   archived chats; dates and positions are illustrative.
+   ===================================================================== */
+const P="Pure-Conscousness.md";
+const SEED_META=[
+  {source:"Anchors you chose",date:"Sep 20",text:"Anchors: 1 Corinthians 13:13 and Matthew 22:37–39 (KJV)."},
+  {source:"JUng-Shadow.md",date:"Sep 24",text:"Sample content from the archived chat JUng-Shadow.md."},
+  {source:"Isaiahs-Life.md",date:"Sep 25",text:"Sample content from the archived chat Isaiahs-Life.md."},
+  {source:"Fascinating-Disovery.md",date:"Sep 26",text:"Sample content from the archived chat Fascinating-Disovery.md."},
+  {source:P,date:"Sep 27",text:"Sample content from the archived chat Pure-Conscousness.md."},
+  {source:"Conversation-Motivation (parts 1 and 2)",date:"Sep 28",text:"Sample content from the two archived motivation chats."}
+];
+const SAMPLE_NODES={
+  triad:{step:0,t:"Faith, hope, charity",kind:"quote",anchor:true,stuck:true,src:"quoted_text",words:"And now abideth faith, hope, charity, these three; but the greatest of these is charity.",cite:"1 Corinthians 13:13 (KJV)",slots:[]},
+  great:{step:0,t:"Love God, love your neighbor",kind:"quote",anchor:true,stuck:true,src:"quoted_text",words:"Thou shalt love the Lord thy God with all thy heart, and with all thy soul, and with all thy mind. … Thou shalt love thy neighbour as thyself.",cite:"Matthew 22:37–39 (KJV)",slots:[]},
+  shadow:{step:1,t:"The shadow falls in your path",kind:"idea",stuck:true,src:"user_said",at:"04:20",words:"In that shadow lies the things that you don't wanna face.",slots:[]},
+  isaiah:{step:2,t:"Jesus as the endpoint of emergence",kind:"idea",stuck:true,src:"user_said",at:"11:30",words:"There probably is a source to whatever it is that emergence is. … I see the arrival of Jesus Christ as the endpoint of that emergence problem.",slots:[]},
+  vector:{step:3,t:"Meaning is the engine",kind:"idea",stuck:true,src:"user_said",at:"01:15",words:"Everybody has their own meaning, and our meaning is the engine that propels our transformations forward.",slots:["What's it meaning? How would you respond?"]},
+  furnished:{step:4,t:"Faith is furnished by memory",kind:"idea",stuck:true,src:"user_said",at:"03:40",words:"The child has memories of grandma, what going to the house means, and what was possible last time. Maybe there's a toy over there that's a favorite toy. He immediately imagines playing with that favorite toy.",slots:["What does a child with no memory of grandma's house trust?","Where does a furnished faith fail?"]},
+  grandma:{step:4,t:"Grandma's after dinner",kind:"image",stuck:true,src:"user_said",at:"03:05",words:"Your dad or your mom said, you know, such and such will happen after dinner, and by god, you did.",slots:[]},
+  car:{step:4,t:"The car starts every morning",kind:"image",stuck:true,src:"user_said",at:"01:50",words:"Every morning when you wake up, you go out to your car that starts.",slots:[]},
+  furniture:{step:4,t:"Faith becomes furniture",kind:"idea",stuck:true,src:"user_said",at:"04:30",words:"And we trust the car will start. After a while, you stop thinking of it as a fantasy future. It becomes part of the furniture.",slots:["What happens the morning the car doesn't start?"]},
+  invisible:{step:4,t:"Faith works best when it's invisible",kind:"idea",stuck:false,src:"inferred",reading:"Habit turns faith into background certainty. You only notice it again when it fails.",basis:["furniture","car"],slots:[]},
+  peter:{step:4,t:"Peter on the water",kind:"image",stuck:true,src:"user_said",at:"06:10",words:"He took a couple steps, and then began to think about the situation, and then fell into the water. And Jesus reached out his hand and pulled him right up.",slots:[]},
+  analysis:{step:4,t:"Thinking is what sinks it",kind:"idea",stuck:false,src:"inferred",reading:"Faith fails at the moment it gets turned back into analysis.",basis:["peter","furniture"],slots:["Is it the thinking, or the noticing of the wind?"]},
+  mustard:{step:4,t:"The mustard seed",kind:"image",stuck:true,src:"user_said",at:"07:30",words:"If you had the faith of the mustard seed, you could move a mountain into the sea. So that was obviously a conscious construct of the use of faith. So there's certainly thinking involved. Or is there?",slots:["If thinking is involved, which part: the aim or the step?"]},
+  creation:{step:4,t:"Faith is the creative component",kind:"idea",stuck:true,src:"user_said",replaced:true,at:"09:02",words:"I guess another dimension I would add is that faith is the creative component of the human consciousness.",slots:[]},
+  realization:{step:4,t:"Faith is realization",kind:"idea",stuck:true,src:"user_said",at:"09:40",words:"From a human consciousness point of view, realization of something new is creation in that regard. The realization is the function.",history:["Sep 27, 09:40. Replaced “Faith is the creative component” from 09:02. Both versions are kept."],slots:[]},
+  stable:{step:4,t:"Stable means something maintains it",kind:"idea",stuck:true,src:"user_said",at:"12:15",words:"It's almost like your realization creates things that become stable. Stable simply means that some other level of your consciousness maintains it.",slots:[]},
+  comestay:{step:4,t:"Things come, stay, and leave",kind:"idea",stuck:true,src:"user_said",at:"13:00",words:"Things come into your world. And then things stay. And then things leave.",slots:["What does it take to let something leave?"]},
+  pure:{step:4,t:"Consciousness, a pure being",kind:"idea",stuck:true,src:"user_said",replaced:true,at:"00:04",words:"Consciousness, a pure being.",slots:[]},
+  watcher:{step:4,t:"The alarm guards who you are",kind:"idea",stuck:true,src:"user_said",at:"24:10",words:"Wrong means something about your being is being threatened. You've got goals, you've got ideas. … What is the furniture of your consciousness that feels threatened? That's who you are.",history:["Sep 27, 24:10. Replaced “Consciousness, a pure being”: “the word pure is doing a lot of work.”"],slots:[]},
+  robber:{step:4,t:"The bank robber silences the alarm too",kind:"idea",stuck:true,src:"user_said",at:"27:30",words:"Robbing the bank is in line with his inner self. None of the things that could go wrong during the bank robbery threaten the things that he cared about, or at least not so much that they outweighed his desire for gold.",slots:["What makes a good untakeable?"]},
+  field:{step:4,t:"A shared field of consciousness",kind:"idea",stuck:true,src:"user_said",at:"17:05",words:"When things come unbidden, we're not operating alone. We're operating in a field of consciousness of others.",slots:["Who is “Verbenade Capsaro”?"]},
+  joined:{step:4,t:"Peter walked inside Jesus's consciousness",kind:"idea",stuck:true,src:"user_said",at:"20:05",words:"Jesus invited Peter to walk on the water with him in his consciousness, with his consciousness.",slots:[]},
+  home:{step:4,t:"Home is faith made of walls",kind:"idea",stuck:true,src:"user_said",at:"33:40",words:"We make sure that we bring in all the toys from outside. We lock them in the garage. … Everything is anchored where we put them in the hopes that the next day, they'll be there. That's a home.",history:["Sep 27, 34:15. You corrected “boys” to “toys”. Both versions are kept."],slots:["What does a person with no walls trust at night?"]},
+  foundations:{step:4,t:"The other foundations of consciousness",kind:"question",stuck:true,src:"user_said",at:"02:30",words:"Along with the other five or six primary foundations of consciousness.",slots:["Faith is one. What are the other four or five?"]},
+  battery:{step:5,t:"Maintenance on no feeling",kind:"idea",stuck:true,src:"user_said",at:"05:10",file:"Conversation-Motivation-2026-09-28.md",words:"You do that task because you really have a sense of the necessity of the necessity.",slots:[]},
+  glory:{step:5,t:"Glory is an open loop",kind:"idea",stuck:true,src:"user_said",at:"02:40",file:"Conversation-Motivation-2026-09-28-part2.md",words:"The chase for glory is a belief in other people's opinion.",slots:["Is a verdict you'll never hear a kind of faith?"]}
+};
+const SAMPLE_LINKS=[
+  ["car","furnished","example of"],["grandma","furnished","example of"],["car","furniture","example of"],
+  ["furnished","furniture","leads to"],["furniture","invisible","my reading",1],["peter","analysis","my reading",1],
+  ["analysis","furniture","tension with",1],["mustard","peter","pairs with"],["realization","creation","replaces"],
+  ["realization","furnished","refines"],["realization","comestay","extends to"],["stable","furniture","explains"],
+  ["comestay","stable","includes"],["watcher","pure","replaces"],["watcher","peter","explains"],["robber","watcher","tests"],
+  ["field","joined","grounds"],["joined","peter","reframes"],["home","furniture","example of"],["foundations","furnished","raised with"],
+  ["furnished","triad","traces to"],["robber","triad","traces to"],["isaiah","triad","traces to"],["joined","great","traces to"],
+  ["battery","glory","same session"]
+].map(([a,b,f,r])=>({a,b,f,read:!!r}));
+const SAMPLE_FLAGS=[
+  {step:3,id:"s-meaning",type:"unanswered",text:"“When somebody says to you, what's it meaning? How would you respond?”",detail:"Asked Sep 26. The conversation moved on without an answer.",nodes:["vector"],question:"When somebody says to you, “what's it meaning?”, how would you respond?"},
+  {step:4,id:"s-kastrup",type:"garble",text:"“Verbenade Capsaro” → Bernardo Kastrup?",detail:"Sep 27, 17:05. You cited this thinker for consciousness as a shared field.",nodes:["field"],phrase:"Verbenade Capsaro",suggestion:"Bernardo Kastrup"},
+  {step:4,id:"s-scient",type:"garble",text:"“The scientists are big on this idea of clearing” → Scientologists?",detail:"Sep 27, 41:20. Said alongside Landmark.",nodes:[],phrase:"scientists",suggestion:"Scientologists"},
+  {step:4,id:"s-echo2",type:"echo",text:"“The shadow falls in your path” ↔ “The alarm guards who you are”",detail:"Sep 24 and Sep 27. Both are about something in you that you'd rather not face.",nodes:["shadow","watcher"]},
+  {step:4,id:"s-gap",type:"gap",text:"“Five or six primary foundations of consciousness.” You named one.",detail:"Sep 27, 02:30. Faith was the one.",nodes:["foundations"],question:"You said faith is one of five or six primary foundations of consciousness. What are the others?"},
+  {step:4,id:"s-toys",type:"correction",text:"“boys” → “toys”",detail:"Sep 27, 34:15. Both versions kept. “toys” leads.",nodes:["home"]},
+  {step:5,id:"s-echo1",type:"echo",text:"“Maintenance on no feeling” ↔ “Stable means something maintains it”",detail:"Sep 28 (the battery terminals) and Sep 27. Both describe upkeep that runs without being felt.",nodes:["battery","stable"]},
+  {step:5,id:"s-tension",type:"tension",text:"Sep 28: “the app is the goal.” Earlier: “the app and UI are window dressing.”",detail:"Both are yours. They point at different first builds.",nodes:[],question:"Earlier the app was window dressing for the theology. Now it's the goal. Which comes first for you?"},
+  {step:5,id:"s-bet",type:"bet",text:"Expected you to come back to “home.” You went to motivation instead.",detail:"Bet recorded Sep 27. A missed bet gets extra attention next pass.",nodes:["home"]}
+];
+function buildSeed(){
+  const steps=SEED_META.map(m=>({...m,result:{add:{},touch:[],replace:[],links:[],flags:[],question:""}}));
+  for(const [id,n] of Object.entries(SAMPLE_NODES)){
+    const c=JSON.parse(JSON.stringify(n));delete c.step;
+    c.date=SEED_META[n.step].date;c.file=c.file||SEED_META[n.step].source;c.history=c.history||[];
+    steps[n.step].result.add[id]=c;
+  }
+  for(const l of SAMPLE_LINKS){steps[Math.max(SAMPLE_NODES[l.a].step,SAMPLE_NODES[l.b].step)].result.links.push(l);}
+  for(const f of SAMPLE_FLAGS){const c={...f};delete c.step;steps[f.step].result.flags.push(c);}
+  steps[4].result.question="You said faith becomes “part of the furniture” once it's habitual. Then you said Peter sank when he started thinking. Is thinking what breaks the furniture, or is it something else?";
+  return steps;
+}
+const SEED=buildSeed();
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const clip=(s,n)=>{s=String(s??"").trim();return s.length>n?s.slice(0,n-1)+"…":s;};
+const reduceMotion=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+let toastTimer;
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,2800);}
+const measureCtx=document.createElement("canvas").getContext("2d");
+function textW(s,font){measureCtx.font=font;return measureCtx.measureText(s).width;}
+function wrap(text,max,font){
+  const words=String(text).split(/\s+/);const lines=[];let cur="";
+  for(const w of words){const test=cur?cur+" "+w:w;if(textW(test,font)>max&&cur){lines.push(cur);cur=w;}else cur=test;}
+  if(cur)lines.push(cur);return lines.slice(0,4);
+}
+function fixVars(root){ /* SVG presentation attributes don't resolve var(); move them to inline style */
+  root.querySelectorAll('[fill*="var("],[stroke*="var("]').forEach(el=>{
+    for(const a of ["fill","stroke"]){const v=el.getAttribute(a);if(v&&v.includes("var(")){el.style.setProperty(a,v);el.removeAttribute(a);}}
+  });
+}
+function today(){return new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});}
+function stamp(iso){try{return new Date(iso).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return "";}}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+/* =====================================================================
+   STATE = replay(steps[0..cursor))
+   ===================================================================== */
+function emptyState(){return {nodes:{},links:[],flags:[],outcomes:{},ingests:0,passes:[],question:null};}
+let S=emptyState();
+const SAMPLE_NAME="Sample: Phil's archived chats";
+let stream={id:null,name:SAMPLE_NAME,builtin:true,steps:SEED.map((s,i)=>({seq:i,kind:"seed",seedIndex:i}))};
+let cursor=stream.steps.length;
+let focus="furnished";
+
+function stepMeta(step){
+  if(step.kind==="seed")return SEED[step.seedIndex];
+  return step;
+}
+function applyStep(st,step){
+  if(step.kind==="seed"){const sd=SEED[step.seedIndex];applyResult(st,sd.result,sd);}
+  else if(step.kind==="ingest")applyResult(st,step.result,step);
+  else if(step.kind==="action")applyAction(st,step);
+}
+function applyResult(st,r,meta){
+  const idx=st.ingests++;
+  st.passes.push({date:meta.date,source:meta.source});
+  for(const [id,n] of Object.entries(r.add||{})){
+    st.nodes[id]=Object.assign(clone(n),{touches:[idx],also:[],history:[...(n.history||[])],slots:[...(n.slots||[])]});
+  }
+  for(const t of r.touch||[]){
+    const n=st.nodes[t.id];if(!n)continue;
+    if(!n.touches.includes(idx))n.touches.push(idx);
+    if(t.also)n.also.push(t.also);
+    for(const s of t.slots||[])if(!n.slots.includes(s))n.slots.push(s);
+  }
+  for(const rp of r.replace||[]){const n=st.nodes[rp.id];if(n)n.replaced=true;}
+  for(const l of r.links||[]){
+    if(st.nodes[l.a]&&st.nodes[l.b]&&!st.links.some(x=>x.a===l.a&&x.b===l.b))st.links.push({...l});
+  }
+  for(const f of r.flags||[])st.flags.push({...f,nodes:[...(f.nodes||[])]});
+  if(r.question)st.question={text:r.question,source:meta.source};
+}
+function applyAction(st,step){
+  const a=step.action||{};
+  const n=a.id?st.nodes[a.id]:null;
+  if(a.type==="keep"&&n){
+    n.stuck=true;n.src="user_confirmed";n.words=n.reading;n.date=step.date;n.at="kept";n.file="kept by you on the map";
+    st.links.forEach(l=>{if(l.a===a.id||l.b===a.id){const other=st.nodes[l.a===a.id?l.b:l.a];if(other&&other.stuck!==false){l.read=false;if(l.f==="my reading")l.f="leads to";}}});
+  } else if(a.type==="discard"&&n){
+    delete st.nodes[a.id];
+    st.links=st.links.filter(l=>l.a!==a.id&&l.b!==a.id);
+    st.flags.forEach(f=>f.nodes=f.nodes.filter(x=>x!==a.id));
+  } else if(a.type==="anchor"&&n){
+    n.anchor=!n.anchor;
+  } else if(a.type==="flag"){
+    const f=st.flags.find(x=>x.id===a.flagId);if(!f)return;
+    let out="Noted.";
+    switch(a.choice){
+      case "accept":
+        for(const id of f.nodes){const m=st.nodes[id];if(!m)continue;m.history.push(`${step.date}: transcribed “${f.phrase}”, confirmed as “${f.suggestion}”. Your original words stay as written.`);m.slots=m.slots.filter(s=>!(f.phrase&&s.includes(f.phrase)));}
+        out=`Confirmed “${f.suggestion}”. The original text stays as written, with a note.`;break;
+      case "keep":out="Kept as written.";break;
+      case "link":{
+        const [x,y]=f.nodes.filter(id=>st.nodes[id]);
+        if(x&&y&&!st.links.some(l=>(l.a===x&&l.b===y)||(l.a===y&&l.b===x))){st.links.push({a:x,b:y,f:"echoes",read:false});}
+        out=x&&y?"Linked on the map.":"Couldn't link: one of the ideas is gone.";break;}
+      case "unrelated":out="Marked not related.";break;
+      case "talk":out="Picked up as a question.";break;
+      case "later":out="Left for later.";break;
+      case "both":out="Kept both. Marked as a tension you're holding on purpose.";break;
+      case "drop":out="Dropped. It stays in the history.";break;
+      default:out="Noted.";
+    }
+    st.outcomes[f.id]=out;
+  }
+}
+function rebuild(){
+  S=emptyState();
+  for(const step of stream.steps.slice(0,cursor))applyStep(S,step);
+  if(!S.nodes[focus])focus=pickFocus();
+  renderAll();
+}
+function degree(id){return S.links.filter(l=>l.a===id||l.b===id).length;}
+function pickFocus(){
+  const ids=Object.keys(S.nodes).filter(id=>!S.nodes[id].replaced);
+  if(!ids.length)return null;
+  const last=S.ingests-1;
+  const recent=ids.filter(id=>S.nodes[id].touches.includes(last)&&S.nodes[id].stuck);
+  const pool=recent.length?recent:ids;
+  return pool.sort((a,b)=>degree(b)-degree(a))[0];
+}
+function actOf(n){
+  if(n.anchor)return "anchor";
+  if(n.replaced)return "replaced";
+  const last=Math.max(...n.touches);const age=S.ingests-1-last;
+  if(age<=0)return n.touches.length>1?"settled":"arriving";
+  if(age<=2)return "settled";
+  if(age<=4)return "fading";
+  return "quiet";
+}
+const actLabel=a=>a==="quiet"?"gone quiet":a;
+
+/* =====================================================================
+   PERSISTENCE: db capability, private per viewer under data/users/<id>
+   ===================================================================== */
+let db=null,uid=null,storeReady=false,savedStreams=[],saveChain=Promise.resolve(),saveProblem=null;
+function metaColl(){return db.collection(`data/users/${uid}`);}
+function stepsColl(sid){return db.collection(`data/users/${uid}/s_${sid}/steps`);}
+function newSid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+const stepDocId=seq=>"st_"+String(seq).padStart(5,"0");
+
+async function initStore(){
+  const C=window.claude;
+  if(!C||typeof C.use!=="function"){renderSave();return;}
+  try{
+    const [d,u]=await Promise.all([C.use("db"),C.use("user")]);
+    if(d&&u){const id=await u.id();if(id){db=d;uid=id;}}
+  }catch(e){}
+  storeReady=true;
+  if(db){await refreshList();const last=lsGet("nm.lastStream");if(last&&savedStreams.some(s=>s.sid===last))await openSaved(last);}
+  renderStreamBar();renderSave();
+}
+async function refreshList(){
+  if(!db)return;
+  try{
+    const snap=await metaColl().get();
+    savedStreams=snap.docs.filter(d=>d.id.startsWith("s_")).map(d=>({sid:d.id.slice(2),...d.data()})).sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
+  }catch(e){saveProblem="Couldn't load your saved streams.";}
+}
+function queueSave(fn){
+  saveChain=saveChain.then(fn).then(()=>{saveProblem=null;renderSave();},e=>{
+    saveProblem=e&&e.code==="quota_exceeded"?"Storage is full. Delete an old stream to keep saving.":"Couldn't save the last change. It's still here in this tab.";renderSave();
+  });
+  renderSave();
+}
+function persistNewStep(step){
+  if(!db||stream.builtin)return;
+  const s=stream;
+  queueSave(async()=>{
+    if(!s.id){s.id=newSid();s.createdAt=new Date().toISOString();await metaColl().doc("s_"+s.id).set({name:s.name,createdAt:s.createdAt,updatedAt:s.createdAt,stepCount:0});lsSet("nm.lastStream",s.id);}
+    await stepsColl(s.id).doc(stepDocId(step.seq)).set(step);
+    await metaColl().doc("s_"+s.id).update({updatedAt:new Date().toISOString(),stepCount:s.steps.length,name:s.name});
+    await refreshList();renderStreamBar();
+  });
+}
+function persistAllSteps(){
+  if(!db||stream.builtin||!stream.steps.length)return;
+  const s=stream;
+  queueSave(async()=>{
+    if(!s.id){s.id=newSid();s.createdAt=new Date().toISOString();await metaColl().doc("s_"+s.id).set({name:s.name,createdAt:s.createdAt,updatedAt:s.createdAt,stepCount:0});lsSet("nm.lastStream",s.id);}
+    for(const st of s.steps)await stepsColl(s.id).doc(stepDocId(st.seq)).set(st);
+    await metaColl().doc("s_"+s.id).update({updatedAt:new Date().toISOString(),stepCount:s.steps.length});
+    await refreshList();renderStreamBar();
+  });
+}
+async function openSaved(sid){
+  if(!db)return;
+  try{
+    const meta=savedStreams.find(s=>s.sid===sid);
+    const snap=await stepsColl(sid).orderBy("seq").get();
+    stream={id:sid,name:meta?meta.name:"Saved stream",builtin:false,steps:snap.docs.map(d=>d.data())};
+    cursor=stream.steps.length;focus=null;lsSet("nm.lastStream",sid);
+    rebuild();
+  }catch(e){toast("Couldn't open that stream. Try again.");}
+}
+async function deleteCurrent(){
+  if(stream.builtin)return;
+  const s=stream;
+  if(db&&s.id){
+    queueSave(async()=>{
+      for(const st of s.steps){await stepsColl(s.id).doc(stepDocId(st.seq)).delete();}
+      await metaColl().doc("s_"+s.id).delete();
+      await refreshList();renderStreamBar();
+    });
+  }
+  openSample();toast("Stream deleted.");
+}
+function openSample(){
+  stream={id:null,name:SAMPLE_NAME,builtin:true,steps:SEED.map((s,i)=>({seq:i,kind:"seed",seedIndex:i}))};
+  cursor=stream.steps.length;focus="furnished";lsSet("nm.lastStream","sample");rebuild();
+}
+function newEmpty(){
+  stream={id:null,name:"Untitled · "+stamp(new Date().toISOString()),builtin:false,steps:[]};
+  cursor=0;focus=null;rebuild();
+}
+function branchHere(){
+  const base=stream.builtin?"Sample":stream.name;
+  const steps=stream.steps.slice(0,cursor).map((st,i)=>Object.assign(clone(st),{seq:i}));
+  stream={id:null,name:`${base} (branch at step ${cursor})`,builtin:false,steps};
+  cursor=steps.length;persistAllSteps();rebuild();
+  toast(db?"Branched. The new stream is saved.":"Branched. Saving isn't available here, so it lives in this tab only.");
+}
+/* ensure the stream can take a new step: fork the sample, refuse while rewound */
+function ensureWritable(onTopOfSample){
+  if(cursor<stream.steps.length){toast("You're looking at an earlier step. Go back to latest or branch from here first.");return false;}
+  if(stream.builtin){
+    const steps=onTopOfSample?stream.steps.map(clone):[];
+    stream={id:null,name:onTopOfSample?"Sample + your text · "+stamp(new Date().toISOString()):"Untitled · "+stamp(new Date().toISOString()),builtin:false,steps};
+    cursor=steps.length;
+    if(steps.length)persistAllSteps();
+  }
+  return true;
+}
+function addStep(step){
+  step.seq=stream.steps.length;
+  stream.steps.push(step);cursor=stream.steps.length;
+  persistNewStep(step);
+}
+function recordAction(action,label){
+  if(!ensureWritable(true))return false;
+  addStep({kind:"action",at:new Date().toISOString(),date:today(),source:label,action});
+  return true;
+}
+
+/* =====================================================================
+   RENDER: stream bar
+   ===================================================================== */
+function stepLabel(step){
+  if(step.kind==="action"){
+    const a=step.action||{};
+    return {"keep":"You kept a reading","discard":"You discarded a reading","anchor":"You changed an anchor","flag":"You resolved a loose end"}[a.type]||"You made a change";
+  }
+  const m=stepMeta(step);return m.source||"Text";
+}
+function renderStreamBar(){
+  const sel=$("#streamsel");
+  let opts=`<option value="sample">${esc(SAMPLE_NAME)}</option>`;
+  for(const s of savedStreams)opts+=`<option value="${esc(s.sid)}">${esc(s.name||"Untitled")} · ${s.stepCount||0} steps</option>`;
+  if(!stream.builtin&&!stream.id)opts+=`<option value="__current">${esc(stream.name)} (not saved yet)</option>`;
+  sel.innerHTML=opts;
+  sel.value=stream.builtin?"sample":(stream.id||"__current");
+  const sc=$("#scrub");sc.max=String(stream.steps.length);sc.value=String(cursor);sc.disabled=!stream.steps.length;
+  const cur=cursor?stream.steps[cursor-1]:null;
+  $("#scrubout").textContent=stream.steps.length?`${cursor} of ${stream.steps.length}`+(cur?` · ${stepMeta(cur).date||""} · ${stepLabel(cur)}`:" · empty map"):"No steps yet";
+  const rw=$("#rewound");
+  if(cursor<stream.steps.length){rw.hidden=false;$("#rewoundtext").textContent=`You're viewing step ${cursor} of ${stream.steps.length}. Later steps are kept. Branch to continue from here without losing them.`;}
+  else rw.hidden=true;
+  renderSave();
+}
+function renderSave(){
+  const el=$("#savestate");el.className="save";
+  if(stream.builtin){el.textContent=storeReady&&!db?"Sample · read-only · saving unavailable here":"Sample · read-only";return;}
+  if(!storeReady){el.textContent="Connecting…";return;}
+  if(!db){el.textContent="Not saved: this tab only";el.classList.add("bad");return;}
+  if(saveProblem){el.textContent=saveProblem;el.classList.add("bad");return;}
+  if(!stream.id){el.textContent="Saved when you add the first step";return;}
+  el.textContent="Saved privately";el.classList.add("ok");
+}
+$("#streamsel").addEventListener("change",e=>{
+  const v=e.target.value;
+  if(v==="sample")openSample();else if(v!=="__current")openSaved(v);
+});
+$("#newstream").addEventListener("click",()=>{newEmpty();showView("add");$("#entry").focus();});
+$("#scrub").addEventListener("input",e=>{cursor=+e.target.value;rebuild();});
+$("#tolatest").addEventListener("click",()=>{cursor=stream.steps.length;rebuild();});
+$("#branch").addEventListener("click",branchHere);
+
+/* =====================================================================
+   RENDER: map
+   ===================================================================== */
+const svg=$("#map");
+const CX=480,CY=300,RX=320,RY=215;
+function neighbors(id){return S.links.filter(l=>(l.a===id||l.b===id)&&S.nodes[l.a]&&S.nodes[l.b]).map(l=>({l,other:l.a===id?l.b:l.a}));}
+function boxFor(id,isFocus){
+  const n=S.nodes[id];
+  const font=(n.stuck?"":"italic ")+(isFocus?"600 15px":"500 13px")+' "IBM Plex Sans", system-ui, sans-serif';
+  const lines=wrap(n.t,isFocus?190:150,font);
+  const lh=isFocus?20:17;
+  const w=Math.max(...lines.map(l=>textW(l,font)))+(isFocus?32:24);
+  const h=lines.length*lh+(isFocus?22:16);
+  return {lines,w,h,lh,fs:isFocus?15:13};
+}
+function edgePt(x,y,w,h,tx,ty){
+  const dx=tx-x,dy=ty-y;if(!dx&&!dy)return[x,y];
+  const s=Math.min(dx?(w/2+4)/Math.abs(dx):Infinity,dy?(h/2+4)/Math.abs(dy):Infinity);
+  return[x+dx*s,y+dy*s];
+}
+function nodeSVG(id,x,y,b,isFocus,extra){
+  const n=S.nodes[id];const act=actOf(n);
+  const opacity=act==="replaced"||act==="quiet"?0.45:(act==="fading"?0.65:1);
+  let stroke="var(--ink)",fill="var(--panel)",sw=1.5,dash="",tcol="var(--ink)",tstyle="";
+  if(!n.stuck){stroke="var(--reading)";fill="var(--paper)";dash='stroke-dasharray="5 4"';tcol="var(--reading)";tstyle='font-style="italic"';}
+  if(isFocus){stroke=n.stuck?"var(--accent)":"var(--reading)";fill="var(--accent-soft)";sw=2.5;}
+  let s=`<g class="node" data-id="${esc(id)}" tabindex="0" role="button" aria-label="${esc(n.t)}" transform="translate(${x},${y})" opacity="${opacity}">`;
+  if(n.anchor)s+=`<rect x="${-b.w/2-4}" y="${-b.h/2-4}" width="${b.w+8}" height="${b.h+8}" rx="9" fill="none" stroke="${stroke}" stroke-width="1.2"/>`;
+  s+=`<rect class="box" x="${-b.w/2}" y="${-b.h/2}" width="${b.w}" height="${b.h}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" ${dash}/>`;
+  const top=-((b.lines.length-1)*b.lh)/2;
+  b.lines.forEach((ln,i)=>{s+=`<text x="0" y="${top+i*b.lh}" dy="0.35em" text-anchor="middle" font-family="IBM Plex Sans, system-ui, sans-serif" font-size="${b.fs}" font-weight="${isFocus?600:500}" fill="${tcol}" ${tstyle} ${n.replaced?'text-decoration="line-through"':""}>${esc(ln)}</text>`;});
+  if(act==="arriving")s+=`<circle cx="${-b.w/2+1}" cy="${-b.h/2+1}" r="4.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="1.5"><title>new in the latest pass</title></circle>`;
+  if(n.replaced)s+=`<text x="0" y="${-b.h/2-8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1" fill="var(--warn)">REPLACED</text>`;
+  else if(!n.stuck)s+=`<text x="0" y="${-b.h/2-8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="1" fill="var(--reading)">MY READING</text>`;
+  const slots=Math.min((n.slots||[]).length,5);
+  for(let i=0;i<slots;i++){const sx=(i-(slots-1)/2)*14;s+=`<circle cx="${sx}" cy="${b.h/2+9}" r="4" fill="var(--panel)" stroke="var(--open)" stroke-width="1.5"><title>open question</title></circle>`;}
+  if(extra>0)s+=`<text x="${b.w/2+6}" y="${b.h/2-2}" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">+${extra}</text>`;
+  return s+"</g>";
+}
+function renderMap(){
+  if(!focus||!S.nodes[focus]){
+    $("#focuslabel").innerHTML=stream.steps.length&&cursor===0?"Step 0: the empty map before anything was added":"This stream is empty";
+    svg.innerHTML=`<text x="480" y="280" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="18" fill="var(--muted)">Nothing on the map yet.</text><text x="480" y="310" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">Open “Add text” and paste something to start.</text>`;
+    fixVars(svg);
+    $("#panel").innerHTML=`<div class="empty"><b>An empty map</b><span>Paste or drop text in Add text. Claude pulls out your ideas and links them here.</span><button class="btn primary" data-goadd="1">Add text</button></div>`;
+    return;
+  }
+  const nb=neighbors(focus).slice(0,12);
+  $("#focuslabel").innerHTML=`Showing the neighborhood of <b>${esc(S.nodes[focus].t)}</b>`;
+  const fb=boxFor(focus,true);const count=nb.length;
+  const placed=nb.map((x,i)=>{
+    const ang=(-Math.PI/2)+(i*(2*Math.PI/Math.max(count,1)))+(count%2?0:Math.PI/count/2);
+    return {...x,x:CX+RX*Math.cos(ang),y:CY+RY*Math.sin(ang),b:boxFor(x.other,false)};
+  });
+  let s=`<defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--reading)"/></marker>
+  </defs><g class="fade-in">`;
+  const slotPad=id=>(S.nodes[id].slots||[]).length?16:0;
+  for(const p of placed){
+    const fromFocus=p.l.a===focus;
+    const [x1,y1]=fromFocus?edgePt(CX,CY,fb.w,fb.h+slotPad(focus),p.x,p.y):edgePt(p.x,p.y,p.b.w,p.b.h+slotPad(p.other),CX,CY);
+    const [x2,y2]=fromFocus?edgePt(p.x,p.y,p.b.w,p.b.h,CX,CY):edgePt(CX,CY,fb.w,fb.h,p.x,p.y);
+    const col=p.l.read?"var(--reading)":"var(--muted)";
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="1.3" ${p.l.read?'stroke-dasharray="5 4"':""} marker-end="url(#${p.l.read?"arrR":"arr"})"/>`;
+    const mx=(x1+x2)/2,my=(y1+y2)/2;const lw=textW(p.l.f,'400 11px "IBM Plex Mono", monospace')+10;
+    s+=`<g transform="translate(${mx},${my})"><rect x="${-lw/2}" y="-9" width="${lw}" height="18" rx="3" fill="var(--panel)" stroke="var(--line)"/><text x="0" y="0" dy="0.35em" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="${col}">${esc(p.l.f)}</text></g>`;
+  }
+  for(const p of placed){const extra=neighbors(p.other).filter(x=>x.other!==focus).length;s+=nodeSVG(p.other,p.x,p.y,p.b,false,extra);}
+  s+=nodeSVG(focus,CX,CY,fb,true,Math.max(0,neighbors(focus).length-nb.length));
+  if(!count)s+=`<text x="${CX}" y="${CY+fb.h/2+44}" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--muted)">Not connected to anything yet. Check Loose Ends for suggested links.</text>`;
+  s+="</g>";
+  svg.innerHTML=s;fixVars(svg);
+  renderPanel();
+}
+svg.addEventListener("click",e=>{const g=e.target.closest("[data-id]");if(g&&g.dataset.id!==focus)setFocus(g.dataset.id);});
+svg.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){const g=e.target.closest("[data-id]");if(g){e.preventDefault();setFocus(g.dataset.id);}}});
+function setFocus(id){if(!S.nodes[id])return;focus=id;renderMap();const g=svg.querySelector(`[data-id="${CSS.escape(id)}"]`);if(g)g.focus({preventScroll:true});}
+
+function traceToAnchor(start){
+  if(S.nodes[start].anchor)return null;
+  const prev={[start]:null};const q=[start];
+  while(q.length){
+    const cur=q.shift();
+    if(cur!==start&&S.nodes[cur].anchor){
+      const path=[];let c=cur;while(c!==null){path.unshift(c);c=prev[c]?prev[c].from:null;}
+      return path.map((id,i)=>({id,via:i?prev[id].label:null}));
+    }
+    for(const {l,other} of neighbors(cur)){if(other in prev||S.nodes[other].replaced)continue;prev[other]={from:cur,label:l.f};q.push(other);}
+  }
+  return [];
+}
+function renderPanel(){
+  const n=S.nodes[focus];const nb=neighbors(focus);const act=actOf(n);
+  let h=`<div class="meta">`;
+  h+=n.stuck?`<span class="chip mine">${n.src==="quoted_text"?"source text":"your words"}</span>`:`<span class="chip reading">my reading</span>`;
+  if(n.anchor)h+=`<span class="chip">anchor</span>`;
+  h+=`<span class="chip">${esc(n.kind)}</span>`;
+  if(act==="replaced")h+=`<span class="chip replaced">replaced</span>`;
+  else if(act!=="anchor")h+=`<span class="chip state-${act}">${esc(actLabel(act))}</span>`;
+  h+=`</div><h2>${esc(n.t)}</h2>`;
+  if(n.stuck){
+    h+=`<div class="sec"><h3>${n.src==="quoted_text"?"Source text":"Your words"}</h3><p class="words${n.src==="quoted_text"?" quote":""}">${esc(n.words)}</p><div class="src">`;
+    if(n.cite)h+=`<span>${esc(n.cite)}</span><span>matched verbatim</span>`;
+    else h+=`<span>${esc(n.date||"")}</span><span>${esc(n.at||"")}</span><span>${esc(n.file||"")}</span>`;
+    h+=`</div>`;
+    if(n.also&&n.also.length){h+=`<div class="also">`+n.also.map(a=>`<p>“${esc(clip(a.words,400))}”</p><div class="src"><span>said again · ${esc(a.date)}</span><span>${esc(a.source)}</span></div>`).join("")+`</div>`;}
+    h+=`</div>`;
+  } else {
+    h+=`<div class="sec"><h3>My reading</h3><p class="reading-text">${esc(n.reading)}</p>
+      <p class="small" style="margin:8px 0 0">Based on: ${(n.basis||[]).filter(b=>S.nodes[b]).map(b=>`<button class="linkbtn" data-go="${esc(b)}">${esc(S.nodes[b].t)}</button>`).join(", ")||"(the ideas it was based on are gone)"}</p>
+      <div class="actions" style="margin-top:10px"><button class="btn primary" data-keep="1">Keep as mine</button><button class="btn danger" data-discard="1">Discard</button></div></div>`;
+  }
+  if(n.history&&n.history.length)h+=`<div class="sec"><h3>History</h3><ul class="hist">${n.history.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  if(n.slots&&n.slots.length)h+=`<div class="sec"><h3>Open questions</h3><ul class="plain">${n.slots.map((q,i)=>`<li class="slotq"><span class="dot"></span><p>${esc(q)}</p><button class="linkbtn small" data-ask="${i}">Answer this</button></li>`).join("")}</ul></div>`;
+  h+=`<div class="sec"><h3>Connects to</h3>`;
+  h+=nb.length?`<ul class="plain">${nb.map(({l,other})=>`<li><span class="small">${esc(l.a===focus?l.f:"← "+l.f)}</span> <button class="linkbtn" data-go="${esc(other)}">${esc(S.nodes[other].t)}</button></li>`).join("")}</ul>`:`<p class="small" style="margin:0">Nothing yet.</p>`;
+  h+=`</div>`;
+  if(!n.anchor){
+    const tr=traceToAnchor(focus);
+    h+=`<div class="sec"><h3>Traces back to</h3>`;
+    if(tr&&tr.length)h+=`<div class="trace">`+tr.map(s=>(s.via?`<span class="via">${esc(s.via)} →</span>`:"")+`<span class="step${S.nodes[s.id].anchor?" anchor":""}">${esc(S.nodes[s.id].t)}</span>`).join("")+`</div>`;
+    else h+=`<p class="small" style="margin:0">${Object.values(S.nodes).some(x=>x.anchor)?"No path to an anchor yet. That's allowed.":"No anchors in this stream. Pin one if you want everything traced back to it."}</p>`;
+    h+=`</div>`;
+  }
+  h+=`<div class="actions"><button class="btn" data-draft="1">Draft from here</button>${n.stuck?`<button class="btn" data-anchor="1">${n.anchor?"Unpin anchor":"Make this an anchor"}</button>`:""}</div>`;
+  $("#panel").innerHTML=h;
+}
+$("#panel").addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.goadd){showView("add");$("#entry").focus();return;}
+  if(t.dataset.go){setFocus(t.dataset.go);return;}
+  if(t.dataset.ask!==undefined){openQuestion(S.nodes[focus].slots[+t.dataset.ask],"Open question on “"+S.nodes[focus].t+"”");showView("add");return;}
+  if(t.dataset.draft){openDraft();return;}
+  const id=focus;
+  if(t.dataset.keep){if(recordAction({type:"keep",id},"keep")){rebuild();toast("Kept. It's now part of your words.");}}
+  else if(t.dataset.discard){const back=(S.nodes[id].basis||[]).find(b=>S.nodes[b]);if(recordAction({type:"discard",id},"discard")){focus=back||null;rebuild();toast("Discarded. Your own words are untouched.");}}
+  else if(t.dataset.anchor){if(recordAction({type:"anchor",id},"anchor")){rebuild();}}
+});
+
+/* search */
+const q=$("#q"),sug=$("#suggest");
+function matches(){const v=q.value.trim().toLowerCase();if(!v)return[];return Object.keys(S.nodes).filter(k=>S.nodes[k].t.toLowerCase().includes(v)||(S.nodes[k].words||S.nodes[k].reading||"").toLowerCase().includes(v)).slice(0,7);}
+q.addEventListener("input",()=>{const m=matches();sug.innerHTML=m.map(k=>`<li><button data-go="${esc(k)}">${esc(S.nodes[k].t)}</button></li>`).join("");sug.hidden=!m.length;});
+q.addEventListener("keydown",e=>{if(e.key==="Enter"){const m=matches();if(m[0]){setFocus(m[0]);sug.hidden=true;q.value="";}}if(e.key==="Escape")sug.hidden=true;});
+sug.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b){setFocus(b.dataset.go);sug.hidden=true;q.value="";}});
+document.addEventListener("click",e=>{if(!e.target.closest(".search"))sug.hidden=true;});
+
+/* draft */
+function openDraft(){
+  const n=S.nodes[focus];const order=[focus,...neighbors(focus).map(x=>x.other).filter(id=>!S.nodes[id].replaced)];
+  let html="",md=`# ${n.t}\n\n`;
+  for(const id of order){
+    const x=S.nodes[id];
+    if(x.stuck){const cite=x.cite||`${x.date||""}${x.file?" · "+x.file:""}`;html+=`<blockquote>${esc(x.words)}<cite>${esc(cite)}</cite></blockquote>`;md+=`> ${x.words}\n> (${cite})\n\n`;}
+    else{html+=`<p><span class="mr">[my reading] ${esc(x.reading)}</span></p>`;md+=`*[my reading] ${x.reading}*\n\n`;}
+    for(const s of x.slots||[]){html+=`<p class="gap">Open: ${esc(s)}</p>`;md+=`**Open:** ${s}\n\n`;}
+  }
+  $("#drafttitle").textContent=n.t;$("#draftbody").innerHTML=html;$("#draftmd").value=md.trim();
+  $("#scrim").hidden=false;$("#closedraft").focus();
+}
+$("#closedraft").addEventListener("click",()=>{$("#scrim").hidden=true;});
+$("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")$("#scrim").hidden=true;});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#scrim").hidden=true;});
+$("#copymd").addEventListener("click",()=>{
+  const ta=$("#draftmd");const fallback=()=>{ta.focus();ta.select();toast("Selected. Press Ctrl+C to copy.");};
+  try{navigator.clipboard.writeText(ta.value).then(()=>toast("Copied."),fallback);}catch(err){fallback();}
+});
+
+/* =====================================================================
+   RENDER: loose ends
+   ===================================================================== */
+const leIcon={garble:"≈",unanswered:"?",echo:"↔",gap:"∅",tension:"⚡",bet:"⌛",correction:"✓"};
+const leName={garble:"Garble",unanswered:"Unanswered",echo:"Echo",gap:"Gap",tension:"Tension",bet:"Bet missed",correction:"Correction"};
+function flagActs(f){
+  switch(f.type){
+    case "garble":return f.suggestion?[[`Use “${clip(f.suggestion,40)}”`,"accept","primary"],["Keep as written","keep"]]:[["Keep as written","keep"]];
+    case "echo":return f.nodes.filter(id=>S.nodes[id]).length>=2?[["Link them","link","primary"],["Not related","unrelated"]]:[["Noted","ok"]];
+    case "unanswered":return [["Answer it","talk","primary"],["Drop it","drop"]];
+    case "gap":return [["Fill it in","talk","primary"],["Later","later"]];
+    case "tension":return [["Talk it through","talk","primary"],["Both are true","both"]];
+    default:return [["Got it","ok"]];
+  }
+}
+function renderLE(){
+  const open=S.flags.filter(f=>!S.outcomes[f.id]),done=S.flags.filter(f=>S.outcomes[f.id]);
+  const row=f=>`<li class="le${S.outcomes[f.id]?" done":""}"><div class="type t-${esc(f.type)}"><i>${leIcon[f.type]||"•"}</i>${esc(leName[f.type]||f.type)}</div>
+    <div class="body"><p class="text">${esc(f.text)}</p>${f.detail?`<p class="detail">${esc(f.detail)}</p>`:""}
+    ${f.nodes.some(k=>S.nodes[k])?`<p class="detail">On the map: ${f.nodes.filter(k=>S.nodes[k]).map(k=>`<button class="linkbtn" data-go="${esc(k)}">${esc(S.nodes[k].t)}</button>`).join(" · ")}</p>`:""}
+    ${S.outcomes[f.id]?`<p class="outcome">✓ ${esc(S.outcomes[f.id])}</p>`:`<div class="actions">${flagActs(f).map(a=>`<button class="btn ${a[2]||""}" data-flag="${esc(f.id)}" data-choice="${a[1]}">${esc(a[0])}</button>`).join("")}</div>`}
+    </div></li>`;
+  $("#lelist").innerHTML=S.flags.length?open.map(row).join("")+done.map(row).join(""):`<li class="empty">No loose ends yet. They appear as text is added.</li>`;
+  const c=$("#lecount");c.textContent=open.length;c.hidden=!open.length;
+}
+$("#lelist").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.go){setFocus(b.dataset.go);showView("map");return;}
+  const id=b.dataset.flag,choice=b.dataset.choice;if(!id)return;
+  const f=S.flags.find(x=>x.id===id);if(!f)return;
+  const qtext=f.question||f.text;
+  if(!recordAction({type:"flag",flagId:id,choice},"flag"))return;
+  rebuild();
+  if(choice==="talk"){openQuestion(qtext,"From Loose Ends");showView("add");}
+});
+
+/* =====================================================================
+   RENDER: timeline (per pass)
+   ===================================================================== */
+function renderTimeline(){
+  const t=$("#timeline");const n=S.ingests;
+  const cand=Object.entries(S.nodes).filter(([,x])=>!x.replaced&&!x.anchor);
+  if(!n||!cand.length){t.setAttribute("viewBox","0 0 960 120");t.innerHTML=`<text x="480" y="60" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">No passes yet. Add text to see ideas arrive, settle, and fade.</text>`;fixVars(t);return;}
+  const lanes=cand.map(([id,x])=>({id,x,score:x.touches.length*3+degree(id)+(x.stuck?1:0)})).sort((a,b)=>b.score-a.score).slice(0,9)
+    .sort((a,b)=>Math.min(...a.x.touches)-Math.min(...b.x.touches));
+  const LX=190,RXX=850,top=34,lh=52,W=960,H=top+lanes.length*lh+30;
+  t.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const xs=k=>n===1?(LX+RXX)/2:LX+(RXX-LX)*k/(n-1);
+  const val=(x,k)=>{let v=0;for(const tt of x.touches){v+=k>=tt?Math.exp(-(k-tt)/1.6):Math.exp(-(tt-k)*5);}return Math.min(1,v/1.3);};
+  let s="";
+  const every=Math.max(1,Math.ceil(n/8));
+  S.passes.forEach((p,k)=>{if(k%every&&k!==n-1)return;s+=`<line x1="${xs(k)}" y1="${top-8}" x2="${xs(k)}" y2="${H-24}" stroke="var(--line)"/><text x="${xs(k)}" y="${top-14}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)"><title>${esc(p.source)}</title>${esc(p.date||"#"+(k+1))}</text>`;});
+  s+=`<text x="${xs(n-1)}" y="${H-8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--accent)">this step</text>`;
+  lanes.forEach((ln,i)=>{
+    const y0=top+i*lh,base=y0+lh-10,hmax=lh-16;
+    const pts=[];const steps=n===1?1:(n-1)*6;
+    for(let j=0;j<=steps;j++){const k=n===1?0:j/6;pts.push([n===1?LX+(RXX-LX)*j:xs(k),base-val(ln.x,k)*hmax]);}
+    const line=pts.map((p,j)=>(j?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+    const area=line+` L${pts[pts.length-1][0]},${base} L${pts[0][0]},${base} Z`;
+    const act=actOf(ln.x);const col=act==="arriving"?"var(--accent)":(ln.x.stuck?"var(--ink)":"var(--reading)");
+    const op=act==="quiet"||act==="fading"?0.5:1;const last=pts[pts.length-1];
+    s+=`<g class="lane" data-go="${esc(ln.id)}" tabindex="0" role="button" aria-label="${esc(ln.x.t)}, ${esc(actLabel(act))}. Open on the map.">
+      <rect class="lanebg" x="0" y="${y0}" width="${W}" height="${lh}" fill="transparent" rx="4"/>
+      <text x="8" y="${base-12}" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="500" fill="var(--ink)">${esc(clip(ln.x.t,26))}</text>
+      <line x1="${LX}" y1="${base}" x2="${RXX}" y2="${base}" stroke="var(--line)"/>
+      <path d="${area}" fill="${col}" opacity="${0.14*op}"/>
+      <path d="${line}" fill="none" stroke="${col}" stroke-width="1.6" opacity="${op}"/>
+      <circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="${col}" opacity="${op}"/>
+      <text x="${RXX+12}" y="${base-12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">${esc(actLabel(act))}</text>
+    </g>`;
+  });
+  t.innerHTML=s;fixVars(t);
+}
+$("#timeline").addEventListener("click",e=>{const l=e.target.closest("[data-go]");if(l){setFocus(l.dataset.go);showView("map");}});
+$("#timeline").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){const l=e.target.closest("[data-go]");if(l){e.preventDefault();setFocus(l.dataset.go);showView("map");}}});
+
+/* =====================================================================
+   ADD TEXT + IDEAIFICATION
+   ===================================================================== */
+let sampleFn=null,sampleState="connecting",busy=false,ctl=null,fileQueue=[],lastSummary=null,openQ=null,dismissedQ=null;
+const MAX_CHUNK=60000;
+
+function splitSpans(text){
+  const out=[];
+  const paras=String(text).replace(/\r\n?/g,"\n").split(/\n+/).map(p=>p.trim()).filter(Boolean);
+  for(const p of paras){
+    const parts=p.match(/[^.!?…]+(?:[.!?…]+["”’)\]]*|$)/g)||[p];
+    let carry="";
+    for(let i=0;i<parts.length;i++){
+      const s=(carry+" "+parts[i]).replace(/\s+/g," ").trim();
+      if(s.length<25&&i<parts.length-1){carry=s;continue;} /* fold short fragments into the next span */
+      carry="";if(s)out.push(s);
+    }
+  }
+  return out;
+}
+function chunkText(text){
+  if(text.length<=MAX_CHUNK)return [text];
+  const paras=text.split(/\n\s*\n/);const chunks=[];let cur="";
+  for(const p of paras){
+    if((cur+"\n\n"+p).length>MAX_CHUNK&&cur){chunks.push(cur);cur=p;}
+    else cur=cur?cur+"\n\n"+p:p;
+    while(cur.length>MAX_CHUNK){chunks.push(cur.slice(0,MAX_CHUNK));cur=cur.slice(MAX_CHUNK);}
+  }
+  if(cur)chunks.push(cur);return chunks;
+}
+function mapListing(){
+  const ids=Object.keys(S.nodes).sort((a,b)=>Math.max(...S.nodes[b].touches)-Math.max(...S.nodes[a].touches)).slice(0,160);
+  if(!ids.length)return "(empty: this is the first text)";
+  return ids.map(id=>{const n=S.nodes[id];return `${id} | ${n.stuck?n.kind:"reading"}${n.anchor?" | ANCHOR":""}${n.replaced?" | replaced":""} | ${n.t}`;}).join("\n");
+}
+function buildPrompt(spans,source){
+  return `You are the "ideaification" step of a meaning-map app. A person gives the app text: their notes, a voice transcript, or a chat transcript. Turn it into ideas and links for their map. Reply with ONLY one JSON object in the shape shown at the end.
+
+THE PERSON'S EXISTING MAP (id | kind | title):
+${mapListing()}
+
+NEW TEXT from source "${source}", cut into numbered spans:
+${spans.map((s,i)=>`[${i}] ${s}`).join("\n")}
+
+RULES
+1. An idea is something the PERSON said: a claim, an image or example, a question they asked, a quote they cited, a term, or a person they named. Put the span numbers it comes from in "spans". Every idea needs at least one span. Never invent content.
+2. If the text is a conversation with an assistant or another speaker, only the person's own statements become ideas. Another speaker's important interpretations may become "readings".
+3. Titles: plain words, at most 8, in the person's own vocabulary. Never use words like node, arc, or graph.
+4. If an idea is the same as one already on the map, set "match" to that map id instead of creating a duplicate.
+5. If the person corrects themselves, make both ideas and set "replaces" on the newer one to the older one's key or map id.
+6. "readings" are YOUR interpretations: things implied but not said. At most 3. Each needs "basis": the idea keys or map ids it rests on.
+7. "slots": up to 2 short open questions per idea that the text leaves genuinely unanswered (how, why, which, what else).
+8. "links" connect idea keys, reading keys, or map ids. Use one of these labels: example of, leads to, refines, explains, extends to, includes, pairs with, tension with, replaces, echoes, raises, answers, traces to. Link new ideas to the existing map where the connection is real. Use "traces to" only toward an ANCHOR.
+9. "flags" are loose ends for the person to decide. Types:
+   garble: words that look like speech-to-text errors. Give the exact "phrase" and your best "suggestion".
+   unanswered: a question in the text that never got an answer.
+   gap: something promised but unfinished (e.g. "five or six things" with only one named).
+   tension: the new text contradicts an idea on the map. Name both in "nodes".
+   correction: the person corrected themselves.
+   echo: a new idea resonates with an existing map idea it isn't linked to. Name both in "nodes".
+   Give each flag a short "text", a one-line "detail", "nodes" (keys or map ids), and a "question" you would ask the person to resolve it.
+10. Scale to the text: roughly one idea per 3 or 4 spans, at most 30 ideas. Prefer fewer, sharper ideas.
+11. "question": the ONE question you would ask the person next, in their own words, aimed at the most interesting tension or open slot. Short enough to hear while driving.
+
+JSON SHAPE:
+{"ideas":[{"key":"i1","title":"...","kind":"idea|image|question|quote|term|person","spans":[0,1],"match":null,"replaces":null,"slots":["..."]}],
+ "readings":[{"key":"r1","title":"...","text":"one or two sentences","basis":["i1"]}],
+ "links":[{"from":"i1","to":"i2","label":"leads to"}],
+ "flags":[{"type":"garble","text":"...","detail":"...","nodes":["i1"],"phrase":"...","suggestion":"...","question":"..."}],
+ "question":"..."}`;
+}
+const KINDS=["idea","image","question","quote","term","person"];
+const LABELS=["example of","leads to","refines","explains","extends to","includes","pairs with","tension with","replaces","echoes","raises","answers","traces to"];
+const FTYPES=["garble","unanswered","gap","tension","correction","echo"];
+function spanLabel(sp){
+  const runs=[];let a=sp[0],b=sp[0];
+  for(const x of sp.slice(1)){if(x===b+1)b=x;else{runs.push(a===b?`${a+1}`:`${a+1}–${b+1}`);a=b=x;}}
+  runs.push(a===b?`${a+1}`:`${a+1}–${b+1}`);
+  return "¶ "+runs.join(", ");
+}
+function normalize(raw,spans,source,stepId,date){
+  const out={add:{},touch:[],replace:[],links:[],flags:[],question:""};
+  if(!raw||typeof raw!=="object"||Array.isArray(raw))return out;
+  const keyMap={};const pendingReplace=[];let ni=0,ri=0;
+  for(const it of Array.isArray(raw.ideas)?raw.ideas:[]){
+    if(!it||typeof it!=="object")continue;
+    const key=String(it.key??"");
+    const sp=[...new Set((Array.isArray(it.spans)?it.spans:[]).map(Number).filter(x=>Number.isInteger(x)&&x>=0&&x<spans.length))].sort((a,b)=>a-b);
+    if(!sp.length)continue; /* no citation, no idea */
+    const words=sp.map(i=>spans[i]).join(" ");
+    const slots=(Array.isArray(it.slots)?it.slots:[]).map(x=>clip(x,160)).filter(Boolean).slice(0,2);
+    const match=it.match!=null&&S.nodes[String(it.match)]?String(it.match):null;
+    if(match){keyMap[key]=match;out.touch.push({id:match,also:{words,date,source},slots});continue;}
+    const id=`${stepId}-${++ni}`;keyMap[key]=id;
+    out.add[id]={t:clip(it.title||words,80),kind:KINDS.includes(it.kind)?it.kind:"idea",stuck:true,src:"user_said",words,date,at:spanLabel(sp),file:source,slots,history:[]};
+    if(it.replaces!=null)pendingReplace.push([id,String(it.replaces)]);
+  }
+  const resolve=k=>{k=String(k??"");return keyMap[k]||(S.nodes[k]?k:null);};
+  for(const r of (Array.isArray(raw.readings)?raw.readings:[]).slice(0,4)){
+    if(!r||typeof r!=="object")continue;
+    const basis=[...new Set((Array.isArray(r.basis)?r.basis:[]).map(resolve).filter(Boolean))];
+    if(!basis.length)continue;
+    const id=`${stepId}-r${++ri}`;keyMap[String(r.key??"")]=id;
+    out.add[id]={t:clip(r.title||r.text,80),kind:"idea",stuck:false,src:"inferred",reading:clip(r.text||r.title,400),basis,slots:[],history:[]};
+  }
+  for(const [id,old] of pendingReplace){
+    const o=resolve(old);if(!o||o===id)continue;
+    const oldNode=out.add[o]||S.nodes[o];if(!oldNode)continue;
+    if(out.add[o])out.add[o].replaced=true;else out.replace.push({id:o,by:id});
+    out.add[id].history.push(`${date}: replaced “${oldNode.t}”. Both versions are kept.`);
+    out.links.push({a:id,b:o,f:"replaces",read:false});
+  }
+  const isReading=x=>(out.add[x]&&out.add[x].stuck===false)||(S.nodes[x]&&S.nodes[x].stuck===false);
+  const seen=new Set(out.links.map(l=>l.a+">"+l.b));
+  for(const l of Array.isArray(raw.links)?raw.links:[]){
+    if(!l||typeof l!=="object")continue;
+    const a=resolve(l.from),b=resolve(l.to);if(!a||!b||a===b)continue;
+    if(seen.has(a+">"+b)||seen.has(b+">"+a))continue;seen.add(a+">"+b);
+    let f=String(l.label||"").toLowerCase().trim();if(!LABELS.includes(f))f="connects to";
+    if(f==="traces to"&&!(S.nodes[b]&&S.nodes[b].anchor))f="connects to";
+    out.links.push({a,b,f,read:isReading(a)||isReading(b)});
+  }
+  for(const [id,n] of Object.entries(out.add)){ /* every reading hangs off its basis */
+    if(n.stuck===false&&!out.links.some(l=>l.a===id||l.b===id))out.links.push({a:n.basis[0],b:id,f:"my reading",read:true});
+  }
+  let fi=0;
+  for(const f of Array.isArray(raw.flags)?raw.flags:[]){
+    if(!f||typeof f!=="object"||!FTYPES.includes(f.type))continue;
+    if(fi>=12)break;
+    out.flags.push({id:`${stepId}-f${++fi}`,type:f.type,text:clip(f.text||f.question||"",220),detail:clip(`${date} · ${source}${f.detail?". "+f.detail:""}`,300),
+      nodes:[...new Set((Array.isArray(f.nodes)?f.nodes:[]).map(resolve).filter(Boolean))],
+      phrase:f.phrase?clip(f.phrase,80):"",suggestion:f.suggestion?clip(f.suggestion,80):"",question:f.question?clip(f.question,300):""});
+  }
+  if(typeof raw.question==="string")out.question=clip(raw.question,300);
+  return out;
+}
+const errCopy={
+  not_granted:"Claude isn't allowed on this page for your account, so ideaification is off.",
+  sampling_disabled:"Claude isn't available for this account, so ideaification is off.",
+  not_declared:"This page can't reach Claude right now.",capability_disabled:"This page can't reach Claude in this view.",capability_removed:"This view is too old to reach Claude. Update the app and reopen.",
+  rate_limited:"Too many requests right now. Wait a minute, then try again.",
+  session_expired:"Your session expired. Sign in again, then try again.",
+  refused:"Claude declined this text. Try a different excerpt.",
+  invalid_json:"The answer didn't come back in the expected shape. Try again, or use a smaller piece of text.",
+  prompt_too_large:"That's too much text for one pass. Split it into smaller pieces.",
+  empty_completion:"No answer came back. Try a smaller piece of text.",
+  cancelled:"Stopped. Nothing was added."
+};
+const HIDE=["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"];
+function setStatus(msg,bad){const s=$("#status");s.textContent=msg||"";s.classList.toggle("bad",!!bad);}
+
+async function ingestOne(text,source,tier){
+  const spans=splitSpans(text);
+  if(!spans.length)throw {code:"empty_input"};
+  const prompt=buildPrompt(spans,source);
+  ctl=new AbortController();
+  setStatus("Thinking… The first words usually take 10 to 60 seconds.");
+  const raw=await sampleFn.json(prompt,{modelTier:tier,signal:ctl.signal,cache:false,onText:({text})=>setStatus(`Receiving the map update… ${text.length.toLocaleString()} characters`)});
+  const stepId="t"+Date.now().toString(36);const date=today();
+  const result=normalize(raw,spans,source,stepId,date);
+  const nIdeas=Object.values(result.add).filter(n=>n.stuck).length,nRead=Object.values(result.add).filter(n=>!n.stuck).length;
+  addStep({kind:"ingest",at:new Date().toISOString(),date,source,text,stepId,tier,result});
+  focus=null;rebuild();
+  lastSummary={source,ideas:nIdeas,readings:nRead,again:result.touch.length,links:result.links.length,flags:result.flags.length,dropped:(Array.isArray(raw&&raw.ideas)?raw.ideas.length:0)-nIdeas-result.touch.length};
+  dismissedQ=null;
+  return result;
+}
+async function runIngest(onTop){
+  if(busy||!sampleFn)return;
+  const text=$("#entry").value;const files=fileQueue.slice();
+  if(!text.trim()&&!files.length){setStatus("Paste or drop some text first.",true);return;}
+  if(!ensureWritable(onTop))return;
+  busy=true;renderAdd();
+  const jobs=[];
+  if(text.trim()){const src=$("#source").value.trim()||"Pasted text";const ch=chunkText(text);ch.forEach((c,i)=>jobs.push({text:c,source:ch.length>1?`${src} (part ${i+1} of ${ch.length})`:src}));}
+  for(const f of files){const ch=chunkText(f.text);ch.forEach((c,i)=>jobs.push({text:c,source:ch.length>1?`${f.name} (part ${i+1} of ${ch.length})`:f.name,file:f}));}
+  let ok=0;
+  for(let i=0;i<jobs.length;i++){
+    const j=jobs[i];if(j.file){j.file.status="working";renderQueue();}
+    try{
+      if(jobs.length>1)setStatus(`Pass ${i+1} of ${jobs.length}: ${j.source}`);
+      await ingestOne(j.text,j.source,$("#tier").value);ok++;
+      if(j.file){j.file.status="done";renderQueue();}
+    }catch(e){
+      const code=e&&e.code;
+      if(j.file){j.file.status="failed";renderQueue();}
+      if(code==="empty_input"){setStatus("There's no readable text in that entry.",true);continue;}
+      if(HIDE.includes(code)){sampleState="off";setStatus(errCopy[code],true);break;}
+      setStatus(errCopy[code]||"Something went wrong on the way. Your text is still here. Try again.",code!=="cancelled");
+      break;
+    }
+  }
+  busy=false;ctl=null;
+  if(ok){
+    if(ok===jobs.length){$("#entry").value="";$("#source").value="";fileQueue=[];}
+    else fileQueue=fileQueue.filter(f=>f.status!=="done");
+    setStatus(ok>1?`Done. ${ok} passes added to the stream.`:"Done. The map is updated.");
+  }
+  renderAdd();
+}
+
+function openQuestion(text,from){if(!text)return;openQ={text,from};dismissedQ=null;renderAdd();setTimeout(()=>$("#answer").focus(),0);}
+function currentQuestion(){
+  if(openQ)return openQ;
+  if(S.question&&S.question.text!==dismissedQ)return {text:S.question.text,from:"One question · after "+S.question.source};
+  return null;
+}
+function renderQueue(){
+  const ul=$("#queue");ul.hidden=!fileQueue.length;
+  ul.innerHTML=fileQueue.map((f,i)=>`<li><span>${esc(f.name)} · ${f.text.length.toLocaleString()} chars</span><span>${f.status==="working"?"working…":f.status==="done"?"added":f.status==="failed"?"not added":`<button class="linkbtn" data-unq="${i}">remove</button>`}</span></li>`).join("");
+}
+function renderAdd(){
+  const cnt=$("#entry").value.length;
+  $("#charcount").textContent=`${cnt.toLocaleString()} characters`+(cnt>MAX_CHUNK?` · will run as ${chunkText($("#entry").value).length} passes`:"");
+  renderQueue();
+  const acts=$("#addactions");
+  const rew=cursor<stream.steps.length;
+  let h="";
+  if(busy)h=`<button class="btn danger" id="stop">Stop</button>`;
+  else if(sampleState==="connecting")h=`<button class="btn" disabled>Connecting to Claude…</button>`;
+  else if(sampleState==="off")h=`<span class="small">Ideaification needs Claude, which isn't available in this view.</span>`;
+  else if(rew)h=`<span class="small">You're viewing an earlier step. Go back to latest or branch to add text.</span>`;
+  else if(stream.builtin)h=`<button class="btn primary" data-run="empty">Ideaify in a new empty stream</button><button class="btn" data-run="ontop">Add on top of the sample</button>`;
+  else h=`<button class="btn primary" data-run="go">Ideaify</button>`;
+  acts.innerHTML=h;
+  const sm=$("#summary");
+  if(lastSummary&&!busy){
+    const L=lastSummary;
+    sm.hidden=false;
+    sm.innerHTML=`<p><b>Added from ${esc(L.source)}:</b> ${L.ideas} ideas in your words, ${L.readings} readings, ${L.again} said again, ${L.links} links, ${L.flags} loose ends.</p>`+(L.dropped>0?`<p class="small">${L.dropped} suggested ideas were dropped because they didn't point to your text.</p>`:"")+`<div class="actions"><button class="btn" data-gomap="1">See it on the map</button>${L.flags?`<button class="btn" data-gole="1">Review loose ends</button>`:""}</div>`;
+  } else sm.hidden=true;
+  const cq=currentQuestion();const qb=$("#qbox");
+  if(cq&&!busy){qb.hidden=false;$("#qboxfrom").textContent=cq.from;$("#qboxtext").textContent=cq.text;$("#sendanswer").disabled=!sampleFn||sampleState==="off"||rew;}
+  else qb.hidden=true;
+  $("#streamname").value=stream.name;$("#streamname").disabled=stream.builtin;
+  $("#streaminfo").textContent=stream.builtin?"The built-in sample is read-only. Adding text or acting on it starts your own saved copy.":(stream.steps.length?`${stream.steps.length} steps. Select one to see the map as it was then.`:"Empty. Add text to begin. Saved as soon as the first step exists.");
+  const list=$("#steplist");
+  list.innerHTML=`<li class="${cursor===0?"cur":""}"><button class="stepbtn" data-cur="0"><span class="n">0</span><span><span class="s">Empty map</span><span class="d">Reset to zero</span></span></button></li>`+stream.steps.map((st,i)=>{
+    const m=stepMeta(st);const r=st.kind==="seed"?SEED[st.seedIndex].result:st.result;
+    const counts=r?`${Object.keys(r.add||{}).length} new · ${(r.links||[]).length} links · ${(r.flags||[]).length} loose ends`:"";
+    const txt=st.kind==="seed"?SEED[st.seedIndex].text:st.text;
+    return `<li class="${i+1===cursor?"cur":""}${i+1>cursor?" future":""}"><button class="stepbtn" data-cur="${i+1}"><span class="n">${i+1}</span><span><span class="s">${esc(stepLabel(st))}</span><span class="d">${esc(m.date||"")}${st.at?" · "+esc(stamp(st.at)):""}${counts?" · "+counts:""}</span></span></button>${txt?`<details><summary>Show the text</summary><pre>${esc(clip(txt,6000))}</pre></details>`:""}</li>`;
+  }).join("");
+  const sa=$("#streamactions");
+  sa.innerHTML=stream.builtin?"":`<button class="btn" id="branch2" ${cursor===0?"disabled":""}>Branch at step ${cursor}</button><button class="btn danger" id="del">Delete this stream</button>`;
+}
+$("#addactions").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.id==="stop"){if(ctl)ctl.abort();return;}
+  if(b.dataset.run)runIngest(b.dataset.run==="ontop"||b.dataset.run==="go");
+});
+$("#summary").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.gomap)showView("map");if(b.dataset.gole)showView("loose");});
+$("#entry").addEventListener("input",()=>{const el=$("#charcount");const cnt=$("#entry").value.length;el.textContent=`${cnt.toLocaleString()} characters`+(cnt>MAX_CHUNK?` · will run as ${chunkText($("#entry").value).length} passes`:"");});
+$("#queue").addEventListener("click",e=>{const b=e.target.closest("[data-unq]");if(b){fileQueue.splice(+b.dataset.unq,1);renderQueue();}});
+$("#sendanswer").addEventListener("click",async()=>{
+  const ans=$("#answer").value.trim();const cq=currentQuestion();
+  if(!ans){$("#answer").focus();return;}
+  if(!ensureWritable(true))return;
+  busy=true;renderAdd();
+  try{await ingestOne(ans,`Your answer to: “${clip(cq?cq.text:"a question",70)}”`,$("#tier").value);$("#answer").value="";openQ=null;setStatus("Your answer is on the map.");}
+  catch(e){const code=e&&e.code;if(HIDE.includes(code))sampleState="off";setStatus(errCopy[code]||"Something went wrong. Your answer is still here. Try again.",code!=="cancelled");}
+  busy=false;ctl=null;renderAdd();
+});
+$("#skipq").addEventListener("click",()=>{const cq=currentQuestion();if(openQ)openQ=null;else if(cq)dismissedQ=cq.text;renderAdd();});
+$("#steplist").addEventListener("click",e=>{const b=e.target.closest("[data-cur]");if(b){cursor=+b.dataset.cur;rebuild();}});
+$("#streamactions").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.id==="branch2")branchHere();
+  if(b.id==="del"){
+    if(b.dataset.armed){deleteCurrent();return;}
+    b.dataset.armed="1";b.textContent="Delete for good? Click again";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete this stream";}},4000);
+  }
+});
+$("#streamname").addEventListener("change",e=>{
+  if(stream.builtin)return;const v=e.target.value.trim()||"Untitled";stream.name=v;
+  if(db&&stream.id){const s=stream;queueSave(async()=>{await metaColl().doc("s_"+s.id).update({name:v,updatedAt:new Date().toISOString()});await refreshList();renderStreamBar();});}
+  renderStreamBar();
+});
+
+/* drag and drop */
+const drop=$("#drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,()=>drop.classList.remove("over")));
+drop.addEventListener("drop",async e=>{
+  e.preventDefault();
+  const files=[...(e.dataTransfer.files||[])];
+  if(files.length){
+    const readable=files.filter(f=>/^text\//.test(f.type)||/\.(md|markdown|txt|text|csv|json|html?)$/i.test(f.name));
+    if(readable.length<files.length)toast("Only text files can be added: .txt, .md and similar.");
+    const loaded=await Promise.all(readable.map(f=>f.text().then(t=>({name:f.name,text:t,status:"queued"})).catch(()=>null)));
+    const ok=loaded.filter(Boolean);
+    if(ok.length===1&&!$("#entry").value.trim()){$("#entry").value=ok[0].text;if(!$("#source").value.trim())$("#source").value=ok[0].name;}
+    else fileQueue.push(...ok);
+    renderAdd();return;
+  }
+  const t=e.dataTransfer.getData("text/plain");
+  if(t){const ta=$("#entry");ta.value=ta.value?ta.value+"\n\n"+t:t;renderAdd();}
+});
+
+/* =====================================================================
+   TALK (simulated voice capture)
+   ===================================================================== */
+const sampleQ="You said faith becomes “part of the furniture” once it's habitual. Then you said Peter sank when he started thinking. Is thinking what breaks the furniture, or is it something else?";
+const script="And we trust the car will start. After a while, you stop thinking of it as a fantasy future. It becomes part of the furniture. … And Peter took a couple steps, and then began to think about the situation, and then fell into the water. … I reach for @@GARBLE because he seemed to have the most coherent speaking for a consciousness that is separate from us, but yet somehow our consciousness is a member of.".split(" ");
+const stepsData=[
+  ["Transcribed","1:52 of audio, word by word, with confidence scores"],
+  ["Cut into spans","9 numbered pieces. Everything else points back to these."],
+  ["Proposed ideas and links","Each one cites its spans, or it's thrown out"],
+  ["Matched against your map","3 already there (strengthened), 1 new"],
+  ["Flagged a garble","“Verbenade Capsaro”, sent to Loose Ends, not auto-fixed"],
+  ["Scored surprise","Highest: “furniture” pulls against “Peter began to think”"],
+  ["Chose one question","From the strongest tension, in your own words"],
+  ["Saved the pass as a step","So the stream can be rewound or branched later"]
+];
+function renderSteps(on){$("#steps").innerHTML=stepsData.map((s,i)=>`<li class="${i<on?"on":""}"><span class="n">${String(i+1).padStart(2,"0")}</span><span><b>${esc(s[0])}</b><span class="d">${esc(s[1])}</span></span></li>`).join("");}
+let recTimer=null,recIdx=0,clockT=0,clockTimer=null,talkState="idle";
+function wordHTML(w){return w==="@@GARBLE"?`<span class="garble" title="Low confidence. Bernardo Kastrup?">Verbenade Capsaro</span>`:esc(w);}
+function startRec(){
+  talkState="rec";recIdx=0;clockT=0;$("#transcript").innerHTML="";renderSteps(0);$("#qcard").hidden=true;
+  const mic=$("#mic");mic.classList.add("rec");mic.setAttribute("aria-label","Stop talking");$("#miclabel").textContent="Listening… tap to stop";
+  clockTimer=setInterval(()=>{clockT++;$("#clock").textContent=Math.floor(clockT/60)+":"+String(clockT%60).padStart(2,"0");},1000);
+  if(reduceMotion){recIdx=0;stopRec();return;}
+  recTimer=setInterval(()=>{if(recIdx>=script.length){stopRec();return;}const tr=$("#transcript");tr.insertAdjacentHTML("beforeend",(recIdx?" ":"")+wordHTML(script[recIdx]));tr.scrollTop=tr.scrollHeight;recIdx++;},90);
+}
+function stopRec(){
+  clearInterval(recTimer);clearInterval(clockTimer);
+  if(recIdx<script.length){$("#transcript").insertAdjacentHTML("beforeend",script.slice(recIdx).map((w,i)=>(recIdx+i?" ":"")+wordHTML(w)).join(""));recIdx=script.length;}
+  $("#clock").textContent="1:52";
+  const mic=$("#mic");mic.classList.remove("rec");mic.setAttribute("aria-label","Start talking");$("#miclabel").textContent="Thinking…";
+  talkState="proc";let i=0;
+  const tick=()=>{i++;renderSteps(i);if(i<stepsData.length)setTimeout(tick,reduceMotion?0:380);else{talkState="done";$("#miclabel").textContent="Tap to talk again";$("#qfrom").textContent="One question";$("#qtext").textContent=sampleQ;$("#qcard").hidden=false;}};
+  setTimeout(tick,reduceMotion?0:300);
+}
+$("#mic").addEventListener("click",()=>{if(talkState==="rec")stopRec();else if(talkState!=="proc")startRec();});
+$("#qanswer").addEventListener("click",()=>{openQuestion(sampleQ,"From the voice sample");$("#qcard").hidden=true;showView("add");});
+$("#qlater").addEventListener("click",()=>{$("#qcard").hidden=true;toast("In the full app, this goes to Loose Ends.");});
+
+/* =====================================================================
+   VIEWS + BOOT
+   ===================================================================== */
+function renderAll(){renderStreamBar();renderMap();renderLE();renderTimeline();renderAdd();}
+function showView(v){
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",String(t.dataset.view===v)));
+  document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="view-"+v);
+  if(v==="timeline")renderTimeline();
+  if(v==="add")renderAdd();
+  try{history.replaceState(null,"","#"+v);}catch(e){}
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showView(t.dataset.view)));
+
+renderSteps(0);rebuild();
+const h0=(location.hash||"").slice(1);if(["map","add","loose","timeline","talk"].includes(h0))showView(h0);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>renderMap());
+(async()=>{
+  const C=window.claude;
+  if(C&&typeof C.use==="function"){
+    try{sampleFn=await C.use("sample");}catch(e){sampleFn=null;}
+  }
+  sampleState=sampleFn?"ready":"off";renderAdd();
+})();
+initStore();
+})();
+</script>
