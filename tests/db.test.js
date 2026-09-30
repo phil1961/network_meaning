@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/db.test.js
-   File Version: 0.1.0
+   File Version: 0.1.1
    ─────────────────────────────────────────────
    Streams and steps against a real Postgres. Skips unless TEST_DATABASE_URL
    is set (never the production DATABASE_URL: this test creates and drops
@@ -14,7 +14,9 @@ const URL_ = process.env.TEST_DATABASE_URL;
 const skip = URL_ ? false : "TEST_DATABASE_URL is not set";
 
 let server, base, cookie, streams, db, closePool;
-test.before({ skip }, async () => {
+/* Hooks take the function first and ignore a skip option, so they check it themselves. */
+test.before(async () => {
+  if (skip) return;
   process.env.DATABASE_URL = URL_;
   process.env.SESSION_SECRET = "test-secret-test-secret";
   process.env.APP_PASSWORD = "correct horse";
@@ -35,7 +37,8 @@ test.before({ skip }, async () => {
   await new Promise(res => server.listen(0, "127.0.0.1", res));
   base = `http://127.0.0.1:${server.address().port}`;
 });
-test.after({ skip }, async () => {
+test.after(async () => {
+  if (skip) return;
   if (server) await new Promise(r => server.close(r));
   if (db) { try { await db.query(`DROP SCHEMA ${process.env.NM_TEST_SCHEMA} CASCADE`); } catch { /* best effort */ } await closePool(); }
 });

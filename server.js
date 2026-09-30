@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: server.js
-   File Version: 0.1.0
+   File Version: 0.1.1
    ─────────────────────────────────────────────
    Network Meaning: the HTTP entry point. Node's built-in http server, no
    framework. Serves the one built page and a small JSON API. Under IIS,
@@ -24,7 +24,7 @@ import { hasDatabase, query } from "./src/server/db.js";
 import { migrate } from "./src/server/migrate.js";
 import * as auth from "./src/server/auth.js";
 import * as streams from "./src/server/streams.js";
-import { ideaify } from "./src/server/ideaify.js";
+import { ideaify, MODELS } from "./src/server/ideaify.js";
 import { replay } from "./src/shared/replay.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -125,7 +125,7 @@ async function handleApi(req, res, url) {
       out = await ideaify({ text, source, tier, state, stepId, date, signal: ctl.signal });
     } catch (e) {
       const code = e && e.code ? e.code : "api_error";
-      await streams.logApiCall({ userId: user.id, streamId: id, model: e && e.model, status: code === "cancelled" ? "cancelled" : code === "refused" ? "refused" : "error", error: e && e.message });
+      await streams.logApiCall({ userId: user.id, streamId: id, model: MODELS[tier](), status: code === "cancelled" ? "cancelled" : code === "refused" ? "refused" : "error", error: e && e.message });
       const status = code === "empty_input" ? 400 : code === "cancelled" ? 499 : code === "rate_limited" ? 429 : 502;
       throw new HttpError(status, code, e && e.message ? e.message : "Something went wrong on the way.");
     }
