@@ -7,6 +7,74 @@ Everything here is a proposal to argue with. The raw material is in
 
 ---
 
+## The goal
+
+**"The goal of the end result app is to promote human understanding by
+allowing exploration and documentation of ideas and motivation and meaning
+for oneself and others."** (Phil, 2026-09-30.)
+
+Everything in this document serves that sentence. The map, the verbatim
+words, the one question, and the loose ends are the means of exploring and
+documenting. Understanding, one's own and other people's, is what they are
+for. What "others" asks of the software is not settled yet: reading or being
+shown someone's map, keeping a map of one's own, or both.
+
+### Statements from Phil (verbatim, dated)
+
+Phil's rule, 2026-09-30: his statements about the app are recorded here and
+in `HANDOFF-Salient-Points.md` as he gives them, exactly as said. Claude's own
+enhancements are kept apart in §9, labelled as experiments under lab test.
+
+**2026-09-30, containers and perspective.** "The ideas, thoughts, and
+concepts recorded in the tool sit within an overall concept and the concepts
+themselves site within a perspective. Both the underlying containing concepts
+and the perspective concepts are alterable, and their alteration changes the
+things presented by the social environment and environment, which in turn
+allows a change in user perspective which allows the user to see the facts
+and concepts in new ways."
+
+("site within" is most likely "sit within," a dictation slip.)
+
+Nothing in §4 or §5 below has containers or a perspective layer yet. The map
+there is flat. §9 holds the experiments that would test this statement
+(E1 to E4).
+
+**2026-09-30, time.** "Time has to be considered. How?"
+
+§4.3 covers time for a flat map: an append-only log, replay of any past day,
+and come, stay, leave. It says nothing about time for containers and
+perspectives. Claude's answers are experiments E5 to E7 in §9.
+
+**2026-09-30, the motivation battery.** "I like the idea of a motivation
+energy storage battery which is drawn from and added to."
+
+Not yet said: what adds to it, what draws from it, and whether there is one
+per person or one per concept. Claude's proposal is experiment E8 in §9.
+
+**2026-09-30, the background corpus.** "We need to prepopulate the
+background environment with a corpus that itself can be explored and its
+concepts and relationships can be tweaked."
+
+§4.2 has a loaded source text (KJV, WEB), used only to check that a quote is
+verbatim. A corpus that is mapped, explored, and tweaked is new. Not yet
+said: which corpus. Claude's proposal is experiment E9 in §9.
+
+**2026-09-30, parting thought.** "Parting thought. I am an entity with
+consciousness and a self/body travelling/gliding through an existing physical
+and social structure. My understanding on subjects ebb and flow with every
+challenge and with the corresponding attention to the challenge, whose
+outcome is desired to be at minimum, life at the present moment... With a
+consideration of easily future challenges."
+
+("easily future challenges": one word may be a dictation slip. Left as said.)
+
+The Timeline in §5.4 shows how much an idea was talked about over time. It
+does not show how well a subject is understood, and nothing records the
+challenge that moved it. No new experiment was added for this one. It bears
+on E6 and E8 in §9.
+
+---
+
 ## 1. The experience in one paragraph
 
 You talk. It listens, keeps your exact words, and quietly builds a map of what
@@ -429,3 +497,151 @@ set before a single line of UI is polished.
   moment is gone.
 - **Trust.** People will pour private things into this. Security and
   exportability aren't features, they're the precondition.
+
+---
+
+## 9. Experiments (Claude's proposals, under lab test)
+
+Everything in this section is Claude's enhancement, not Phil's words. Each one
+is an experiment being lab tested: it states what would be tried and what
+result would count for or against it. None is part of the design until a
+test says so and Phil agrees. Status is one of *proposed*, *building*,
+*testing*, *adopted*, *dropped*.
+
+E1 to E4 respond to Phil's 2026-09-30 statement on containers and
+perspective, E5 to E7 to "Time has to be considered. How?", E8 to the
+motivation battery, and E9 to the background corpus (all under "The goal"
+above).
+
+**E1. A containing concept is an ordinary idea that other ideas sit within.**
+*Status: proposed, not built.*
+No new kind of thing. A container is an item on the map, and "sits within" is
+a link from an idea to it, drawn as nesting instead of a line. The person
+makes or changes a container with an action step, so it replays, rewinds, and
+branches like everything else. The machine may suggest a container, but only
+as a reading that can be thrown out. Needs new action types in
+`src/shared/replay.js`. No database change, since actions are stored as JSON
+in the step.
+*Test:* take two `_archive/` transcripts already mapped. Have Phil name the
+containing concepts by hand. Count how many ideas find a home, how many sit
+in two containers at once, and how many refuse all of them. For: most ideas
+settle and the leftovers are interesting. Against: most ideas want several
+containers, which would mean containment is really just linking.
+
+**E2. A perspective is a named branch of the stream.**
+*Status: proposed, not built.*
+Branching already copies a stream up to a step without calling the model. A
+perspective would be a branch in which the containers are altered (renamed,
+regrouped, a different one made the anchor) while every verbatim word stays
+identical. Two perspectives can then be laid side by side: same words,
+different containers.
+*Test:* branch one mapped stream, alter one container, and show the two maps
+together. For: Phil can say in a sentence what the second one shows that the
+first didn't. Against: the two look the same apart from labels.
+
+**E3. A re-reading pass when a container or perspective changes.**
+*Status: proposed, not built.*
+After an alteration, one model call re-reads the same verbatim spans under
+the new container and reports only what moved: ideas that now belong
+elsewhere, tensions and gaps that appear or dissolve, echoes that weren't
+visible before. Everything it reports is a reading, marked as the machine's,
+and nothing stuck is rewritten. This is the step aimed at "see the facts and
+concepts in new ways."
+*Test:* run it on the E2 branch. Phil marks each reported change as *new to
+me*, *already knew*, or *wrong*. For: a fair share of *new to me* and few
+*wrong*. Against: mostly restatement, which is the flattering mirror again.
+
+**E4. Ask what the world shows under the new perspective.**
+*Status: proposed, not built.*
+The tool can't observe "the things presented by the social environment and
+environment." The person can. After a perspective change, the one question
+asks what they now notice in people or surroundings that they didn't before.
+The answer comes back as the person's own words, stuck, tagged with the
+perspective it was seen under. This reuses the world probe from §4.2.
+*Test:* over a few sessions, check whether what gets noticed differs by
+perspective. For: the observations cluster by perspective. Against: the same
+observations show up whichever perspective is active.
+
+**E5. Trying a perspective on is a branch. Adopting one is a dated step.**
+*Status: proposed, not built. Revises E2.*
+E2 treats a perspective only as a side-by-side branch. A person's view also
+changes once, in order, in their life, and that is a before and an after,
+not two parallel maps. So there are two operations. *Trying on* is a branch:
+hypothetical, and it can be dropped. *Adopting* is an action step on the main
+stream with its date. Nothing is overwritten either way. An idea keeps the
+record of every container it has sat within and when, the same way a
+correction keeps both versions.
+*Test:* adopt one alteration on a mapped stream, then rewind past it. For:
+the earlier map comes back exactly, and each idea can answer "where did this
+sit in September?" Against: the history is there but nobody ever looks at it.
+
+**E6. Two dates on every entry, and fading counted in days.**
+*Status: proposed, not built.*
+Today a step has one time, when it was recorded. A transcript from March
+pasted in October is dated October. Each entry would carry *said on* as well
+as *recorded on*, and the timeline would order by *said on*. Come, stay,
+leave is counted in passes today (`actOf` in `src/shared/replay.js` says so
+in its own comment), so a 14-file drop fades everything at once. It would
+weigh calendar days between *said on* dates instead. Words are also tagged
+with the perspective that was adopted when they were said, so an old thought
+can be read in its own frame.
+*Test:* feed the `_archive/` transcripts with their original dates. For: the
+timeline matches the order Phil remembers, and nothing fades merely because
+it was loaded early. Against: the original dates can't be recovered well
+enough to matter.
+
+**E7. Write down what the change is expected to show, then check later.**
+*Status: proposed, not built. Extends E4.*
+Phil's loop takes time. A perspective is altered today, and the world
+presents something different days later. When a perspective is adopted, the
+tool records a bet in the person's words: what they expect to notice. Later
+sessions are scored against it, using the bets from §4.1 step 10. A missed
+bet is a surprise worth attention.
+*Test:* three adopted changes, each with a bet, checked two weeks on. For:
+hits and misses are both informative. Against: the bets are too vague to
+score.
+
+**E8. The motivation battery as a ledger of dated deposits and draws.**
+*Status: proposed, not built.*
+The battery is a level that replays like everything else: an append-only list
+of entries, each one a deposit or a draw, dated, and tied to the person's own
+words. The level on any day is the sum to that day, so it rewinds and
+branches with the map and can be drawn along the timeline (§5.4). Two
+guesses to test, both Claude's. First, what charges it is fruit, not fervor
+(§6): a reported action, a loose end closed, a bet that came true. Excitement
+alone adds nothing. Second, "maintenance on no feeling" is a draw: doing the
+necessary thing when the feeling is absent spends what was stored earlier.
+*Test:* hand-mark the two Conversation-Motivation transcripts for moments
+that add and moments that draw. For: Phil and the ledger agree on most of
+them, and the level's shape over the sessions looks true to him. Against:
+the entries are arbitrary, or the number invites gaming and self-judgment.
+*Needs from Phil before building:* what adds, what draws, and whether the
+battery belongs to the person or to each containing concept.
+
+**E9. The background corpus is a map of its own, loaded before the person
+says anything.**
+*Status: proposed, not built. May revise E4.*
+The corpus goes through the same pipeline as a person's text and is kept as
+its own stream. Its words are stuck, as quoted text, and are never shown as
+the person's words. Its concepts and relationships are the machine's
+readings, so they are plastic: the person can explore them and tweak them.
+Each tweak is a dated action step (E5), so the first reading can always be
+brought back and two people can hold different tweaks of the same text. The
+person's own map links into it. What the corpus presents beside a given idea
+depends on the containers and perspective in force. E4 assumed the tool
+cannot see the environment. If the corpus is part of that environment, the
+tool can see that part, and E4 narrows to the world outside the tool.
+*Test:* load one short text Phil chooses, small enough to read the whole
+map. Tweak one relationship. For: the text is untouched, the tweak can be
+undone, and what is presented beside one of Phil's ideas changes in a way he
+can describe. Against: the machine's map of the text is too poor to be worth
+tweaking, or tweaks change nothing downstream.
+*Cost to know before scaling:* every chunk of a corpus is a model call. A
+whole Bible is tens of thousands of verses, so the lab test starts with one
+chapter or one short book.
+*Needs from Phil before building:* which corpus, and whether everyone starts
+from the same one.
+
+**Open, and it changes E1 and E2:** whether the nesting is exactly three
+levels (idea, containing concept, perspective) or a concept can sit within
+another concept. Asked 2026-09-30, not yet answered.

@@ -484,6 +484,8 @@ installed in `D:\Projects\network-meaning`, the scaffold worktree removed.
 `npm run gate` passes from the main folder. The mockup review that led here
 is summarized in §14.
 
+*(The two paragraphs below are superseded by §15, 2026-09-30.)*
+
 **Not yet exercised:** a real ideaify run and the Postgres tests
 (`tests/db.test.js` skips until `TEST_DATABASE_URL` is set). The local
 Postgres 16 service (`postgresql-16b`, data in `D:\postgres\data`) requires
@@ -523,3 +525,64 @@ Still open, by weight:
   Postgres is the fix when it hurts.
 - **Not implemented:** bets, surprise scoring, budget, verifier pass,
   verbatim matching of quoted scripture. Prong two.
+
+## 15. Session status (2026-09-30, end of session)
+
+**Done this session**
+
+- **`.env` is filled in and both credentials work.** The Anthropic key
+  answers on all three tiers (`claude-haiku-4-5`, `claude-sonnet-5-5`,
+  `claude-opus-5-5`). One real `ideaify()` call on the quick tier returned
+  valid structured output with nothing dropped. It was called directly, not
+  through the page, so no step and no `api_calls` row came from it.
+- **The database is live.** `network_meaning` is owned by the role
+  `network_meaning` and migrated to version 1. The role could not create
+  tables until Phil ran
+  `ALTER DATABASE network_meaning OWNER TO network_meaning`; a database
+  created by `postgres` gives other roles no CREATE on `public`. Create any
+  future database with `OWNER network_meaning`.
+- **The server starts** on port 8787 and `/health` reports the database
+  connected. Signing in and ingesting through the browser have not been
+  tried.
+- **The Postgres tests pass, 4 of 4,** against a throwaway database,
+  `network_meaning_test`. `TEST_DATABASE_URL` is not in `.env`; it is passed
+  for the run. Getting there took two fixes:
+  - `tests/db.test.js` gave its hooks the options before the function, which
+    `node:test` treats as an empty hook, so setup and teardown never ran.
+  - `server.js` logged a failed model call with no model name, which broke
+    the NOT NULL on `api_calls.model`, so failed calls were never logged. It
+    now passes the model for the requested tier.
+- **The goal and four design statements from Phil are recorded** verbatim in
+  `VISION.md` and `HANDOFF-Salient-Points.md` (both under "The goal"). The
+  goal statement makes the app the deliverable, which supersedes "window
+  dressing" in §1 of this file. Phil's rule from now on: his statements go
+  into both docs as he gives them, and Claude's enhancements go into
+  `VISION.md` §9 as labelled experiments under lab test. §9 holds E1 to E9,
+  all proposed, none built.
+
+**Known failing**
+
+- `tests/server.test.js`, "health reports the missing database honestly,"
+  expects 503 and gets 200, so `npm run gate` fails. The test deletes
+  `DATABASE_URL`, but importing `server.js` loads `.env` and puts it back.
+  It passed before only because no `.env` existed. Suggested fix: load `.env`
+  in `server.js` only when it is run directly, as `migrate.js` does.
+
+**Waiting on Phil** (he chose to let these sit)
+
+1. Nesting: exactly three levels (idea, containing concept, perspective), or
+   can a concept sit inside another concept?
+2. The motivation battery: what adds to it, what draws from it, and is there
+   one per person or one per concept?
+3. The background corpus: which one, and does everyone start from the same
+   one?
+
+**Next session, in order**
+
+1. Fix the `.env` leak into `tests/server.test.js` so the gate passes again.
+2. Sign in through the browser and run one real ideaify on a short paste.
+   Check the summary line (ideas, readings, dropped) and the `api_calls` row.
+3. Take Phil's answers to the three questions, then pick which experiment in
+   `VISION.md` §9 to lab test first.
+4. Speaker-label two `_archive/` transcripts, then run the archive test from
+   `VISION.md` §7. Experiment E6 (said-on dates, fading in days) bears on it.

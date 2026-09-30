@@ -18,8 +18,14 @@ Tags used below:
 
 ## The goal
 
-**An application that helps create a meaning map of the ideas a user
-presents.** (Phil, 2026-09-28.)
+**"The goal of the end result app is to promote human understanding by
+allowing exploration and documentation of ideas and motivation and meaning
+for oneself and others."** (Phil, 2026-09-30.)
+
+The earlier, narrower wording still describes what the app does: "An
+application that helps create a meaning map of the ideas a user presents."
+(Phil, 2026-09-28.) The meaning map is the means. Human understanding is the
+end.
 
 Everything below is raw material for that goal. Some of it describes how the
 app should work, and some of it is sample content the app would have to map.
@@ -28,10 +34,110 @@ are the nodes. "Echoes between files" is the cross-session linking. "Chats
 referenced but not present" and "Loose threads" are the dangling arcs. The app
 should produce those three things without anyone doing it by hand.
 
-**Possible tension to settle:** `HANDOFF.md` calls the theology the
-deliverable and the app "window dressing." Stated this way, the app is the
-goal and the theology is one user's content. Both can be true, but they point
-to different first builds.
+**Tension, settled 2026-09-30:** `HANDOFF.md` (2026-09-28) calls the theology
+the deliverable and the app "window dressing." The goal above names the app
+as the end result and says "for oneself and others," so the app is the goal
+and the theology is one user's content in it. `HANDOFF.md` still carries the
+older wording.
+
+**Still open:** what "others" asks of the build. It could mean other people
+reading or being shown one person's map, other people each keeping their own
+map, or both. The scaffold today has one user and no way to share a map.
+
+### Statements from Phil since the goal (verbatim, dated)
+
+Phil's rule, 2026-09-30: statements he gives about the app are recorded here
+and in `VISION.md` as he gives them, exactly as said. Claude's own
+enhancements are kept apart, labelled as experiments under lab test, in
+`VISION.md` §9.
+
+**2026-09-30, containers and perspective.** [Phil] "The ideas, thoughts, and
+concepts recorded in the tool sit within an overall concept and the concepts
+themselves site within a perspective. Both the underlying containing concepts
+and the perspective concepts are alterable, and their alteration changes the
+things presented by the social environment and environment, which in turn
+allows a change in user perspective which allows the user to see the facts
+and concepts in new ways."
+
+- [garble?] "site within" is most likely "sit within."
+- Claude's reading, not Phil's words: three layers (recorded idea, containing
+  concept, perspective). The upper two can be altered while the recorded
+  words stay fixed. Altering them changes what people and surroundings
+  present, and that lets the person's own way of seeing shift. "Perspective"
+  is used twice, once for something editable in the tool and once for the
+  person's own view, which reads as a loop.
+- [lost] Asked and not yet answered: is the nesting exactly three levels, or
+  can a concept sit inside another concept before reaching a perspective?
+- The scaffold's map is flat today. Nothing contains anything, and there is
+  no perspective layer. Experiments E1 to E4 in `VISION.md` §9 are Claude's
+  proposals for testing this.
+
+**2026-09-30, time.** [Phil] "Time has to be considered. How?"
+
+- Said right after the containers-and-perspective statement, so it reads as
+  a question about that: how time enters when containers and perspectives
+  are altered. It echoes "Remember, this is all about being in time."
+- What the scaffold already does: every step is appended with a timestamp
+  and never updated, so any earlier map can be replayed.
+- What it does not do: it has one date per entry (when it was recorded, not
+  when it was said), and come, stay, leave is counted in passes, not days.
+- Claude's answers are experiments E5 to E7 in `VISION.md` §9.
+
+**2026-09-30, the motivation battery.** [Phil] "I like the idea of a
+motivation energy storage battery which is drawn from and added to."
+
+- Echoes, noted and not argued: battery terminals and "maintenance on no
+  feeling" (Conversation-Motivation); "Motivation follows action more than
+  it precedes it"; energy as budget and surprise as fuel (Meaning-Generator).
+  Those passages are about the machine's attention budget or about cleaning
+  battery terminals. This statement is about the person's motivation as a
+  store.
+- A store that is drawn from and added to is a quantity in time, so this
+  also bears on the time question above.
+- [lost] Not yet said: what adds to it, what draws from it, and whether
+  there is one battery per person or one per concept.
+- Claude's proposal is experiment E8 in `VISION.md` §9.
+
+**2026-09-30, the background corpus.** [Phil] "We need to prepopulate the
+background environment with a corpus that itself can be explored and its
+concepts and relationships can be tweaked."
+
+- "Environment" also appears in the containers-and-perspective statement
+  ("the things presented by the social environment and environment").
+  Claude's reading, not Phil's words: the background corpus may be that
+  environment, or part of it, brought inside the tool. If so, altering a
+  container or perspective changes what the corpus presents.
+- What exists already: `VISION.md` §4.2 allows a loaded source text (KJV,
+  WEB), but only for checking that a quote is verbatim. It is not mapped,
+  explored, or tweakable.
+- [lost] Not yet said: which corpus. In these docs "the corpus" has meant
+  Phil's own transcripts in `_archive/`. A background corpus could be those,
+  scripture, something else, or a different one per person.
+- Claude's proposal is experiment E9 in `VISION.md` §9.
+
+**2026-09-30, parting thought.** [Phil] "Parting thought. I am an entity with
+consciousness and a self/body travelling/gliding through an existing physical
+and social structure. My understanding on subjects ebb and flow with every
+challenge and with the corresponding attention to the challenge, whose
+outcome is desired to be at minimum, life at the present moment... With a
+consideration of easily future challenges."
+
+- [garble?] "easily future challenges": one word may be a dictation slip.
+  Left as said.
+- Echoes, noted and not argued: "physical and social structure" ↔ "the social
+  environment and environment" in the containers statement; "at minimum, life
+  at the present moment" ↔ motivation as a gradient with "breathing at the
+  floor" (Conversation-Motivation); attention paid to a challenge ↔ attention
+  as scarce currency spent at the seams (Fascinating-Discovery).
+- Claude's reading, not Phil's words: the person is the one in motion and the
+  structure is already there. Understanding of a subject is not a fixed store.
+  It rises and falls with each challenge and with the attention given to it.
+  The aim has a floor (life now) and a horizon (challenges to come).
+- Against the build: the Timeline (`VISION.md` §5.4) shows how much an idea
+  was talked about over time. It does not show how well a subject is
+  understood, and nothing records the challenge that moved it.
+- No new experiment was added for this one. It bears on E6 (time) and E8 (a
+  level that is drawn from and added to).
 
 ### What the corpus already says about the app
 
