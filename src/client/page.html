@@ -1,0 +1,206 @@
+<!doctype html>
+<!--
+  File: src/client/page.html
+  File Version: 0.1.0
+  The page shell. build.js replaces the STYLE marker with src/client/style.css and
+  the SCRIPT marker with the shared and client modules, in filename order, and
+  writes public/index.html. Edit here, never in public/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Network Meaning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+@@STYLE@@
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand"><h1>Network Meaning</h1><span class="pill" id="buildpill">v0</span></div>
+    <nav role="tablist" aria-label="Views">
+      <button class="tab" role="tab" id="tab-map" data-view="map" aria-selected="true">Map</button>
+      <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
+      <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
+      <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
+      <button class="tab" role="tab" id="tab-talk" data-view="talk" aria-selected="false">Talk</button>
+    </nav>
+    <div class="who" id="who"></div>
+  </header>
+
+  <div class="streambar">
+    <div class="sb-group">
+      <label class="sb-label" for="streamsel">Stream</label>
+      <select id="streamsel"></select>
+      <button class="btn" id="newstream" title="Start over with an empty map">New empty stream</button>
+    </div>
+    <div class="scrub">
+      <label class="sb-label" for="scrub">Step</label>
+      <input type="range" id="scrub" min="0" max="0" value="0">
+      <output id="scrubout" for="scrub"></output>
+    </div>
+    <span class="save" id="savestate">Connecting…</span>
+  </div>
+  <div class="rewound" id="rewound" hidden>
+    <span id="rewoundtext"></span>
+    <button class="btn" id="tolatest">Back to latest</button>
+    <button class="btn primary" id="branch">Branch from here</button>
+  </div>
+
+  <main>
+    <!-- MAP -->
+    <section class="view" id="view-map" role="tabpanel" aria-labelledby="tab-map">
+      <div class="mapgrid">
+        <div class="canvas">
+          <div class="canvasbar">
+            <div class="focuslabel" id="focuslabel"></div>
+            <div class="search">
+              <input id="q" type="search" placeholder="Find an idea…" autocomplete="off" aria-label="Find an idea">
+              <ul class="suggest" id="suggest" hidden></ul>
+            </div>
+          </div>
+          <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas"></svg>
+          <div class="legend">
+            <span><i class="sw"></i>your words</span>
+            <span><i class="sw read"></i>my reading</span>
+            <span><i class="sw kept"></i>reading you kept</span>
+            <span><i class="sw anchor"></i>anchor</span>
+            <span><i class="sw slot"></i>open question</span>
+            <span><i class="sw faded"></i>faded or replaced</span>
+            <span>+n: more connections beyond this view</span>
+          </div>
+        </div>
+        <aside class="panel" id="panel"></aside>
+      </div>
+    </section>
+
+    <!-- ADD TEXT -->
+    <section class="view" id="view-add" role="tabpanel" aria-labelledby="tab-add" hidden>
+      <div class="addgrid">
+        <div class="card">
+          <h2>Add text</h2>
+          <p class="small" style="margin:0">Paste, type, or drop text here: notes, a transcript, a chat export. Drop several .txt or .md files to add them one after another. Claude pulls out the ideas and links them into this stream's map. Each pass is saved as a step you can rewind to.</p>
+          <div class="field">
+            <label for="source">Where is this from?</label>
+            <input class="input" id="source" placeholder="e.g. Pure-Conscousness.md, or “car ride, Sep 29”">
+          </div>
+          <div class="drop" id="drop">
+            <textarea id="entry" aria-label="Text to ideaify" placeholder="Paste or drop text here…"></textarea>
+            <div class="dropnote"><span id="charcount">0 characters</span><span>Your words are kept exactly as written.</span></div>
+          </div>
+          <ul class="queue" id="queue" hidden></ul>
+          <div class="row">
+            <div class="field" style="flex-direction:row;align-items:center;gap:8px">
+              <label for="tier">Depth</label>
+              <select id="tier">
+                <option value="quick">Quick</option>
+                <option value="default" selected>Balanced</option>
+                <option value="complex">Thorough (slower)</option>
+              </select>
+            </div>
+            <div class="actions" id="addactions"></div>
+          </div>
+          <div class="status" id="status" role="status"></div>
+          <div class="summary" id="summary" hidden></div>
+          <div class="qbox" id="qbox" hidden>
+            <span class="from" id="qboxfrom">One question</span>
+            <p id="qboxtext"></p>
+            <label class="small" for="answer">Answer in your own words. Your answer is ideaified like any other text.</label>
+            <textarea id="answer"></textarea>
+            <div class="actions"><button class="btn primary" id="sendanswer">Ideaify my answer</button><button class="btn" id="skipq">Not now</button></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>This stream</h3>
+          <div class="field">
+            <label for="streamname">Name</label>
+            <input class="input" id="streamname">
+          </div>
+          <p class="small" style="margin:0" id="streaminfo"></p>
+          <ol class="steplist" id="steplist"></ol>
+          <div class="actions" id="streamactions"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOOSE ENDS -->
+    <section class="view" id="view-loose" role="tabpanel" aria-labelledby="tab-loose" hidden>
+      <div class="le-wrap">
+        <div class="le-head">
+          <h2>Loose Ends</h2>
+          <span class="small">Things the map noticed but won't decide for you. Each answer becomes a step in the stream.</span>
+        </div>
+        <ul class="le-list" id="lelist"></ul>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="view" id="view-timeline" role="tabpanel" aria-labelledby="tab-timeline" hidden>
+      <div class="tl-wrap">
+        <h2>Timeline</h2>
+        <p class="small" style="margin:0">The most active ideas, pass by pass. Ideas arrive, settle, and fade as new text comes in. Select a lane to open it on the map.</p>
+        <div class="tl-scroll"><svg id="timeline" role="img" aria-label="Attention per idea over the stream's passes"></svg></div>
+      </div>
+    </section>
+
+    <!-- TALK -->
+    <section class="view" id="view-talk" role="tabpanel" aria-labelledby="tab-talk" hidden>
+      <div class="talk">
+        <div class="phone">
+          <div class="screen">
+            <div class="pbar"><span>Network Meaning</span><span class="small" id="clock">0:00</span></div>
+            <div class="transcript" id="transcript"><p class="hint">Tap the mic to replay a sample voice session: Phil talking about faith on Sep 27. (Voice capture is simulated here.)</p></div>
+            <div class="qcard" id="qcard" hidden>
+              <span class="from" id="qfrom">One question</span>
+              <p id="qtext"></p>
+              <div class="actions"><button class="btn primary" id="qanswer">Answer</button><button class="btn" id="qlater">Later</button></div>
+            </div>
+            <div class="microw">
+              <button class="mic" id="mic" aria-label="Start talking"><span class="core"></span></button>
+              <span class="small" id="miclabel">Tap to talk</span>
+            </div>
+          </div>
+        </div>
+        <div class="pipe">
+          <h2>After you stop talking</h2>
+          <p>What happens underneath while the phone waits. The goal is one good question, delivered before the moment passes.</p>
+          <ol class="steps" id="steps"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="drafttitle">
+    <h2 id="drafttitle"></h2>
+    <p class="small" style="margin:0">A draft built from this part of your map. Your words are quoted exactly. My readings are marked. Open questions stay open.</p>
+    <div class="draft" id="draftbody"></div>
+    <label class="small" for="draftmd">As markdown</label>
+    <textarea id="draftmd" readonly></textarea>
+    <div class="actions"><button class="btn primary" id="copymd">Copy markdown</button><button class="btn" id="closedraft">Close</button></div>
+  </div>
+</div>
+
+<div class="scrim" id="loginscrim" hidden>
+  <form class="modal login" id="loginform" aria-labelledby="logintitle">
+    <h2 id="logintitle">Network Meaning</h2>
+    <p class="small" style="margin:0">This is the inside of someone's head. Sign in to open it.</p>
+    <label class="small" for="password">Password</label>
+    <input class="input" type="password" id="password" autocomplete="current-password" required>
+    <div class="status" id="loginstatus" role="status"></div>
+    <div class="actions"><button class="btn primary" type="submit" id="loginbtn">Sign in</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+@@SCRIPT@@
+</script>
+</body>
+</html>

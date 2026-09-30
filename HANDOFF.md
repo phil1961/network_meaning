@@ -444,3 +444,45 @@ Next steps, in order:
    essay, or treat Section 5 of this document as its replacement.
 5. Normalize filenames and strip duplicated paragraphs from the transcripts
    before they are used as source text.
+
+---
+
+## 13. Scaffold status (2026-09-29)
+
+Phil's call: build the real app to mockup parity first, then break things
+by experimenting. He had no strong language preference and left the choice
+to Claude. Decision: Node 24 (ESM, no framework, `pg` and the Anthropic SDK
+as the only dependencies) with Postgres 16, hosted under IIS through
+HttpPlatformHandler exactly as `home_finder_agents_social` hosts waitress.
+`README.md` has the run and gate commands.
+
+What the scaffold does, verified by `npm test` and `npm run smoke`:
+
+- Serves the page, gates the API behind a signed cookie, refuses a wrong
+  password, and reports the missing database honestly on `/health`.
+- Replays steps into the map on both sides with one reducer
+  (`src/shared/replay.js`). Keep, discard, anchor, and every Loose Ends
+  outcome are covered by tests.
+- Validates the model's answer with `normalize.js`: no span citation, no
+  idea; words are assembled verbatim from cited spans; limits enforced.
+- The sample stream, rewind, branch bar, search, draft, Loose Ends,
+  timeline and the talk demo all work in headless Brave with no script
+  errors.
+
+Changes from the mockup, on purpose:
+
+- A kept reading stays marked as the machine's phrasing (never "your words").
+- Traceback follows derivation links only, never "tension with" or "replaces".
+- The sample's tension flag says which side is a quote and which a summary.
+- Forking the sample snapshots its steps into the new stream, so saved
+  streams never depend on the sample file.
+- A failed ingest no longer leaves the header showing the sample while the
+  stream is a new empty one; the fork is rendered as soon as it happens.
+
+Not yet exercised: a real ideaify run and the Postgres tests (`tests/db.test.js`
+skips until `TEST_DATABASE_URL` is set). The local Postgres 16 service is
+running but needs a password Claude does not have.
+
+Next: get `DATABASE_URL` and `ANTHROPIC_API_KEY` into `.env`, run the
+database tests, do one real ideaify on a short paste, then speaker-label two
+`_archive/` transcripts and run the archive test from VISION §7.
