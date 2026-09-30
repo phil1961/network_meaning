@@ -447,7 +447,7 @@ Next steps, in order:
 
 ---
 
-## 13. Scaffold status (2026-09-29)
+## 13. Scaffold status (2026-09-29, end of session)
 
 Phil's call: build the real app to mockup parity first, then break things
 by experimenting. He had no strong language preference and left the choice
@@ -479,10 +479,47 @@ Changes from the mockup, on purpose:
 - A failed ingest no longer leaves the header showing the sample while the
   stream is a new empty one; the fork is rendered as soon as it happens.
 
-Not yet exercised: a real ideaify run and the Postgres tests (`tests/db.test.js`
-skips until `TEST_DATABASE_URL` is set). The local Postgres 16 service is
-running but needs a password Claude does not have.
+**Where it stands.** Merged into master (commit a60575e), dependencies
+installed in `D:\Projects\network-meaning`, the scaffold worktree removed.
+`npm run gate` passes from the main folder. The mockup review that led here
+is summarized in §14.
 
-Next: get `DATABASE_URL` and `ANTHROPIC_API_KEY` into `.env`, run the
-database tests, do one real ideaify on a short paste, then speaker-label two
-`_archive/` transcripts and run the archive test from VISION §7.
+**Not yet exercised:** a real ideaify run and the Postgres tests
+(`tests/db.test.js` skips until `TEST_DATABASE_URL` is set). The local
+Postgres 16 service (`postgresql-16b`, data in `D:\postgres\data`) requires
+an md5 password for every connection, and no Anthropic key was available in
+the environment. Both go in `D:\Projects\network-meaning\.env`, copied from
+`.env.example`; the database is created once with
+`psql -U postgres -c "CREATE DATABASE network_meaning"`.
+
+**Next session, in order:**
+
+1. Put `DATABASE_URL`, `ANTHROPIC_API_KEY`, `APP_PASSWORD`, `SESSION_SECRET`
+   in `.env`. Start with `node server.js`, sign in at port 8787.
+2. Run the Postgres tests: `TEST_DATABASE_URL=<a throwaway db> npm test`.
+3. One real ideaify on a short paste. Check the summary line (ideas, readings,
+   dropped) and the api_calls row.
+4. Speaker-label two `_archive/` transcripts (they have no speaker labels;
+   paragraphs alternate), then run the archive test from VISION §7.
+5. Phil will propose breaking changes from there. The step log is the
+   contract; everything else is negotiable.
+
+## 14. Mockup review findings (2026-09-29)
+
+Fixed in the scaffold: kept readings shown as "your words"; traceback through
+"tension with" links; sample tension flag quoting a summary as Phil's words;
+saved streams pointing at the sample by index; header desync after a failed
+ingest; pasted text re-ingested after a partial multi-file run.
+
+Still open, by weight:
+
+- **Speaker attribution.** Neither doc addresses it. Unlabeled transcripts
+  will credit Claude's lines to Phil. Prerequisite for the archive test.
+- **Activity state counts passes, not time.** A 14-file drop fades
+  everything from the first file. Needs calendar time in `actOf`.
+- **Reconcile sees titles only,** capped at the 160 most recently touched.
+  Old settled ideas fall off first, the ones most likely to be said again.
+  Duplicates will grow. Embedding or text search over `steps.result` in
+  Postgres is the fix when it hurts.
+- **Not implemented:** bets, surprise scoring, budget, verifier pass,
+  verbatim matching of quoted scripture. Prong two.
