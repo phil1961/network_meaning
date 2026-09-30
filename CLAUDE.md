@@ -2,8 +2,10 @@
 
 ## Files live in two places
 
-- `D:\_Projects\network_meaning` — the working copy and git repo. **Source of truth.**
-- Google Drive folder `network_meaning`, ID `1X_IfrXISMQryjtvK4NrzBQ6mkRYwfUab` — the shared copy, readable by Claude in the browser.
+- `D:\Projects\network-meaning` — the working copy and git repo. **Source of truth.** Remote: github.com/phil1961/network_meaning.
+- Google Drive folder `network_meaning-docs`, ID `11CaUhG1NRAqDuU-WSw5Qmc0LUfhPGwdt` — the shared copy of the root `.md` files, readable by Claude in the browser. Created 2026-09-30 through the connector. The earlier folder `network_meaning` (ID `1X_IfrXISMQryjtvK4NrzBQ6mkRYwfUab`) is no longer visible to the connector ("Requested entity was not found"), most likely because the connector was reauthorized after it was created; Phil's mounted copy at `H:\My Drive\network_meaning` still holds the files for him.
+
+End-of-session sync (Phil's rule): copy the root `.md` files to `H:\My Drive\network_meaning` for Phil, and upload the same files through the connector into the folder above for browser Claude. Both, every time. Since `update_file` only changes metadata, re-uploading means trashing the old copy and creating a new one.
 
 ## The Google Drive connector has per-file scope — read this before debugging it
 
@@ -22,7 +24,7 @@ Established 2026-09-28 by enumeration. Two likelier-sounding explanations were i
 
 ### Working rules
 
-1. **Discover with `list_recent_files`, never `search_files`.** Then work by file or folder ID. If you need a file the listing doesn't reach, ask the user to paste its browser URL — the ID is in it.
+1. **Discover with `list_recent_files`, never `search_files`.** Tested again 2026-09-30: `search_files` by `mimeType` (folder, text/markdown, text/plain) and by `title` all return empty pages, sometimes with a continuation token and still nothing on later pages. Mime-type search is not a workaround. Then work by file or folder ID. If you need a file the listing doesn't reach, ask the user to paste its browser URL — the ID is in it.
 2. **To make a local file readable by browser Claude, upload it with `create_file`.** Copying it to `H:` will *never* work: mount-written files stay invisible to the connector permanently, even inside a Claude-created folder. This asymmetry is the single most important fact here.
 3. **Pass `disableConversionToGoogleType: true`** when creating text files, or `text/plain` is silently converted into a Google Doc and stops being markdown.
 4. **Use `download_file_content` for `.md` and `.txt`.** `read_file_content` doesn't support `text/plain`, and failing on it looks like a missing file when the file is fine.
