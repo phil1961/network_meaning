@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/70-loose.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Loose Ends: the inbox of things the map noticed but won't decide. */
 const leIcon = { garble: "≈", unanswered: "?", echo: "↔", gap: "∅", tension: "⚡", bet: "⌛", correction: "✓" };
@@ -16,9 +16,10 @@ function flagActs(f) {
   }
 }
 function renderLE() {
-  const open = S.flags.filter(f => !S.outcomes[f.id]), done = S.flags.filter(f => S.outcomes[f.id]);
+  /* put off is still open: it goes below the rest, and says when it was put off */
+  const open = S.flags.filter(f => !S.outcomes[f.id]).sort((a, b) => (a.later ? 1 : 0) - (b.later ? 1 : 0)), done = S.flags.filter(f => S.outcomes[f.id]);
   const row = f => `<li class="le${S.outcomes[f.id] ? " done" : ""}"><div class="type t-${esc(f.type)}"><i>${leIcon[f.type] || "•"}</i>${esc(leName[f.type] || f.type)}</div>
-    <div class="body"><p class="text">${esc(f.text)}</p>${f.detail ? `<p class="detail">${esc(f.detail)}</p>` : ""}
+    <div class="body"><p class="text">${esc(f.text)}</p>${f.detail ? `<p class="detail">${esc(f.detail)}</p>` : ""}${f.later && !S.outcomes[f.id] ? `<p class="detail">Left for later on ${esc(f.later)}. Still open.</p>` : ""}
     ${f.nodes.some(k => S.nodes[k]) ? `<p class="detail">On the map: ${f.nodes.filter(k => S.nodes[k]).map(k => `<button class="linkbtn" data-go="${esc(k)}">${esc(S.nodes[k].t)}</button>`).join(" · ")}</p>` : ""}
     ${S.outcomes[f.id] ? `<p class="outcome">✓ ${esc(S.outcomes[f.id])}</p>` : `<div class="actions">${flagActs(f).map(a => `<button class="btn ${a[2] || ""}" data-flag="${esc(f.id)}" data-choice="${a[1]}">${esc(a[0])}</button>`).join("")}</div>`}
     </div></li>`;

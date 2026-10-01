@@ -99,6 +99,341 @@ This one was built the same day. It is experiment E11 in §9, status
 *testing*, and the State view in the app. The Bobby data in the app is made
 up, for Phil to revise.
 
+**2026-09-30, the help analysis button.** "I want a help analysis button I
+can press which makes suggestions given the state of play."
+
+Said while walking the State view on the Bobby sample. Built the same
+evening as experiment E12 in §9, status *testing*: a button at the top of
+the State view. What "the state of play" takes in, what kinds of suggestion
+come back, and where the button sits are Claude's choices, for Phil to
+revise.
+
+**2026-09-30, the scripting language and the stepper.** "Great. Now imagine
+creating a scripting language that interacts with the app to make it go.
+Provide a stepper so we can watch as all the actions happens."
+
+Built the same evening as experiment E13 in §9, status *testing*: a Script
+view and a stepper that stays in view on every tab. The words of the
+language and the way the stepper shows each action are Claude's choices,
+for Phil to revise.
+
+**2026-09-30, yes to the script proposals.** "I think all of your proposals
+are a yes."
+
+Said in answer to the four questions Claude put after building the stepper:
+should scripts be saved on the server and shared; should a stream be able
+to write itself out as a script; should a line be able to check something,
+so a script is also a test; may the model write scripts. All four are
+agreed and none is built yet. See the note under E13 in §9.
+
+**2026-09-30, modelling a world.** "I want to stream of consciousness some
+things first. We are modelling a world, in this case its bobby's world. It
+consists of facts about his environment, his mental furniture, and his
+motivations. In the case of Bobby Went To The store to buy milk. That's the
+end goal and it starts in a place where he needs milk."
+
+("its bobby's world" is most likely "it's." Left as said. He said "to buy
+milk" here; the sentence locked earlier is "to get milk.")
+
+Said as the opening of a stream of thought, with more to come, so nothing
+is built or proposed from it yet. Against the build as it stands: the State
+view's Now holds facts of one kind only. It does not tell a fact about the
+environment from a piece of mental furniture or from a motivation, and the
+Bobby sample starts from "There is no milk in the house," which is a fact
+about the house, not "he needs milk."
+
+*(Note, later the same evening: E14 in §9 built a map each for the
+environment, the mental state and the assumptions, and drew "He needs milk"
+with a reading on each. Now, in the State view, still holds facts of one
+kind.)*
+
+**2026-09-30, a map and a diagram for each feature.** "Good question. But
+before we answer that I think our modelling software ought to have maps
+that represent each of those features. His environment, mental state, and
+assumptions (moral presuppositions). Each of those maps needs their own
+diagram that we can select on and improve."
+
+("Good question" answers Claude's question of which of the three "he needs
+milk" belongs to. It is set aside, not answered.)
+
+Still part of the stream of thought, so nothing is built or proposed from
+it yet. The three named here are not the same three as in the statement
+before: "mental furniture" has become "mental state," "motivations" is not
+in this list, and "assumptions (moral presuppositions)" is new. Against the
+build as it stands: the app has one map with one diagram, the map of ideas
+drawn from what was said. The State view is lists, not a diagram. There is
+no map of the environment and none of assumptions, and nothing on any map
+can be edited in place except keeping or discarding a reading and pinning
+an anchor.
+
+*(Note, later the same evening: no longer so. E14 in §9 built the three
+maps, a selector above the one diagram, and a panel that confirms, rules
+out and adds items.)*
+
+**2026-09-30, the diagrams as the defining feature.** "And what the
+diagrams present to represent those sounds like an awesome defining
+feature. Because the better job our world modelling does of presenting
+those conceptual maps the more wondereful our "engine" component becomes."
+
+("wondereful" is as typed.)
+
+Still the stream of thought. It ties the worth of the engine to how well
+the maps are presented. In `HANDOFF.md` §8 the diagram generator was prong
+three, the part that "comes last"; this statement puts it at the front.
+Claude's question from the entry before, whether motivation gets a map of
+its own, was not taken up and stays open.
+
+**2026-09-30, make one up for Bobby.** "I suggest it'll have to visuallized
+with the diagramming capability we've already made a stab at. I want you to
+step back and consider how a world renown psychological investigator would
+assemble it. Make one up for bobby, and we'll ad more complications and
+nuance as we do."
+
+("visuallized," "renown" and "ad" are as typed. This answers Claude's
+question of what is on the diagram of Bobby's environment.)
+
+Built the same evening as experiment E14 in §9, status *testing*: four maps
+of one world, drawn by the diagram the app already had, and a made-up world
+for Bobby. How an investigator would assemble it, and everything in Bobby's
+world beyond the two things that were said, are Claude's, for Phil to
+revise.
+
+**2026-09-30, a blank box takes its suggestion.** "Also, a UI improvement.
+Where you make a suggestion in a text box, like "e.g. Get Milk", I want to
+be able to just click the button (Put it forth, etc), and if the field is
+blank it runs with the suggestion and makes that the entry."
+
+Built the same evening, as said. It applies wherever a box shows a
+suggestion beginning "e.g.": a state fact, a goal, a move, and an item added
+to a world map.
+
+**2026-09-30, other people in Bobby's world.** "I imagine a future for this
+app, where we have maps that represent other people in Bobby's world. The
+store clerk, his wife or girl friend, his mechanic. And each adds to and
+fills out their own interior and exterior representations. Eventually, they
+use this software to coordinate their actions."
+
+A picture of the future, not a request to build. It bears on what "for
+oneself and others" asks of the software (under "The goal" above): here the
+others each keep maps of their own and use them together. Against the build
+as it stands: one person signs in, a stream holds one world, and nothing in
+it says whose world it is. The store clerk and the mechanic are not in
+Bobby's made-up world at all, and "someone else lives there" is a
+supposition with no person behind it.
+
+*(Note, later the same evening: "one person signs in" is no longer so. E15
+in §9 built accounts at three levels, an area for each person, and streams
+an admin can share. A stream still holds one world and still does not say
+whose world it is.)*
+
+**2026-09-30, a coordination routine, thousands of people, and the AI
+filling in.** "I also imagine a world where this app has a centralized
+coordination routine, and thousands of people use their version of the
+software. I even imagine AI filling out lots of things that nobody wants to
+take the trouble to do. Like attributes for common objects, and actions."
+
+Also a picture of the future. Against the build as it stands: the model
+reads text it is given and makes suggestions when asked; it fills in
+nothing on its own. One thing already built would carry it: an item on a
+world map is either given or supposed, and what the AI fills in could
+arrive as supposed, dashed, until someone confirms it. That is Claude's
+reading, not Phil's words.
+
+**2026-09-30, counts in the Stream menu.** "Also, for the Stream Drop down
+selelector, I want to see the number of Environment, Mental State, and
+Assumptions coded on the map. That way when I'm selecting a stream I can
+see before I choose how many of them it has"
+
+("selelector" is as typed.)
+
+Built the same evening, as said (app 0.5.1). Each line in the Stream menu
+gives the stream's steps and the number of items on its Environment, Mental
+state and Assumptions maps, or "no world maps" when it has none. Claude's
+additions: the step count on the built-in samples, and the "no world maps"
+wording.
+
+**2026-09-30, sign-up and an admin panel.** "I want you to add user signup
+mechanism, and for me, a user add ability. Someone should be able to signup
+themselves, and I should be able to use an admin panel to add them myself.
+Email address is the unique. They should get their own personal area to add
+and play with streams, and they should all share Bobby's story."
+
+**2026-09-30, three levels.** "philipalarson@gmail.com is an admin. The
+database should have at least three levels. User, Guest, and Admin. What a
+user does is stored, what a guest does isn't."
+
+**2026-09-30, a guest and the AI buttons.** "Also, a Guest can't use the AI
+Analysis buttons. Those buttons should provide an info box that says he has
+to become a registered user to use it."
+
+These three were built together the same evening as experiment E15 in §9,
+status *testing* (app 0.6.0). What is Phil's and what is Claude's is set
+out there. The owner's email in `.env` is philipalarson@gmail.com, which
+makes that account an admin.
+
+**2026-09-30, a check before every call to the AI.** "Also, for every call
+out to the AI API, whatever the user provides in that context call has to
+be sanity checked for malicious, or stupid inputs"
+
+Built the same evening as experiment E16 in §9, status *testing*.
+
+**2026-09-30, a help doc.** "Great. Now I need a help doc, and the help doc
+should contain something on the ultimate vision"
+
+Built the same evening (app 0.7.0): `HELP.md` in the repo, and a Help tab
+in the app built from that same file, open to guests too. Its last section,
+"Where this is going," quotes Phil's goal and his three statements on
+modelling a world, other people's maps, and coordination, and says plainly
+which part exists today.
+
+**2026-09-30, a document of the method.** "Also, I love what you have
+invented so far with regard to deriving the map data. Make sure to create a
+document of your thinking so it can be reliably replicated and to have an
+artifact we can track over time in our repo"
+
+Written the same evening: `METHOD-Deriving-the-Maps.md`, version 1, with a
+change log. It sets out the stance, the procedure in eight steps, the link
+labels, the checks a result has to pass, Bobby as the worked example, the
+decisions and the thinking behind each, and where the method is weak.
+
+**2026-09-30, where the panel is.** "Where is the user's panel."
+
+A question, asked while looking for the admin panel. The tab was labelled
+"People" and showed only to admins, and the owner's account had not yet
+been marked an admin for the session already open. Both are fixed: the tab
+is labelled **Admin**, and the owner's account is made an admin when the
+server starts.
+
+**2026-09-30, Phil's streams are his own.** "Remove Phil's streams from the
+users, and from the guest's accounts."
+
+Done the same evening. The sample *Phil's archived chats* was built into
+the page, so every visitor received it. It now lives on the server
+(`src/server/owner-sample.js`) and is given only to the owner after
+sign-in. Everyone else has the two Bobby samples, and the page opens on
+*Bobby's world*. One thing of Phil's is still in the page for everyone: the
+Talk tab's simulated voice session, which replays a few of his sentences
+about faith. It is not a stream, so it was left, and is flagged for his
+decision.
+
+**2026-09-30, yes to the evidence pieces.** "I do want you to add those
+peices when you get a chance, but first."
+
+("peices" is as typed.)
+
+"Those pieces" are the three parts of experiment E17 in §9: the Evidence
+report, a verdict on each Help analysis suggestion, and script lines that
+check a result. Agreed, not built. See the note under E17.
+
+**2026-09-30, spendable resources.** "Bobby has access to spendable
+resources, money, time and physical strength. What do you think about
+somehow integrating those features?"
+
+A question put to Claude, and the first mention of resources. Against the
+build as it stands: a move records whether it brought the goal closer and
+nothing about what it cost; "He has the money to pay for it" is one
+supposed item on Bobby's Environment map, a yes or no with no amount; time
+appears only as the date on a step; strength appears nowhere. Claude's
+answer is experiment E18 in §9, *proposed*.
+
+**2026-09-30, the resources are refreshed.** "And he gets those refreshed,
+in a paycheck, sleep, and food"
+
+Said a few minutes after the statement above, while E18 was being written.
+It adds what E18 lacked: where a resource comes from. In the order given,
+the two lists pair as money with a paycheck, time with sleep, and physical
+strength with food; whether Phil meant them paired that way is not said.
+See the note under E18.
+
+**2026-09-30, motivation is a resource too.** "Yes, motivation energy, or
+desire for the end result is also a resource which can be recharged, and
+spent."
+
+The "Yes" answers Claude's question whether motivation is one of the
+spendable resources or a different kind of thing. It also bears on the
+battery statement of the same morning ("drawn from and added to"): the
+battery and the resources are now one kind of thing. Phil gives it two
+names here, "motivation energy" and "desire for the end result." Not yet
+said: what recharges it, as a paycheck, sleep and food recharge the other
+three. See the second note under E18, and the note on E8.
+
+**2026-09-30, separate them; eating together.** "No seperate them because
+sometimes a social goal is to eat together and I want that accounted for."
+
+("seperate" is as typed.)
+
+Said in reply to Claude's message that put the four resources "on one
+ledger," folded the battery into the resources, and asked whether
+motivation is held per goal or per person. What "them" refers to is not
+certain, and Claude has asked. What is certain from the words: eating
+together can be a social goal; Phil wants the app to account for it; and
+something Claude had joined is to be kept apart. This is also the first
+mention of a *social* goal, one that has other people in it. See the third
+note under E18.
+
+**2026-09-30, what refreshes motivation.** "Reflection on the right ideas
+refreshes motivation and desire"
+
+This answers Claude's question of what recharges motivation, as a
+paycheck, sleep and food recharge the other three. It joins the two halves
+of the app: the map of ideas is where motivation is refreshed, and the
+goals, moves and resources are where it is spent. It is close to the
+purpose in `HANDOFF.md` §1, "to anchor a highly meaningful and
+motivational attitude." Not yet said: which ideas are "the right ideas,"
+and who says so. See the fourth note under E18.
+
+**2026-09-30, motivation is kept apart.** "Yes, keep motivation apart from
+money, time and strength"
+
+The "Yes" confirms Claude's first reading of "separate them" (the third
+note under E18): motivation is not on one ledger with the other three.
+This settles it. See the fifth note under E18.
+
+**2026-09-30, motivation is held per goal; not building yet.** "Motivation
+is held per goal, and yes, we aren't building yet. We have to get to a
+point where you see a coherent picture [...]"
+
+(The end of the sentence is left out at Phil's request. It said that he
+was not done talking.)
+
+Two things. First, a decision: motivation is held per goal, not per
+person. That answers the question open since the battery statement of the
+morning (one per person or one per concept) and is noted under E8.
+Second, how the work goes for now: Phil is still thinking aloud, nothing
+from this stream of thought is to be built, and the aim is a coherent
+picture first. That holds for E8 and E18, and Claude takes it to hold for
+the evidence pieces of E17 as well until Phil says to start.
+
+**2026-09-30, two reviews.** "Great. Grok created a bug analysis, and
+brother claude created an archecture doc. Read those and take action
+accordingly."
+
+("archecture" is as typed.) Said in the session that built E11 to E16. The
+two are `GROK-REVIEW.md` and `ARCHITECTURE.md`, both in this repo. Both
+were read in full and acted on the same night (app 0.8.0). What was done
+about each finding, and what was left, is in `HANDOFF.md` §16 and
+summarized as E19 in §9.
+
+**2026-09-30, Darlene.** "Add some data to Bobby and the milk stream to his
+Environment, Mental State and Assumptions. Change the goal too that way we
+don't duplicate what already exists. Maybe change Bobby to Darlene."
+
+Done the same night. The sample *Bobby and the milk* is now *Darlene and
+the appointment*: a different person and goal (getting her mother to the
+eye doctor), the same walk through facts, a goal read in the text, moves
+and reaching it, and now five environment items, five mental-state items
+and four assumptions beside them, with one item confirmed and one ruled
+out. All of it is made up, for Phil to revise.
+
+**2026-09-30, on the server.** "I want to see the app mounted on this
+server under: http://www.toughguycomputing.com/network_meaning"
+
+Done the same night. The app runs under IIS as the application
+`/network_meaning` on the site toughguycomputing.net, from this folder,
+in its own app pool. A visitor who arrives over plain HTTP is sent to
+HTTPS. The details are in `README.md` ("On the server") and
+`HANDOFF.md` §16.
+
 ---
 
 ## 1. The experience in one paragraph
@@ -540,8 +875,14 @@ motivation battery, and E9 to the background corpus (all under "The goal"
 above). E10 and the revisions to E4 and E9 respond to the three docs from
 the phone session of 2026-09-30 evening: `Three-Layers.md`,
 `Story-and-Game.md` and `NEXT-STEP-Three-Layer-Build.md`, now in this repo.
-E11 is the state layer Phil asked to have built. Earlier experiments are
-revised by a note that refers to them, never rewritten in place.
+E11 is the state layer Phil asked to have built. E12 is the help analysis
+button he asked for, E13 the scripting language and stepper, E14 the
+maps of one world with Bobby's world made up, E15 accounts and the three
+levels, and E16 the check before every call to the AI. E17 (evidence) and
+E18 (spendable resources) come from a parallel session the same night, and
+E19 is what was done about the two reviews. Earlier experiments
+are revised by a note that refers
+to them, never rewritten in place.
 
 **E1. A containing concept is an ordinary idea that other ideas sit within.**
 *Status: proposed, not built.*
@@ -771,6 +1112,595 @@ person's call today. Whether the model should at least ask "was that
 reached?" as its one question is worth deciding. Also open: how the state
 layer meets the containers, perspective and battery. The state facts are
 the obvious place for the battery's level to live, if it is a level.
+
+**E12. Help analysis: a button that makes suggestions given the state of
+play.**
+*Status: built and testing, 2026-09-30 (app 0.3.0). Phil's request; the
+design below is Claude's.*
+A **Help analysis** button at the top of the State view. Pressing it makes
+one model call that reads the state of play at the latest step and returns
+one or two sentences on where things stand and at most six suggestions.
+- *What the model is shown:* Now (the standing facts), the past facts, every
+  goal with its moves in order, dropped goals, the loose ends still open,
+  the ideas on the map with their open questions, and the last question the
+  app asked.
+- *Kinds of suggestion:* **next move** (one step toward an open goal; the
+  prompt asks for the small step that would show most plainly whether the
+  ground moves, from `Story-and-Game.md`), **reached?** (the moves read as
+  if a goal may be reached; it asks, it never declares), **now** (a fact
+  that may no longer be true, or one that is missing), **stuck?** (an open
+  goal that is not moving), **loose end** (one the state of play now bears
+  on), **question** (one thing worth asking).
+- *The brake:* every suggestion must point at something in the state of
+  play (a fact, a goal, a loose end, an idea). One that points at nothing,
+  or whose kind does not fit what it points at, is dropped and counted, the
+  same rule `normalize.js` applies to ideas. A goal already marked *ground
+  is stuck* cannot be asked about again as "stuck?"; that is the no-nagging
+  rule. The prompt forbids praise and encouragement (§6).
+- *Suggest, don't decide:* a suggestion changes no fact, goal or move. It is
+  shown as the machine's reading, with links to what it rests on. The
+  person acts with the ordinary buttons, or doesn't.
+- *In time:* the analysis is a step in the stream (action type `analysis`,
+  made only by the server), so it rewinds, branches, and comes back on
+  reload without calling the model again. Only the latest is in view, with
+  a count of the steps taken since it was made. No database change.
+*How it is built:* `src/server/analyze.js` (prompt, schema, validation),
+`POST /api/streams/:id/analyze`, one new case in the reducer, and the card
+in `src/client/65-statelayer.js`. Pressing it on a built-in sample starts a
+saved copy first, like any other action.
+*Test so far:* one real run on the finished Bobby sample (Sonnet 5.5, about
+7 seconds). It returned one suggestion, a loose end, which read: *Is "Did
+Bobby get the milk?" answered now? He has milk and is home again.* It
+pointed at the loose end, the fact and the goal. Nothing was dropped. It left the stuck car goal
+alone, as told to. It did not notice that Bobby went to the store while the
+car grinds on starting.
+*For:* on a stream of Phil's own, most suggestions are things he would act
+on or is glad to have been asked. *Against:* the suggestions restate what
+the page already shows, or they read as nagging, or Phil never presses it.
+*Open, Claude's:* whether the button belongs on every view or only State;
+whether a suggestion should carry its own button (record this move, mark
+reached) instead of only a link; whether suggestions can be dismissed one
+by one; whether Depth should be offered (it runs on the Balanced tier now).
+The "reached?" kind is a partial answer to the question left open in E11:
+the model may ask whether a goal was reached, and still may not say so.
+
+**E13. A scripting language that makes the app go, and a stepper to watch
+it.**
+*Status: built and testing, 2026-09-30 (app 0.4.0). Phil's request; the
+language and the stepper's behaviour are Claude's design.*
+A **script** is plain text, one action per line, in plain words:
+`verb [name or "a few words"] [word] : free text`. Lines starting with `#`
+are comments. An example:
+
+```
+stream: Bobby, scripted
+date: Sep 28
+fact home: Bobby is at home.
+goal milk: Get milk.
+release home: He left for the store.
+move milk closer: Bobby is at the store. They have milk.
+reach milk: Bobby has milk.
+help
+```
+
+- *Everything a script does is something the person could press.* Each line
+  becomes an ordinary action step, a model call (`text` ideaifies, `help`
+  presses Help analysis), or a change of what is in view (`show`, `focus`,
+  `rewind`, `latest`). A script has no powers the buttons lack, so a
+  scripted stream rewinds, branches and reloads like any other. Steps a
+  script makes carry the source `script`.
+- *The words:* `stream`, `date`, `note`; `fact`, `release`; `goal`, `move`,
+  `reach`, `stuck`, `drop`, `reopen`, `accept`, `reject`; `text`, `help`;
+  `keep`, `discard`, `anchor`, `resolve`; `focus`, `show`, `rewind`,
+  `latest`, `branch`. The Script view lists each with what it does.
+- *Pointing at things:* a line that makes a fact or a goal can give it a
+  name (`goal milk: …`), and later lines use the name. Anything else,
+  including what the model read in a text, is pointed at by a few of its
+  words in quotes (`accept "milk"`). The words must match exactly one thing
+  the line could act on. None or several stops the run at that line and
+  says so in plain words.
+- *`date:`* dates the steps that follow, so a scripted story can span days.
+  This is the first place a step's date is something other than the day it
+  was recorded, which bears on E6.
+- *The stepper* is a dock under the page that stays in view on every tab.
+  **Step** runs one line. **Play** runs them in turn at a chosen pace and
+  can be paused. Each action opens the view where it lands and marks the
+  fact or goal it touched; model calls wait for the answer. A line that
+  can't run stops the run there, with the reason, and Step tries it again.
+  A script that can't be read lists its lines and does not run at all.
+*How it is built:* `src/shared/script.js` (the parser and the planner, pure
+and shared), `src/client/85-script.js` (the runner, the Script view, the
+dock). The server gained only an optional `date` on `/ingest` and
+`/analyze`. No database change. The last script worked on is kept in the
+browser, not on the server.
+*Test so far:* two built-in scripts, both run end to end in a headless
+browser against the live database on 2026-09-30. *Bobby and the milk, by
+hand* (21 lines, no model calls) left 13 steps dated Sep 28 to Oct 1 and
+the same Now, Past and Goals as the Bobby sample. *Bobby and the milk, read
+by the model* (11 lines, 3 model calls, about 16 seconds) had the model
+read the goal from the sentence, `accept "milk"` found it, and the last
+`help` returned three suggestions.
+*For:* Phil can write or dictate a short script of his own and watch it
+run; scripts become the way scenarios are tried, shown and re-run.
+*Against:* the words are harder to write than the buttons are to press, or
+pointing at things by a few words fails too often on real streams.
+*Open, Claude's:* whether scripts should be saved on the server and shared;
+whether a stream should be able to write itself out as a script (every
+action step already has a line that would make it); whether a script line
+should be able to check something ("expect milk reached") so a script is
+also a test; whether the model should be able to write scripts.
+
+**E13, note 2026-09-30.** Phil: "I think all of your proposals are a yes."
+The four open items above are agreed: scripts saved on the server and
+shared; a stream writes itself out as a script; a line can check something;
+the model may write scripts. *Status of each: agreed, not built.* Phil
+asked to think aloud first, so the build waits on that.
+
+**E14. The maps of one world, and Bobby's world as an investigator would
+assemble it.**
+*Status: built and testing, 2026-09-30 (app 0.5.0). Phil's request: a map
+each for "his environment, mental state, and assumptions (moral
+presuppositions)," each with a diagram "that we can select on and improve,"
+drawn "with the diagramming capability we've already made a stab at," and
+one made up for Bobby. The method and the made-up content are Claude's.*
+
+*The method, stepping back.* An investigator does not start from a theory
+of Bobby. He starts from what there is to go on and keeps it apart from
+everything he adds:
+1. *Evidence first.* Two things were said: "He needs milk" and "Bobby went
+   to the store to get milk." Those are **given**. Nothing else is.
+2. *Everything else is a supposition, and says so.* A supposed item is
+   drawn dashed. It can be **confirmed** (it turns solid, with the date) or
+   **ruled out** (it is kept, struck through). This is stuck and plastic
+   again: the words put forth are fixed; whether they hold is open.
+3. *Every supposition carries the question that would check it.* "A store
+   that sells milk is within reach" carries "Which store? How far?" These
+   are the open questions already drawn as hollow dots.
+4. *The situation is worked from near to far:* home, what it lacks, who
+   else is there, the store, the way, the money, the hour.
+5. *The mental state is worked as want, what is taken for granted, and
+   intention.* What is taken for granted is Phil's "mental furniture": "He
+   takes it for granted that the store will have milk."
+6. *The assumptions are found by asking "why does that matter?"* and asking
+   it again of the answer, from the act up to what he takes to be right.
+7. *An ambiguous word is read every way it can be before one is chosen.*
+   "Needs" is read once on each map: a lack in the house, a want in him, an
+   ought he holds. The map of what was said shows "He needs milk" in the
+   middle with those three readings around it. That is the question Phil
+   set aside (which of the three it belongs to), laid out to be looked at,
+   not answered.
+Borrowed from, as far as Claude recalls and not checked against sources:
+Kurt Lewin's life space (behaviour as a function of the person and the
+environment), Henry Murray's pairing of a need in the person with a press
+from the environment, the belief, desire and intention account of action,
+the cognitive-therapy case formulation with its layer of rules and
+assumptions, and laddering from personal construct psychology.
+
+*What was built.*
+- Four maps of one world: **What was said**, **Environment**, **Mental
+  state**, **Assumptions**. A selector above the diagram picks one and
+  shows how many items each holds.
+- One diagram draws them all. "What was said" shows one link out from the
+  item in the middle, as before. A world map shows two links out within
+  that map, so a small map is seen whole, plus the middle item's own links
+  into the other maps, marked with the map they sit on. Each world item has
+  a bar in its map's colour. Selecting any item makes it the middle;
+  following a link into another map changes the map in view.
+- *Select on and improve:* the panel can confirm or rule out a supposition
+  and add a new item to the map in view, given or supposed, joined to the
+  item in the middle.
+- Five new action types in the one reducer (`item`, `link`, `ask`,
+  `confirm`, `ruleout`), so the maps rewind, branch and replay. No database
+  change. Script words for each: `said`, `environment`, `mental`,
+  `assumption`, `link`, `ask`, `confirm`, `ruleout`, and `show environment`
+  and its like.
+- *Bobby's world* is a built-in script of 67 lines, and a built-in sample
+  that is the same script run in the page, so the two cannot drift: 2
+  things said, 7 environment items, 7 mental-state items, 5 assumptions, 29
+  links, 13 open questions. Run in the stepper, it shows the world being
+  assembled in the order above.
+*Test so far:* the script ran end to end in a headless browser against the
+live database (67 lines, about 26 seconds at the fast pace); then an item
+was added from the panel and a supposition confirmed.
+*Two things the made-up world shows, for Phil to judge.* There is no map of
+motivation in it. What moves Bobby appears as the links that cross between
+maps ("gives rise to," "makes it worth doing," "presses"), which is close
+to `Three-Layers.md`, where motivation is read off the distance between
+layers. And the sentence says "get" where Phil last said "buy"; the world
+carries that as an open question on the act and on "You pay for what you
+take from a store," not as a choice.
+*For:* Phil can look at each diagram and say it shows something true about
+how such a world is put together, and adding a complication is easy enough
+that he does it. *Against:* the three maps blur (items could sit on any of
+them), or the diagrams are no clearer than a list.
+*Open, Claude's:* whether motivation gets a map; whether the State view
+(Now, goals, moves) is part of the mental state or a fifth thing; whether
+the model should be allowed to propose world items from text, as supposed;
+whether each map wants a diagram of its own shape (rings for nearness, a
+ladder for assumptions) instead of one shape for all; and whose world a
+stream is, which the two pictures of the future (other people's maps, and
+thousands of people coordinating) will need answered.
+
+**E15. Accounts: sign-up, an admin panel, three levels, and a shared
+stream.**
+*Status: built and testing, 2026-09-30 (app 0.6.0). Phil's requests are
+quoted under "The goal." The points marked Claude's are choices Phil has
+not yet seen.*
+- *Phil's:* a person can sign up themselves; an admin can add them from a
+  panel; email is the unique key; each person has an area of their own;
+  three levels, **guest**, **user**, **admin**; what a user does is stored
+  and what a guest does is not; a guest cannot use the AI, and the AI
+  buttons give an info box saying he has to become a registered user;
+  philipalarson@gmail.com is an admin; everyone shares Bobby's story.
+- *How it is built:* `sql/002-users.sql` adds a password hash, a level, a
+  disabled date and who added the person, and a `shared` mark on streams.
+  `src/server/auth.js` holds sign-in, sign-up and the levels. A password is
+  stored only as a salted scrypt hash. The **Admin** tab, shown only to admins, is the panel:
+  list, add, set a level, set a new password, disable or enable.
+- *Guests, Claude's reading of "guest":* there are two kinds, and both get
+  the same treatment. Someone with no account can press **Look around as a
+  guest** on the sign-in card. An account can also be at the guest level.
+  Either way the work lives in the browser tab and is never sent to the
+  server; the server refuses every storing route to a guest account as
+  well, so the rule does not depend on the page. A guest can still do
+  everything that needs no AI, including running a script. If a guest
+  becomes a user, the stream in hand is saved for them.
+- *Sharing Bobby's story, Claude's reading:* the three built-in samples,
+  two of them Bobby's, are in the page for everyone, guests included. An
+  admin can also mark one of their own streams **shared with everyone**. A
+  shared stream is listed for all, read-only; acting on it starts a copy in
+  the person's own area. Others cannot add to the shared original. That is
+  the cautious reading, chosen because sign-up is open to anyone.
+- *Note, 2026-09-30 later:* at Phil's word, "Remove Phil's streams from the
+  users, and from the guest's accounts," the sample of his archived chats
+  is no longer in the page. Two samples are built in for everyone, both
+  Bobby's. The owner alone gets his own sample, from the server.
+- *Claude's additions:* signing up makes a user unless `SIGNUP_LEVEL=guest`;
+  sign-up can be closed (`SIGNUP=closed`) or asked for an invite code
+  (`SIGNUP_CODE`); everyone but an admin has a daily number of AI calls
+  (`DAILY_CALL_LIMIT`, 40 unless set), because every call is paid for with
+  the server's key; a disabled account stops working at once and its
+  streams are kept; nothing in the panel deletes a person.
+*Test so far:* the Postgres tests cover sign-up, signing in, the walls
+between personal areas, sharing, the panel, the daily limit, and that no
+stream, step or call is recorded for a guest. A headless browser run on a
+throwaway schema signed a person up, added a guest from the panel, shared a
+stream, showed the guest the info box, promoted the guest and disabled the
+first person.
+*For:* people Phil invites can get in, work without stepping on each other,
+and see Bobby's story. *Against:* strangers sign up and spend the AI
+budget, or the guest level confuses more than it helps.
+*Open, Claude's:* whether others should be able to add to a shared stream,
+which the coordination Phil pictures will need; whether a guest account is
+wanted at all beside looking around with no account; that the app sends no
+email, so a forgotten password needs an admin; that changing a password
+does not sign out sessions already open.
+
+**E16. A check before every call to the AI.**
+*Status: built and testing, 2026-09-30 (app 0.6.0). Phil's request: "for
+every call out to the AI API, whatever the user provides in that context
+call has to be sanity checked for malicious, or stupid inputs." The checks
+are Claude's.*
+Before Ideaify and before Help analysis, `src/server/screen.js` looks at
+everything a person supplied that is about to go into the prompt: the text
+being sent, its label, and the facts, goals, moves and map items already in
+the stream.
+- *Stupid:* empty; longer than one pass takes; not text (binary, control
+  characters); no words in it; mostly symbols or numbers; a run of several
+  hundred characters with no space; one character or the same few words
+  repeated. Refused for everyone, admins included.
+- *Malicious:* phrases that give orders to an AI instead of saying
+  something ("ignore your previous instructions," "reveal your system
+  prompt," markup posing as the AI's own channel). Kept narrow: talking
+  about instructions or prompts passes. An admin's text skips this check,
+  since Phil's own transcripts quote such phrases and it is his key.
+- A refusal says what was found, the AI is not called, and the refusal is
+  logged as a call with the status `screened`, so it counts toward the
+  daily limit.
+- *Beside the check:* both prompts now say that the text is material to
+  read and none of it is addressed to the model; every line a person wrote
+  is set in the prompt as one bounded line, so it cannot start a section of
+  its own; one step cannot be enormous. The answer was already held to a
+  JSON schema and rebuilt from the person's own spans by `normalize.js`.
+*For:* junk and plain attempts never reach the model, and an honest user
+is rarely refused. *Against:* honest text is refused often enough to
+annoy, which the narrow patterns are meant to prevent.
+*What it cannot do, said plainly:* a list of phrases cannot catch every
+attempt to steer a model. This is the first gate, not the only one. A
+second, model-based check on each call is possible and was not built; it
+would double the calls.
+
+**E17. Evidence: the stream reports how the machine's claims fared.**
+*Status: proposed, not built, 2026-09-30. Claude's proposal, from the
+review in `ARCHITECTURE.md` and two questions Phil asked after reading it:
+"What would evidence look like?" and "Can the app benefit by your analysis
+of the need for evidence now?"*
+The review's main opinion was that the experiments from E11 on are at
+*testing* and none has had its test. Much of the evidence is already in
+the stream, uncounted: every time the person keeps or discards a reading,
+accepts or rejects a goal, settles a loose end, or confirms or rules out a
+supposition, that verdict is a step.
+- *An Evidence report.* A pure function over the steps, shared like
+  `replay.js`, so it rewinds with everything else and needs no model call
+  and no database change. For one stream, and split by model: readings
+  kept, discarded and left undecided; goals read in the text accepted and
+  rejected; loose ends by outcome; suppositions confirmed, ruled out and
+  still open; ideas said again; and items dropped for citing nothing,
+  which each ingest step already records.
+- *A verdict on each Help analysis suggestion:* new to me, already knew,
+  or wrong (the marks E3 proposes). One new action type. Today a
+  suggestion can only be read, so E12 has no way to collect its own test.
+- *Script lines that check* (agreed under E13) carry the archive test of
+  §7 as a script, so it can be run again after any change to a prompt.
+*Test:* run the report on the first real stream of Phil's own, and on the
+archive test. *For:* a number changes a decision: a Depth setting, a
+prompt, or an experiment's status moving to *adopted* or *dropped*.
+*Against:* the counts are too small to mean anything, nobody looks at
+them, or the rates become a score to chase (§6).
+*What it is not:* a judgment of the person. It counts the machine's
+claims and what became of them.
+
+**E17, note 2026-09-30.** Phil: "I do want you to add those peices when you
+get a chance." All three parts are agreed. *Status: agreed, not built.* The
+build waits until the work in progress in the same working tree is
+committed, since it touches `src/shared/replay.js` and the State view.
+
+**E18. Spendable resources: what a person has, what a goal takes, and what
+a move costs.**
+*Status: proposed, not built, 2026-09-30. Phil's statement is quoted under
+"The goal": "Bobby has access to spendable resources, money, time and
+physical strength." The design below is Claude's.*
+- *Three kinds, because the three behave differently.* Money is a
+  **store**: it stays until it is spent, and it can pass to someone else.
+  Time is a **window**: it runs out whether it is spent or not ("the store
+  closes at nine"). Strength is a **capacity**: it is used up and comes
+  back with rest. One number with one rule would get two of the three
+  wrong.
+- *Three places it shows.* A **holding**: what the person has, kept in
+  State beside Now, given or supposed like any world item, with the
+  question that would check it. A **need** on a goal: what reaching it
+  takes. A **cost** on a move: what it spent or brought in. The level of a
+  holding on any day is replayed from the moves, so it rewinds and
+  branches with the rest.
+- *Words before numbers.* The app invents no distance to a goal (E11) and
+  should invent no amounts. A level can be said in words (plenty, enough,
+  tight, none, not known); an amount is optional. A need or a cost the
+  person did not state is a supposition, drawn dashed.
+- *What it joins up.* The battery of E8 is the same shape, a store drawn
+  from and added to, so one ledger could carry money, strength and
+  motivation. *Ground is stuck* could name what is short. Help analysis is
+  told to prefer "the small, cheap step" and has no notion of cost; with
+  costs it would. And in the Bobby sample the car goal waits on "the first
+  opening is next month," which is the mechanic's time, not Bobby's:
+  resources belong to people, and what one person has and another needs
+  is where worlds touch. The coordination Phil pictures will turn on that.
+*How it would be built:* three action types in the one reducer (a holding
+put forth or revised, a need on a goal, a cost on a move) and script words
+to match. No database change. No model call at first; later the model may
+propose needs and costs it reads in text, as supposed.
+*Test:* by script, on Bobby, made up for review: he has twenty dollars
+(given), an hour before the store closes (supposed), and he is on foot
+because the car grinds (supposed). *For:* the milk errand and the stuck
+car goal read more truly with what they take in view, and Phil adds a
+complication through a resource (the money is short, the store closes)
+more easily than through a fact. *Against:* nobody enters what a move
+cost; the amounts give a false precision; or State turns into a budget
+and the goal is lost in it.
+*Cautions, Claude's:* money is private in a way most of a map is not,
+which bears on sharing; and a level that rises and falls invites being
+treated as a score (§6).
+*Needs from Phil before building:* whether motivation is one of these
+resources or a different kind of thing; words, amounts, or both; and
+whether resources get a place of their own on screen or live inside State
+and the Environment map.
+
+**E18, note 2026-09-30, refreshing.** Phil: "And he gets those refreshed,
+in a paycheck, sleep, and food." E18 had holdings, needs and costs, and
+said only in passing that a move can bring something in. This adds a
+fourth thing, a **source**: what refills a holding. Claude's reading of
+what follows, none of it Phil's words:
+- *A source is not a move toward a goal.* It is part of the upkeep of a
+  life, and most sources come round again: a paycheck by the fortnight or
+  the month, sleep by the night, food several times a day. So a source
+  has a rhythm as well as an amount, which is one answer to "Time has to
+  be considered. How?"
+- *Resources turn into one another.* Work spends time and strength and
+  brings the paycheck. Money buys food. Food and sleep restore strength,
+  and sleep spends time. It is a cycle, and Bobby's errand is inside it:
+  milk is food. Getting milk spends money, time and strength to keep the
+  cycle going, which may be part of why it matters.
+- *Nothing is refilled by the clock.* By the rule that the app shows only
+  what was reported, a refresh is a step when it happens ("the paycheck
+  came"), not something the app adds on its own each Friday.
+- *The expected refresh is mental furniture.* "He takes it for granted
+  that the paycheck will come" is the same kind of item as "the car starts
+  every morning": trust laid down by repetition. So an expected refresh
+  belongs on the Mental state map as something taken for granted, and the
+  day it does not come is a surprise of the kind §4.1 calls a missed bet.
+*Added to the test:* give Bobby a payday, a night's sleep and a meal in
+the script, and one refresh that fails to come. *For:* the missed refresh
+shows up as the thing that changes what he can do, without anyone working
+it out by hand. *Added to what is needed from Phil:* whether the two lists
+pair in the order given (time with sleep), or sleep and food both restore
+strength.
+
+**E18, second note 2026-09-30, motivation.** Phil: "Yes, motivation energy,
+or desire for the end result is also a resource which can be recharged,
+and spent." So there are four resources, not three, and the ledger of E8
+is the ledger of E18. What is Phil's: motivation is a resource; it is
+recharged and it is spent. What follows is Claude's reading:
+- *"Desire for the end result" ties it to a goal.* Money, time and
+  strength belong to the person and can be spent on any goal. Desire for
+  an end result is desire for *that* result. So motivation may be held per
+  goal, where the other three are held per person. That would answer the
+  question left open under E8, one battery per person or one per concept,
+  with "one per goal," but Phil has not said so.
+- *What a goal's states would then mean.* A goal dropped is one whose
+  desire ran out. A goal where the ground is stuck and the desire is still
+  high is the painful case, which `Three-Layers.md` describes as
+  resistance against the vector being travelled. The app could tell the
+  two apart, where today both are a status the person picks.
+- *What recharges it is not yet said.* One candidate is already in
+  `Story-and-Game.md`, in Phil's framing: achieving a minor step is
+  exciting "because it makes the goal feel more possible." If so, a move
+  that brings the goal closer recharges the desire for it, and moves that
+  change nothing draw it down. Another is the source of the desire
+  itself: in Bobby's world, the links "gives rise to" and "makes it worth
+  doing" that run from his situation and his assumptions into what he
+  wants.
+- *It converts like the others.* Motivation is what gets time, strength
+  and money spent on one goal instead of another. Spending it is choosing.
+- *The caution in §6 applies most here.* A motivation level must not
+  reward intensity of feeling. Like the other three it should be the
+  person's own report, in words first, never something the app computes.
+*Added to what is needed from Phil:* what recharges motivation, and
+whether it is held per goal or per person.
+
+**E8, note 2026-09-30.** E8 proposed the motivation battery as a ledger of
+dated deposits and draws, and asked what adds, what draws, and whose it
+is. Phil's statement the same evening makes motivation one of the
+spendable resources of E18. E8 is folded into E18: same ledger, same
+rules, and its two guesses (fruit charges it; "maintenance on no feeling"
+draws it) stand as guesses to be tested there. The question of *gap or
+battery* further down is partly answered: it is a store. Whether the gap
+between foundation and environment is what charges the store is still
+open.
+
+**E18, third note 2026-09-30, "separate them."** Phil: "No seperate them
+because sometimes a social goal is to eat together and I want that
+accounted for." This corrects something in the two notes above. Which
+thing is not certain; the readings below are Claude's, in order of
+likelihood, and the question has been put to Phil.
+1. *Keep motivation apart from money, time and strength.* The note on E8
+   folded the battery into one ledger with the other three. But a meal
+   does two different jobs. As food it refills strength. Eaten together it
+   is a social goal, a desire for an end result. On one ledger the meal
+   would be only a refill and the second job would vanish. On this reading
+   there are two kinds: *means* (money, time, strength: held by the
+   person, refilled by a paycheck, sleep and food) and *motivation*
+   (desire for an end result: bound to goals). The fold in the E8 note is
+   withdrawn until Phil says.
+2. *Keep the refill apart from the goal.* The first note said "a source is
+   not a move toward a goal." Eating together shows that is wrong as
+   written: one event can be a source and a goal at once. On this reading
+   the two must be recorded separately on the same event so neither
+   swallows the other.
+3. *Keep the resources apart from one another,* each with its own record,
+   instead of one ledger for all.
+What holds on every reading, and so changes the design now:
+- *One event, several effects.* A meal together spends money and time,
+  refills strength, and reaches or moves a social goal. Today one action
+  step does one thing. E18 needs an event that can carry what it spent,
+  what it refilled, and which goals it moved, each shown on its own.
+- *A social goal has other people in it.* Bobby's made-up world already
+  has "Someone else lives there and uses milk" and "He has someone in mind
+  who is waiting for it." The milk may be for a meal together. A goal
+  would need to say with whom, which is the first place the maps of other
+  people (Phil's picture of the future) are needed by something being
+  designed now.
+*Added to the test:* in the Bobby script, a supper eaten with the person
+at home. *For:* the State view shows it both as strength restored and as
+a social goal reached, and neither is lost.
+
+**E18, fourth note 2026-09-30, reflection.** Phil: "Reflection on the
+right ideas refreshes motivation and desire." So each resource now has its
+source in Phil's words: money a paycheck, strength (and perhaps time)
+sleep and food, motivation reflection on the right ideas. The rest is
+Claude's reading:
+- *The idea map is the source.* What a paycheck is to money, time spent
+  with one's own ideas is to motivation. That makes the first thing the
+  app did (keep a person's ideas, verbatim, and ask one question) the
+  place where the fourth resource is refilled, and the State view the
+  place where it is spent. The two halves were built separately and had
+  no stated connection until this sentence.
+- *It supports the first reading of "separate them."* Motivation's source
+  is of a different kind from a paycheck or a meal, which fits keeping
+  motivation apart from the three means. Still to be confirmed by Phil.
+- *"The right ideas" is the person's to say.* The app already has a way:
+  an anchor is an idea the person pinned as one everything should trace
+  back to. For Phil those are the two commandments and the triad. The app
+  must not pick the right ideas itself, and must not count intensity (§6);
+  an AI choosing which ideas motivate is the flattering mirror.
+- *A reflection can be a step.* Opening an idea, answering its open
+  question, or drafting from it is already something the app sees. With
+  the person's own word on whether it refreshed them, it becomes a refill
+  recorded like any other, and it rewinds.
+- *It can be tested with E17.* The claim is checkable from the stream: do
+  moves toward a goal follow reflection on the ideas that goal traces back
+  to, more than they follow nothing? *For:* they do, on Phil's own stream
+  over some weeks. *Against:* reflection and moves show no relation, or
+  only the person's say-so connects them.
+*Added to what is needed from Phil:* which ideas are "the right ideas"
+(the anchors, the ideas a goal traces back to, or something else), and
+whether "motivation" and "desire" are one thing or two.
+
+**E18, fifth note 2026-09-30, settled: two kinds.** Phil: "Yes, keep
+motivation apart from money, time and strength." Reading 1 of the third
+note is confirmed and readings 2 and 3 are set aside as readings of that
+sentence. The fold of E8 into E18 is withdrawn for good. As it now stands,
+in Phil's words where they exist:
+- **Means:** money, time and physical strength. "Spendable resources."
+  Refreshed "in a paycheck, sleep, and food."
+- **Motivation:** "motivation energy, or desire for the end result."
+  "Recharged, and spent." Refreshed by "reflection on the right ideas."
+  Kept apart from the means.
+E18 is the experiment for the means. E8 is again the experiment for
+motivation, with its ledger of its own, and now has two of the three
+answers it was waiting for: it is a store, and reflection on the right
+ideas is what adds to it. Still open there: what draws from it, and
+whether it is held per goal or per person.
+Two things from the third note stand whichever kind is in question, and
+are Claude's: one event can carry several effects (a supper together
+spends means, refills strength, and reaches a social goal), each shown on
+its own; and a social goal has other people in it.
+
+**E8, second note 2026-09-30, per goal.** Phil: "Motivation is held per
+goal." Settled. Each goal carries its own motivation: its own level, its
+own refills and draws. The means of E18 stay with the person and can be
+spent on any goal. What E8 now has, in Phil's words: it is a store,
+"drawn from and added to"; it is "desire for the end result"; it is
+"recharged, and spent"; "reflection on the right ideas" refreshes it; it
+is kept apart from money, time and strength; it is held per goal. Still
+open: what draws it down; which ideas are "the right ideas"; whether
+"motivation" and "desire" are one thing or two. *Status: proposed, not
+built.* Phil, the same message: "we aren't building yet."
+
+**E19. What was done about the two reviews.**
+*Status: built and testing, 2026-09-30 (app 0.8.0). The reviews are
+`GROK-REVIEW.md` and `ARCHITECTURE.md`. The fixes are Claude's. The full
+list, finding by finding, is `HANDOFF.md` §16.*
+The reviews agreed on what mattered most, and those are fixed:
+- *The reducer decides.* The state's maps have no prototype and every id is
+  checked, so a hostile id does nothing. What an action may act on (only a
+  reading can be kept or discarded; only fixed words can be an anchor) is
+  now decided in the reducer, for the page, a script and the server alike.
+  The server stores only actions the reducer knows.
+- *The page and the server are one stream.* A failed save stays on screen
+  and nothing new is taken until it is saved; a change the server refuses
+  is undone.
+- *Stop stops.* The model call is cancelled on the server and nothing is
+  stored.
+- *Nothing is invented.* A move the model read in the text has no effect
+  until a person reports one, and stays marked as read in the text.
+- *One phrase cannot lock a stream.* A line already in a stream that reads
+  as an order to an AI is left out of what the model is shown, and the
+  person is told which. This revises E16, which refused the call instead.
+- *One list of link words* (`WORLD_LINKS`), shared by the panel, the
+  method document and a test.
+- *Spend is bounded.* A ceiling on AI calls a day for everyone who is not
+  an admin, and throttles on sign-in and sign-up.
+*Left for Phil, because both reviews say it is his call:* sign-up is still
+open, as he asked; the reviews advise closing it until he decides. On the
+public site the limits are set tight instead.
+*Not done, and why:* storing the map in tables so that worlds can be
+queried across streams, real dates beside the date labels (E6), an author
+on every step, sessions that end when a password changes, and running the
+site from a release folder instead of the working copy. Each is structure
+for the later vision, and the architecture review's own advice is to prove
+one world on real material first.
+*For:* the fixes hold up when Phil and one more person use the public site.
+*Against:* a fix has made honest use harder, most likely the save queue
+refusing new changes on a bad connection.
 
 **Open, and it changes E1 and E2:** whether the nesting is exactly three
 levels (idea, containing concept, perspective) or a concept can sit within

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/server.test.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    The HTTP surface without a database: the page, health, and the
    sign-in gate. Nothing here needs DATABASE_URL or a key. */
@@ -42,6 +42,7 @@ test("the built page is served at the root", async () => {
   const html = await r.text();
   assert.match(html, /<title>Network Meaning<\/title>/);
   assert.match(html, /==== module shared\/replay\.js ====/);
+  assert.doesNotMatch(html, /Faith is furnished by memory|Phil's archived chats/, "the owner's own sample is not in the page everyone gets");
 });
 
 test("the API is gated by the session cookie", async () => {
@@ -62,6 +63,15 @@ test("a wrong password is refused, a malformed body is a 400, unknown routes are
   assert.equal(missing.status, 404);
   const fav = await fetch(base + "/favicon.ico");
   assert.equal(fav.status, 204);
+});
+
+test("who may sign up is public; the admin panel and signing up without a database are not open doors", async () => {
+  const a = await fetch(base + "/api/auth");
+  assert.equal(a.status, 200);
+  assert.ok(["open", "code", "closed"].includes((await a.json()).signup));
+  assert.equal((await fetch(base + "/api/admin/users")).status, 401);
+  const bad = await fetch(base + "/api/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: "nope", password: "long-enough-pw" }) });
+  assert.equal(bad.status, 400, "a bad email is refused before anything else is tried");
 });
 
 test("a forged session cookie is ignored", async () => {

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/shared/replay.js
-   File Version: 0.2.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The map is a projection of the stream. State = replay(steps[0..cursor)).
    This reducer runs on the server (to give the model the current map) and
@@ -21,18 +21,71 @@
      st.goals  {id: {text, date, status, proposed, moves:[{date, text, effect}], ...}}
    status: proposed (the machine read it in the text; plastic until the
    person accepts it) | open | reached | stuck | dropped.
-   Actions: state, release, goal, acceptgoal, rejectgoal, move, reach, regoal. */
+   Actions: state, release, goal, acceptgoal, rejectgoal, move, reach, regoal.
+
+   Help analysis (Phil, 2026-09-30): suggestions given the state of play,
+   made by the server (src/server/analyze.js) and stored as an action step
+   of type "analysis". Only the latest is in view:
+     st.analysis  {id, date, model, standing, suggestions:[{id, kind, text, why, about:[{on, id}]}], since, leftOut:[phrases]}
+   since counts the steps applied after it, so the page can say it is stale. */
 
 export const LINK_LABELS = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to", "connects to", "my reading"];
 /* Links a traceback may walk. A path through a contradiction or a
    replacement is not a derivation. */
 export const DERIVATION_LABELS = LINK_LABELS.filter(l => l !== "tension with" && l !== "replaces");
 
+/* The maps of one world (Phil, 2026-09-30): what was said, and a map each
+   for the environment, the mental state, and the assumptions (moral
+   presuppositions). An item on a world map is put forth by hand or by a
+   script. It is either given or supposed; a supposition can be confirmed
+   or ruled out. Items live in st.nodes beside the ideas, with n.map set
+   (ideas have none), so one diagram draws them all.
+   Actions: item, link, ask, confirm, ruleout. */
+export const WORLD_MAPS = { said: "What was said", env: "Environment", mind: "Mental state", moral: "Assumptions" };
+export const mapOf = n => (n && n.map) || "said";
+export const lastTouch = n => (n.touches && n.touches.length ? Math.max(...n.touches) : -1);
+/* How many items a stream's steps put on each world map. Counted from the
+   item steps themselves, which is also how the server counts them for the
+   stream list (src/server/streams.js), so the two agree. */
+export function worldCounts(steps) {
+  const c = { env: 0, mind: 0, moral: 0 };
+  for (const s of steps || []) { const a = s && s.kind === "action" ? s.action : null; if (a && a.type === "item" && Object.hasOwn(c, a.map)) c[a.map]++; }
+  return c;
+}
+
+/* The words for a link on the world maps: one list, used by the panel, the
+   method document and the tests. "within" joins two items on one map;
+   "across" joins maps. A script may still write any words; these are the
+   ones the method uses. LINK_LABELS above is a different set, for the links
+   the model proposes between ideas read from text. */
+export const WORLD_LINKS = {
+  within: ["leads to", "rests on", "serves", "allows", "presses", "sharpens", "lets it run", "lacks", "shared with", "within reach of", "by", "takes", "only if", "part of", "blocks", "where it starts"],
+  across: ["read as a lack", "read as a want", "read as an ought", "gives rise to", "is who", "is trusted", "makes it worth doing", "limits how", "presses", "carried out as"]
+};
+
+/* A move the person reports says whether it brought the goal closer. A move
+   the model read in the text says nothing about that: its effect is
+   "unsaid", and stays so. No distance is invented. */
 export const MOVE_EFFECTS = ["closer", "same", "farther"];
+export const UNSAID = "unsaid";
+
+/* Every action the reducer knows, and the test an id must pass before it is
+   used as a key. The state's maps have no prototype, so even a hostile id
+   such as "__proto__" could only ever be an ordinary key; ids are checked
+   as well so that nothing odd is stored. The server uses actionOk() to
+   refuse a bad action before it is saved. */
+export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis"];
+const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b"];
+export function safeId(v) { return typeof v === "string" && /^[A-Za-z0-9_.:-]{1,80}$/.test(v) && v !== "__proto__" && v !== "constructor" && v !== "prototype"; }
+export function actionOk(a) {
+  if (!a || typeof a !== "object" || Array.isArray(a) || !ACTION_TYPES.includes(a.type)) return false;
+  return ID_FIELDS.every(k => a[k] === undefined || a[k] === null || safeId(a[k]));
+}
+const bare = () => Object.create(null);
 export const GOAL_STATUSES = ["proposed", "open", "reached", "stuck", "dropped"];
 
 export function emptyState() {
-  return { nodes: {}, links: [], flags: [], outcomes: {}, ingests: 0, passes: [], question: null, state: {}, goals: {} };
+  return { nodes: bare(), links: [], flags: [], outcomes: bare(), ingests: 0, passes: [], question: null, state: bare(), goals: bare(), analysis: null };
 }
 
 export function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -45,6 +98,7 @@ export function replay(steps) {
 
 export function applyStep(st, step) {
   if (!step) return;
+  if (st.analysis) st.analysis.since++;
   if (step.kind === "ingest") applyResult(st, step.result || {}, step);
   else if (step.kind === "action") applyAction(st, step);
 }
@@ -53,6 +107,7 @@ export function applyResult(st, r, meta) {
   const idx = st.ingests++;
   st.passes.push({ date: meta.date, source: meta.source });
   for (const [id, n] of Object.entries(r.add || {})) {
+    if (!safeId(id) || !n || typeof n !== "object") continue;
     st.nodes[id] = Object.assign(clone(n), { touches: [idx], also: [], history: [...(n.history || [])], slots: [...(n.slots || [])] });
   }
   for (const t of r.touch || []) {
@@ -66,12 +121,12 @@ export function applyResult(st, r, meta) {
   for (const l of r.links || []) {
     if (st.nodes[l.a] && st.nodes[l.b] && !st.links.some(x => x.a === l.a && x.b === l.b)) st.links.push({ ...l });
   }
-  for (const f of r.flags || []) st.flags.push({ ...f, nodes: [...(f.nodes || [])] });
+  for (const f of r.flags || []) if (f && safeId(f.id)) st.flags.push({ ...f, nodes: [...(f.nodes || [])] });
   /* Goals the model read in the text arrive as proposals. The words are the
      person's (verbatim spans); calling them a goal is the machine's reading. */
   for (const g of r.goals || []) {
-    if (!g || !g.id) continue;
-    const readMoves = (g.moves || []).map(m => ({ date: meta.date, text: m.text, at: m.at || "", effect: "closer", read: true }));
+    if (!g || !safeId(g.id)) continue;
+    const readMoves = (g.moves || []).map(m => ({ date: meta.date, text: m.text, at: m.at || "", effect: UNSAID, read: true }));
     if (g.existing) {
       const ex = st.goals[g.id];
       if (ex && ex.status !== "reached" && ex.status !== "dropped" && readMoves.length) { ex.moves.push(...readMoves); ex.history.push(`${meta.date}: ${readMoves.length} move${readMoves.length > 1 ? "s" : ""} read in ${meta.source}.`); }
@@ -106,7 +161,8 @@ function applyStateAction(st, a, step) {
       return true;
     }
     case "acceptgoal": {
-      if (g && g.status === "proposed") { g.status = "open"; g.acceptedOn = step.date; g.history.push(`${step.date}: you confirmed this is a goal.`); g.moves.forEach(m => { m.read = false; }); }
+      /* Confirming the goal does not turn the moves read in the text into the person's own report: they stay marked. */
+      if (g && g.status === "proposed") { g.status = "open"; g.acceptedOn = step.date; g.history.push(`${step.date}: you confirmed this is a goal.`); }
       return true;
     }
     case "rejectgoal": {
@@ -135,15 +191,69 @@ function applyStateAction(st, a, step) {
       g.history.push(`${step.date}: ${to === "stuck" ? "the ground is stuck" : to === "dropped" ? "dropped" : "reopened"}${stateText(a.note) ? ". " + stateText(a.note) : "."}`);
       return true;
     }
+    case "analysis": {
+      /* The machine's suggestions. They change nothing else in the state. */
+      const sug = (Array.isArray(a.suggestions) ? a.suggestions : []).filter(s => s && stateText(s.text))
+        .map(s => ({ id: s.id || "", kind: s.kind || "question", text: stateText(s.text), why: stateText(s.why), about: (Array.isArray(s.about) ? s.about : []).filter(r => r && r.on && r.id).map(r => ({ on: r.on, id: r.id })) }));
+      st.analysis = { id: a.id || "", date: step.date, model: a.model || "", standing: stateText(a.standing), suggestions: sug, since: 0,
+        leftOut: (Array.isArray(a.leftOut) ? a.leftOut : []).map(stateText).filter(Boolean).slice(0, 5) };
+      return true;
+    }
+    default: return false;
+  }
+}
+
+/* The world maps' actions: put an item on a map, link two items, hang an
+   open question on one, confirm a supposition, rule one out. Nothing is
+   deleted: a ruled-out item stays, struck through, with its history. */
+function applyWorldAction(st, a, step) {
+  const n = a.id ? st.nodes[a.id] : null;
+  const note = stateText(a.note) ? ". " + stateText(a.note) : ".";
+  switch (a.type) {
+    case "item": {
+      const text = stateText(a.text);
+      if (!a.id || n || !text || !Object.hasOwn(WORLD_MAPS, a.map)) return true;
+      const made = { t: text.length > 80 ? text.slice(0, 79) + "…" : text, kind: a.map === "said" ? "idea" : "item", stuck: true, src: a.map === "said" ? "user_said" : "put_forth",
+        words: text, date: step.date, at: "", file: "", slots: [], history: [], touches: [], also: [] };
+      if (a.map !== "said") { made.map = a.map; made.supposed = a.supposed !== false; }
+      st.nodes[a.id] = made;
+      return true;
+    }
+    case "link": {
+      if (!st.nodes[a.a] || !st.nodes[a.b] || a.a === a.b) return true;
+      if (st.links.some(l => (l.a === a.a && l.b === a.b) || (l.a === a.b && l.b === a.a))) return true;
+      st.links.push({ a: a.a, b: a.b, f: stateText(a.f).slice(0, 40) || "connects to", read: false });
+      return true;
+    }
+    case "ask": {
+      const q = stateText(a.text);
+      if (n && q && !n.slots.includes(q)) n.slots.push(q);
+      return true;
+    }
+    case "confirm": {
+      if (n && n.supposed && !n.ruledOut) { n.supposed = false; n.confirmedOn = step.date; n.history.push(`${step.date}: confirmed${note}`); }
+      return true;
+    }
+    case "ruleout": {
+      if (n && n.map && !n.ruledOut) { n.ruledOut = true; n.replaced = true; n.history.push(`${step.date}: ruled out${note} It is kept, struck through.`); }
+      return true;
+    }
     default: return false;
   }
 }
 
 export function applyAction(st, step) {
   const a = step.action || {};
+  if (!actionOk(a)) return; /* an unknown action, or one with an id that is not an id, does nothing */
   if (applyStateAction(st, a, step)) return;
+  if (applyWorldAction(st, a, step)) return;
   const n = a.id ? st.nodes[a.id] : null;
-  if (a.type === "keep" && n) {
+  /* What each of these may act on is decided here, for the page, a script
+     and the server alike: only the machine's reading can be kept or
+     discarded, and only fixed words can be an anchor. The person's own
+     words are never deleted and never relabelled. */
+  const reading = n && n.stuck === false && !n.map;
+  if (a.type === "keep" && reading) {
     /* A kept reading becomes stuck (it can no longer be rewired) but it
        stays the machine's phrasing. It is never shown as the person's words. */
     n.stuck = true; n.kept = true; n.src = "user_confirmed"; n.keptOn = step.date;
@@ -153,15 +263,17 @@ export function applyAction(st, step) {
         if (other && other.stuck !== false) { l.read = false; if (l.f === "my reading") l.f = "leads to"; }
       }
     });
-  } else if (a.type === "discard" && n) {
+  } else if (a.type === "discard" && reading) {
     delete st.nodes[a.id];
     st.links = st.links.filter(l => l.a !== a.id && l.b !== a.id);
     st.flags.forEach(f => { f.nodes = f.nodes.filter(x => x !== a.id); });
-  } else if (a.type === "anchor" && n) {
+  } else if (a.type === "anchor" && n && n.stuck && !n.kept && !n.ruledOut) {
     n.anchor = !n.anchor;
   } else if (a.type === "flag") {
     const f = st.flags.find(x => x.id === a.flagId);
     if (!f) return;
+    /* "Later" is not an answer: the loose end stays open, marked as put off. */
+    if (a.choice === "later") { f.later = step.date; return; }
     let out = "Noted.";
     switch (a.choice) {
       case "accept":
@@ -197,6 +309,25 @@ export function neighbors(st, id) {
   return st.links.filter(l => (l.a === id || l.b === id) && st.nodes[l.a] && st.nodes[l.b]).map(l => ({ l, other: l.a === id ? l.b : l.a }));
 }
 
+/* The item at the middle of one map: the one with the most links inside
+   that map; the earliest wins a tie. null when the map is empty. */
+export function pickFocusIn(st, map) {
+  const ids = Object.keys(st.nodes).filter(id => mapOf(st.nodes[id]) === map && !st.nodes[id].replaced);
+  if (!ids.length) return null;
+  const inside = id => st.links.filter(l => (l.a === id || l.b === id) && st.nodes[l.a] && st.nodes[l.b] && mapOf(st.nodes[l.a]) === map && mapOf(st.nodes[l.b]) === map).length;
+  let best = ids[0], top = inside(best);
+  for (const id of ids.slice(1)) { const k = inside(id); if (k > top) { best = id; top = k; } }
+  return best;
+}
+
+/* The item to put in the middle of a map when it is opened. Normally the
+   best-linked live item. A map that holds only ruled-out items still has a
+   middle, so that what was ruled out is drawn struck through instead of
+   the map looking empty. null only when the map has nothing at all. */
+export function mapMiddle(st, map) {
+  return pickFocusIn(st, map) || Object.keys(st.nodes).find(id => mapOf(st.nodes[id]) === map) || null;
+}
+
 export function pickFocus(st) {
   const ids = Object.keys(st.nodes).filter(id => !st.nodes[id].replaced);
   if (!ids.length) return null;
@@ -211,6 +342,7 @@ export function pickFocus(st) {
 export function actOf(st, n) {
   if (n.anchor) return "anchor";
   if (n.replaced) return "replaced";
+  if (!n.touches.length) return "settled"; /* put forth by hand, not read from a pass */
   const last = Math.max(...n.touches);
   const age = st.ingests - 1 - last;
   if (age <= 0) return n.touches.length > 1 ? "settled" : "arriving";
@@ -251,12 +383,21 @@ export function currentState(st) { return Object.entries(st.state).filter(([, s]
 export function pastState(st) { return Object.entries(st.state).filter(([, s]) => s.ended).map(([id, s]) => ({ id, ...s })); }
 
 /* Movement toward a goal, read off its moves: how many brought it closer,
-   how many did nothing, how many set it back, and the last move. No
-   invented distance; only what the person reported. */
+   how many did nothing, how many set it back, how many were read in the
+   text with no effect said, and the last move. No invented distance; only
+   what the person reported. */
 export function movement(g) {
-  const m = { moves: g.moves.length, closer: 0, same: 0, farther: 0, last: g.moves.length ? g.moves[g.moves.length - 1] : null };
+  const m = { moves: g.moves.length, closer: 0, same: 0, farther: 0, unsaid: 0, last: g.moves.length ? g.moves[g.moves.length - 1] : null };
   for (const x of g.moves) m[x.effect] = (m[x.effect] || 0) + 1;
   return m;
+}
+
+/* One bounded line, for anything a person wrote that is set in a listing
+   the model reads: no newlines (it cannot start a section of its own), no
+   control characters, clipped. The server's screen.js has the same rule. */
+export function flat(s, max = 300) {
+  s = String(s ?? "").replace(/[\u0000-\u001f\u007f\u2028\u2029]+/g, " ").replace(/\s+/g, " ").trim();
+  return s.length > max ? s.slice(0, max - 1) + "…" : s;
 }
 
 export const goalStatusLabel = s => ({ proposed: "read in your text", open: "open", reached: "reached", stuck: "ground is stuck", dropped: "dropped" }[s] || s);
@@ -264,19 +405,19 @@ export const goalStatusLabel = s => ({ proposed: "read in your text", open: "ope
 /* The state and goals the model sees, so it can tell a new goal from one
    already put forth and notice a move toward an open goal. */
 export function stateListing(st, cap = 40) {
-  const now = currentState(st).slice(-cap).map(s => `state | ${s.id} | ${s.text}`);
+  const now = currentState(st).slice(-cap).map(s => `state | ${s.id} | ${flat(s.text)}`);
   const goals = Object.entries(st.goals).filter(([, g]) => g.status === "open" || g.status === "proposed" || g.status === "stuck").slice(-cap)
-    .map(([id, g]) => `goal | ${id} | ${g.status} | ${g.text} | ${g.moves.length} moves`);
+    .map(([id, g]) => `goal | ${id} | ${g.status} | ${flat(g.text)} | ${g.moves.length} moves`);
   return now.concat(goals).join("\n") || "(no state facts or goals yet)";
 }
 
 /* The listing the model sees of what is already on the map. Most recently
    touched first; capped so the prompt stays bounded. */
 export function mapListing(st, cap = 160) {
-  const ids = Object.keys(st.nodes).sort((a, b) => Math.max(...st.nodes[b].touches) - Math.max(...st.nodes[a].touches)).slice(0, cap);
+  const ids = Object.keys(st.nodes).filter(id => !st.nodes[id].map).sort((a, b) => lastTouch(st.nodes[b]) - lastTouch(st.nodes[a])).slice(0, cap);
   if (!ids.length) return "(empty: this is the first text)";
   return ids.map(id => {
     const n = st.nodes[id];
-    return `${id} | ${n.stuck && !n.kept ? n.kind : "reading"}${n.anchor ? " | ANCHOR" : ""}${n.replaced ? " | replaced" : ""} | ${n.t}`;
+    return `${id} | ${n.stuck && !n.kept ? n.kind : "reading"}${n.anchor ? " | ANCHOR" : ""}${n.replaced ? " | replaced" : ""} | ${flat(n.t)}`;
   }).join("\n");
 }

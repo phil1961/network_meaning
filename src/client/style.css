@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.2.0
+   File Version: 0.7.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 :root{
@@ -54,11 +54,12 @@ nav{display:flex;gap:4px;overflow-x:auto;max-width:100%}
 .sb-group{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .sb-label{font-family:var(--font-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 select,.input{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:100%}
+#streamsel{max-width:min(100%,640px);text-overflow:ellipsis} /* the open list shows each stream's whole line; the closed box stays a sane width */
 .scrub{display:flex;align-items:center;gap:10px;flex:1;min-width:240px}
 .scrub input{flex:1;accent-color:var(--accent);min-width:100px}
 .scrub output{font-family:var(--font-data);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
 .save{font-family:var(--font-data);font-size:11px;color:var(--muted)}
-.save.ok{color:var(--ok)} .save.bad{color:var(--warn)}
+.save.ok{color:var(--ok)} .save.bad{color:var(--warn);cursor:pointer;text-decoration:underline;max-width:340px}
 .rewound{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 16px;background:var(--accent-soft);border-bottom:1px solid var(--line);font-size:13px}
 
 main{flex:1;padding-block:16px;padding-inline:16px}
@@ -263,7 +264,7 @@ form.inline .input{width:100%}
 .track{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
 .beads{display:inline-flex;gap:3px;font-size:15px;line-height:1}
 .bead{color:var(--muted)} .bead.e-closer{color:var(--accent)} .bead.e-farther{color:var(--warn)} .bead.read{opacity:.55}
-.bead.reachedmark{color:var(--ok)}
+.bead.reachedmark{color:var(--ok)} .bead.e-unsaid{color:var(--reading)} .mglyph.e-unsaid{color:var(--reading)}
 .moves{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:13px}
 .moves li{display:grid;grid-template-columns:52px 16px minmax(0,1fr);gap:8px;align-items:baseline}
 .moves li.read .mtext{font-style:italic;color:var(--reading)}
@@ -272,6 +273,78 @@ form.inline .input{width:100%}
 .reachednote{margin:0;font-size:13px;color:var(--ok)}
 .ghist summary{cursor:pointer;font-size:12px;color:var(--muted)}
 .empty.small{padding:12px 0}
+/* help analysis: the machine's suggestions, marked as readings */
+.helpcard{grid-column:1/-1}
+.helpcard .row .small{flex:1;min-width:220px}
+#helpbody{display:flex;flex-direction:column;gap:10px}
+.helplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.help{display:grid;grid-template-columns:104px minmax(0,1fr);gap:4px 14px;border:1px solid var(--line);border-left:3px dashed var(--reading);border-radius:8px;padding:10px 12px;background:var(--paper)}
+@media (max-width:560px){.help{grid-template-columns:minmax(0,1fr)}}
+.help .type{font-family:var(--font-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding-top:3px;color:var(--reading)}
+.help .body{display:flex;flex-direction:column;gap:4px;min-width:0}
+.help .htext{margin:0;font-weight:500;overflow-wrap:anywhere}
+.help .hwhy{margin:0;font-size:13px;color:var(--muted)}
+
+/* ---------- The maps of one world: selector, supposed items, map colours ---------- */
+:root{--m-env:#2E7D4F;--m-mind:#2346C8;--m-moral:#B56F0A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--m-env:#6CC592;--m-mind:#8AA2FF;--m-moral:#E5A640}}
+:root[data-theme="dark"]{--m-env:#6CC592;--m-mind:#8AA2FF;--m-moral:#E5A640}
+.mapsel{display:flex;flex-wrap:wrap;gap:4px}
+.seg{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:500;color:var(--muted);display:inline-flex;align-items:center;gap:6px;border-bottom-width:3px}
+.seg:hover{border-color:var(--ink)}
+.seg[aria-selected="true"]{background:var(--panel);color:var(--ink);border-color:var(--ink)}
+.seg.m-env{border-bottom-color:var(--m-env)} .seg.m-mind{border-bottom-color:var(--m-mind)} .seg.m-moral{border-bottom-color:var(--m-moral)}
+.segn{font-family:var(--font-data);font-size:11px;color:var(--muted)}
+.canvasbar.sub{padding-top:6px;padding-bottom:6px}
+.maploose{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:8px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.sw.supposed{border:1.5px dashed var(--ink);background:transparent}
+.sw.bar{width:5px;height:13px;border:0;border-radius:2px}
+.sw.bar.m-env{background:var(--m-env)} .sw.bar.m-mind{background:var(--m-mind)} .sw.bar.m-moral{background:var(--m-moral)}
+.chip.m-env{color:var(--m-env);border-color:var(--m-env)} .chip.m-mind{color:var(--m-mind);border-color:var(--m-mind)} .chip.m-moral{color:var(--m-moral);border-color:var(--m-moral)}
+.chip.supposed{border-style:dashed;color:var(--ink)}
+.words.supposed{border-left-style:dashed}
+#map .node.flash .box{animation:flashbox 1.6s ease-out}
+@keyframes flashbox{0%,35%{stroke:var(--accent);stroke-width:5}100%{stroke-width:1.5}}
+@media (prefers-reduced-motion:reduce){#map .node.flash .box{animation:none;stroke:var(--accent);stroke-width:3}}
+
+/* ---------- Script and the stepper ---------- */
+#scripttext{width:100%;min-height:340px;resize:vertical;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--font-data);font-size:13px;line-height:1.6;white-space:pre;overflow:auto;tab-size:2}
+.scripterrors{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--warn)}
+.scripterrors .n{font-family:var(--font-data);font-size:11px;margin-right:8px}
+.scripthelp{margin:0;display:flex;flex-direction:column;gap:2px}
+.scripthelp dt{margin-top:8px}
+.scripthelp dt code{font-family:var(--font-data);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.scripthelp dd{margin:0;font-size:12px;color:var(--muted)}
+.dock{position:sticky;bottom:0;z-index:10;background:var(--panel);border-top:2px solid var(--accent);box-shadow:0 -6px 20px rgba(0,0,0,.10);padding:8px 16px calc(8px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:6px}
+.dockbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.dockbar .grow{flex:1}
+.dockpos{font-family:var(--font-data);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.docklines{position:relative;list-style:none;margin:0;padding:0;max-height:118px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;background:var(--paper);font-family:var(--font-data);font-size:12px;line-height:1.5}
+.docklines li{display:grid;grid-template-columns:18px 28px minmax(0,1fr);gap:6px;padding:1px 8px;color:var(--muted)}
+.docklines li code{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.docklines li .n{text-align:right;opacity:.7}
+.docklines li.done{color:var(--ink)}
+.docklines li.done .mk{color:var(--ok)}
+.docklines li.cur{background:var(--accent-soft);color:var(--ink);font-weight:500}
+.docklines li.cur .mk{color:var(--accent)}
+.docklines li.err{background:transparent;outline:1px solid var(--warn);outline-offset:-1px}
+.docklines li.err .mk{color:var(--warn)}
+.dockmsg{font-size:13px;min-height:1.5em;overflow-wrap:anywhere}
+.dockmsg.bad{color:var(--warn)}
+.flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%,35%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;box-shadow:0 0 0 2px var(--accent)}}
+
+/* ---------- Help: HELP.md as a page ---------- */
+.helpdoc{max-width:760px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px 28px;line-height:1.6}
+.helpdoc h2{margin:0 0 8px;font-family:var(--font-words);font-size:26px;font-weight:600}
+.helpdoc h3{margin:26px 0 6px;font-size:18px;border-top:1px solid var(--line);padding-top:18px}
+.helpdoc h4{margin:16px 0 4px;font-size:15px}
+.helpdoc p{margin:0 0 10px}
+.helpdoc ul,.helpdoc ol{margin:0 0 12px;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+.helpdoc code{font-family:var(--font-data);font-size:12.5px;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.helpdoc pre{font-family:var(--font-data);font-size:12.5px;line-height:1.6;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow:auto;margin:0 0 12px}
+.helpdoc blockquote{margin:0 0 12px;font-family:var(--font-words);font-style:italic;font-size:17px;line-height:1.45;border-left:3px solid var(--ink);padding-left:12px}
 
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}

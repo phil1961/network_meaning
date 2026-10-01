@@ -1,9 +1,11 @@
 /* ─────────────────────────────────────────────
    File: src/server/streams.js
-   File Version: 0.1.0
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    Streams and their append-only steps. Every function takes the userId
-   first and only ever sees that user's rows. */
+   first. A person sees their own streams, and the streams an owner has
+   marked shared; a shared stream can be read and branched from by anyone
+   signed in, and written only by its owner. */
 
 import { query, withTx } from "./db.js";
 
@@ -17,18 +19,23 @@ function rowToStep(r) {
 }
 
 export async function listStreams(userId) {
-  const r = await query(`SELECT s.id, s.name, s.created_at, s.updated_at, s.parent_stream_id, s.branch_at_seq,
-      (SELECT count(*) FROM steps t WHERE t.stream_id = s.id)::int AS step_count
-    FROM streams s WHERE s.user_id = $1 ORDER BY s.updated_at DESC`, [userId]);
-  return r.rows.map(x => ({ id: x.id, name: x.name, stepCount: x.step_count, createdAt: x.created_at, updatedAt: x.updated_at, parentStreamId: x.parent_stream_id, branchAtSeq: x.branch_at_seq }));
+  /* maps: how many items the stream's steps put on each world map, the
+     same count worldCounts() makes in src/shared/replay.js. */
+  const item = m => `count(*) FILTER (WHERE t.kind = 'action' AND t.action->>'type' = 'item' AND t.action->>'map' = '${m}')::int`;
+  const r = await query(`SELECT s.id, s.name, s.created_at, s.updated_at, s.parent_stream_id, s.branch_at_seq, s.shared, (s.user_id = $1) AS mine,
+      c.step_count, c.env, c.mind, c.moral
+    FROM streams s
+    LEFT JOIN LATERAL (SELECT count(*)::int AS step_count, ${item("env")} AS env, ${item("mind")} AS mind, ${item("moral")} AS moral FROM steps t WHERE t.stream_id = s.id) c ON true
+    WHERE s.user_id = $1 OR s.shared ORDER BY (s.user_id = $1) DESC, s.updated_at DESC`, [userId]);
+  return r.rows.map(x => ({ id: x.id, name: x.name, stepCount: x.step_count, maps: { env: x.env, mind: x.mind, moral: x.moral }, shared: x.shared, mine: x.mine, createdAt: x.created_at, updatedAt: x.updated_at, parentStreamId: x.parent_stream_id, branchAtSeq: x.branch_at_seq }));
 }
 
 export async function getStream(userId, id) {
-  const s = await query("SELECT id, name, created_at, updated_at, parent_stream_id, branch_at_seq FROM streams WHERE id = $1 AND user_id = $2", [id, userId]);
+  const s = await query("SELECT id, name, created_at, updated_at, parent_stream_id, branch_at_seq, shared, (user_id = $2) AS mine FROM streams WHERE id = $1 AND (user_id = $2 OR shared)", [id, userId]);
   if (!s.rows.length) return null;
   const st = await query(`SELECT ${STEP_COLS} FROM steps WHERE stream_id = $1 ORDER BY seq`, [id]);
   const x = s.rows[0];
-  return { id: x.id, name: x.name, createdAt: x.created_at, updatedAt: x.updated_at, parentStreamId: x.parent_stream_id, branchAtSeq: x.branch_at_seq, steps: st.rows.map(rowToStep) };
+  return { id: x.id, name: x.name, createdAt: x.created_at, updatedAt: x.updated_at, parentStreamId: x.parent_stream_id, branchAtSeq: x.branch_at_seq, shared: x.shared, mine: x.mine, steps: st.rows.map(rowToStep) };
 }
 
 function insertStepSQL(client, streamId, seq, step) {
@@ -47,7 +54,8 @@ export async function createStream(userId, { name, steps = [], fromStreamId = nu
   return withTx(async client => {
     let copy = [];
     if (fromStreamId) {
-      const own = await client.query("SELECT id FROM streams WHERE id = $1 AND user_id = $2", [fromStreamId, userId]);
+      /* a branch may start from your own stream or from a shared one; the copy is yours */
+      const own = await client.query("SELECT id, user_id FROM streams WHERE id = $1 AND (user_id = $2 OR shared)", [fromStreamId, userId]);
       if (!own.rows.length) throw Object.assign(new Error("source stream not found"), { status: 404 });
       const r = await client.query(`SELECT ${STEP_COLS} FROM steps WHERE stream_id = $1 AND seq < $2 ORDER BY seq`, [fromStreamId, atSeq ?? 1e9]);
       copy = r.rows.map(rowToStep);
@@ -78,6 +86,12 @@ export async function appendStep(userId, streamId, step) {
 
 export async function renameStream(userId, id, name) {
   const r = await query("UPDATE streams SET name = $3, updated_at = now() WHERE id = $1 AND user_id = $2 RETURNING id, name", [id, userId, String(name || "Untitled").slice(0, 200)]);
+  return r.rows[0] || null;
+}
+
+/* Share a stream with everyone signed in, or stop. Only its owner can. */
+export async function shareStream(userId, id, shared) {
+  const r = await query("UPDATE streams SET shared = $3 WHERE id = $1 AND user_id = $2 RETURNING id, name, shared", [id, userId, !!shared]);
   return r.rows[0] || null;
 }
 

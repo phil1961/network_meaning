@@ -1,6 +1,6 @@
 -- ─────────────────────────────────────────────
 -- File: sql/001-init.sql
--- File Version: 0.1.0
+-- File Version: 0.1.1
 -- ─────────────────────────────────────────────
 -- The stream is the source of truth. The map is a replay of steps.
 -- Applied once by src/server/migrate.js inside a transaction.
@@ -52,6 +52,6 @@ CREATE TABLE IF NOT EXISTS api_calls (
   latency_ms     integer NULL,
   input_tokens   integer NULL,
   output_tokens  integer NULL,
-  status         text NOT NULL,         -- ok | error | refused | cancelled
+  status         text NOT NULL,         -- ok | error | refused | cancelled | screened (stopped before the call)
   error          text NULL
 );

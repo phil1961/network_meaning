@@ -1,6 +1,6 @@
 {
   "name": "network-meaning",
-  "version": "0.2.0",
+  "version": "0.8.0",
   "description": "A meaning map of the ideas a person presents: their words kept verbatim, the machine's readings marked, every step in an append-only stream.",
   "type": "module",
   "private": true,

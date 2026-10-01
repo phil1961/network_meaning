@@ -578,44 +578,228 @@ Still open, by weight:
   the program, so `tests/server.test.js` no longer picks up the real
   database. `npm run gate`: 34 tests, 30 pass, 4 skip without
   `TEST_DATABASE_URL`; with it, 34 pass. `npm run smoke`: 37 checks pass,
-  16 of them on the Bobby sample and the State view.
+  16 of them on the Bobby sample and the State view. *(Counts superseded by
+  the next item.)*
+- **The Help analysis button is built (app version 0.3.0),** later the same
+  evening, from Phil's statement: "I want a help analysis button I can press
+  which makes suggestions given the state of play." It sits at the top of
+  the State view. `src/server/analyze.js` holds the prompt, the schema and
+  the validation; the route is `POST /api/streams/:id/analyze`; the result
+  is an action step of type `analysis`, which only the server may create.
+  `VISION.md` §9 E12 has the design and the test so far. One real
+  end-to-end run in a headless browser against the live database (sign in,
+  fork the Bobby sample, press the button, reload, delete the fork)
+  returned one suggestion in about 7 seconds on Sonnet 5.5. That run is
+  also the first sign-in through the page. `npm run gate`: 41 tests, 36 pass, 5 skip without
+  `TEST_DATABASE_URL`; the 5 Postgres tests pass against
+  `network_meaning_test`. `npm run smoke`: 40 checks pass. *(Counts
+  superseded by the next item.)*
+- **The scripting language and the stepper are built (app version 0.4.0),**
+  from Phil's statement: "Now imagine creating a scripting language that
+  interacts with the app to make it go. Provide a stepper so we can watch
+  as all the actions happens." A new Script tab holds the editor, two
+  built-in Bobby scripts and the list of words; the stepper is a dock that
+  stays in view on every tab. `src/shared/script.js` parses a script and
+  plans each line; `src/client/85-script.js` runs it through the same
+  functions the buttons call. A script can do only what the buttons can, so
+  every line is an ordinary step. The server gained an optional `date` on
+  `/ingest` and `/analyze`. `VISION.md` §9 E13 has the design and the test
+  so far. Both built-in scripts ran end to end in a headless browser
+  against the live database; the one with the model made a real ingest
+  through the page, the first. `npm run gate`: 49 tests, 44 pass, 5 skip
+  without `TEST_DATABASE_URL`. `npm run smoke`: 54 checks pass. *(Counts
+  superseded by the next item.)*
+- **The maps of one world are built (app version 0.5.0),** from Phil's
+  stream of thought the same evening: a world is "facts about his
+  environment, his mental furniture, and his motivations"; the software
+  "ought to have maps that represent each of those features. His
+  environment, mental state, and assumptions (moral presuppositions)," each
+  with a diagram "that we can select on and improve"; "Make one up for
+  bobby." The Map view now has a selector for four maps: what was said,
+  environment, mental state, assumptions. World items live in `st.nodes`
+  with `map` set and are given or supposed; five new action types (`item`,
+  `link`, `ask`, `confirm`, `ruleout`) and script words to match. The
+  built-in sample *Bobby's world* is the built-in world script run in the
+  page. `VISION.md` §9 E14 has the method, the design and the test so far.
+  Also built, at Phil's request: a blank box showing "e.g. …" takes the
+  suggestion as the entry when its button is pressed. `npm run gate`: 52
+  tests, 47 pass, 5 skip without `TEST_DATABASE_URL`. `npm run smoke`: 66
+  checks pass. The world script ran end to end in a headless browser
+  against the live database.
+- **The Stream menu counts what each stream holds (app version 0.5.1),** at
+  Phil's request: steps, and the items on its Environment, Mental state and
+  Assumptions maps. The server counts them in `listStreams`
+  (`src/server/streams.js`); the page counts the same way with
+  `worldCounts()` for the samples and the open stream. `npm run smoke`: 67
+  checks pass; gate and Postgres tests unchanged in number and passing.
+- **Accounts, three levels, sharing, and a check before every AI call are
+  built (app version 0.6.0); a Help tab and a method document follow
+  (0.7.0).** All from Phil's statements the same evening, verbatim in
+  `VISION.md` and `HANDOFF-Salient-Points.md`; designs in `VISION.md` §9
+  E15 and E16.
+  - `sql/002-users.sql` is the first migration since the start: password
+    hash, level (guest, user, admin), disabled date, who added the person,
+    and `shared` on streams. It is applied when the server starts.
+  - `src/server/auth.js`: sign-in by email and password, sign-up, levels.
+    The owner (`APP_USER_EMAIL`, philipalarson@gmail.com) still signs in
+    with `APP_PASSWORD` and is always an admin; a blank email on the card
+    means the owner. New settings in `.env`, all optional: `SIGNUP`
+    (`closed` to stop sign-ups), `SIGNUP_CODE` (an invite code),
+    `SIGNUP_LEVEL` (`guest` to start people as guests), `DAILY_CALL_LIMIT`
+    (AI calls a day for anyone but an admin, 40 unless set).
+  - A guest's work stays in the browser tab; the server refuses every
+    storing route to a guest account. The AI buttons show a guest an info
+    box.
+  - `src/server/screen.js` checks what a person supplies before each AI
+    call; refusals are logged in `api_calls` with status `screened`.
+  - `HELP.md` is the help; `build.js` turns it into the Help tab.
+    `METHOD-Deriving-the-Maps.md` is how the maps of a world are derived.
+  - `npm run gate`: 68 tests, 57 pass, 11 skip without `TEST_DATABASE_URL`;
+    all 11 Postgres tests pass against `network_meaning_test`.
+    `npm run smoke`: 80 checks pass, including a guest running a whole
+    script with no server. A headless browser run on a throwaway schema
+    covered sign-up, the Admin tab, levels, sharing and the info box.
+- **Phil's own sample is out of the page.** "Remove Phil's streams from the
+  users, and from the guest's accounts." *Phil's archived chats* moved from
+  `src/client/20-sample.js` to `src/server/owner-sample.js`; `GET
+  /api/samples` gives it to the owner alone. The page opens on *Bobby's
+  world* for everyone. The admin tab is labelled **Admin**. Counts now:
+  `npm run gate` 69 tests, 57 pass, 12 skip; all 12 Postgres tests pass;
+  `npm run smoke` 80 checks pass. Still in the page for everyone: the Talk
+  tab's demo, which replays a few of Phil's sentences. Flagged for him.
+- **Two pictures of the future are recorded, not built:** maps for the
+  other people in Bobby's world, who "use this software to coordinate their
+  actions," and "a centralized coordination routine," thousands of people,
+  and the AI "filling out lots of things that nobody wants to take the
+  trouble to do." Both are verbatim in `VISION.md` and
+  `HANDOFF-Salient-Points.md`.
+
+*(The three closing lists that stood here were written at 0.2.0 and never
+brought up to date. They are replaced by §16 below, which is current as of
+0.8.0.)*
+
+## 16. Review response, the server, and where things stand (2026-09-30, night)
+
+Phil: "Grok created a bug analysis, and brother claude created an archecture
+doc. Read those and take action accordingly." The reviews are
+`GROK-REVIEW.md` in this repo and the Claude Doc *network-meaning:
+Engineering & Architecture*, also kept in this repo as `ARCHITECTURE.md`. App version
+0.8.0.
+
+**What was done about each finding**
+
+| Finding | Source | Done |
+|---|---|---|
+| A reserved id (`__proto__`) in an action writes to every object | Architecture 1 | Fixed. The state's maps have no prototype; ids are checked (`safeId`, `actionOk` in `src/shared/replay.js`); the server refuses unknown actions and bad ids. Tested with 22 hostile actions. |
+| Stop does not stop the server | Architecture 2 | Fixed. The cancel listener is on the response. The route stores nothing once stopped. Checked in a real browser: nothing stored. |
+| Open sign-up, total spend unbounded | Architecture 3, Grok conflict | Bounded, not closed. `DAILY_CALL_CEILING` (300, and 60 on the public site) caps everyone but admins together; sign-in waits after 8 wrong tries; sign-ups are 5 an hour from one place. Sign-up itself stays open, as Phil asked. **His call.** |
+| "Your words stay your words" enforced only by the page | Architecture 4 | Fixed. The reducer decides what keep, discard and anchor may act on. Tested. |
+| A failed save leaves a hole and the warning clears itself | Architecture 5, Grok A1 | Fixed. The queue stops on failure, the note stays, new changes are refused until it is saved, and a change the server refuses is undone. Checked in a real browser with the server taken away and brought back. |
+| One phrase locks the AI out of a stream | Architecture 6, Grok B3 | Fixed differently from both suggestions. The line is left out of what the model is shown and the person is told which. Nothing is refused and nothing is removed. |
+| Every open and call replays the whole stream; no query across streams | Architecture 7 | Not done. It is structure for worlds that meet. |
+| Dates are labels with no year | Architecture 8 | Not done. E6. |
+| Small gaps in the store | Architecture 9 | Step ids can no longer collide. The rest (the limit checked then spent, no foreign keys on `api_calls`, no author on a step) is not done. |
+| Uncommitted releases, no CI, working copy is the deployed copy | Architecture 10 | Committed and pushed at the end of this session. No CI. The site runs from this folder, as the other apps on the server do. |
+| A move read in the text is stored as "closer" | Grok A2 | Fixed. Its effect is "unsaid" and it stays marked after the goal is confirmed. The help prompt says not to treat it as progress. |
+| A map of only ruled-out items draws as empty | Grok A3 | Fixed (`mapMiddle`). |
+| A paste that fails partway says Done | Grok A4 | Fixed. |
+| Help analysis drops the oldest open goals | Grok A5 | Fixed. Live goals are chosen before the cap. |
+| "Later" closes a loose end | Grok A6 | Fixed. It stays open, marked as put off. |
+| A guest's script line `branch` reports failure | Grok A7 | Fixed. |
+| The cookie is not Secure behind IIS | Grok A8 | Did not hold here: IIS on this server passes `x-forwarded-proto`, so the cookie is Secure over HTTPS. `COOKIE_SECURE=true` exists for a host that does not. The public site also sends HTTP on to HTTPS. |
+| The handoff's closing lists are stale | Grok B1 | This section. |
+| Three link vocabularies | Grok B2 | Fixed. `WORLD_LINKS` is the one list; the panel offers it; the method document gives it in full; a test holds them together. |
+| Stale "against the build" lines in the vision | Grok B4 | Notes added, Phil's words untouched. |
+| An analysis can be slipped in when a stream is created | Grok B5 | Fixed. Steps posted whole pass the same check, and a posted ingest step cannot claim a model made it. |
+| File-version headers lag | Grok B6 | Process, no code change. |
+| `ideaId` is rendered and never set by the model | Grok B7 | Left. The Darlene sample uses it; the model still cannot set it. |
+| Password change leaves old sessions valid; Google Fonts | one-sided | Not done. |
+
+Also added while there: security headers on every answer, including a
+content policy that lets the page talk only to its own server.
+
+**The server**
+
+Phil: "I want to see the app mounted on this server under:
+http://www.toughguycomputing.com/network_meaning"
+
+- Mounted by `bin\setup_network_meaning_v1.0.ps1` (run once, elevated):
+  site `toughguycomputing.net`, application `/network_meaning`, pool
+  `NetworkMeaning` (No Managed Code), physical path this folder.
+- `web.config` sets `BASE_PATH=/network_meaning`, `FORCE_HTTPS=true`,
+  `DAILY_CALL_LIMIT=15` and `DAILY_CALL_CEILING=60`. It pins node to
+  `D:\programs\nvm\v24.14.0\node.exe`.
+- **To pick up a change to the code:** save `web.config` (any edit, or
+  `touch`). IIS restarts the node process with no administrator needed.
+  `bin\recycle_apppool_v1.0.ps1` does the same, elevated.
+- The process log is `logs\iis-stdout*.log`.
+- Checked through the public name in a real browser: HTTP goes to HTTPS,
+  the page loads at 0.8.0, a guest can look around and act, the AI buttons
+  give a guest the info box, and `.env`, `server.js` and `src\` are
+  not served.
+- The local server on port 8787 (`node server.js`) is a second process
+  over the same database. It is for development only.
+
+**Tests at the end of the session**
+
+`npm run gate`: 74 tests, 60 pass, 14 skip without `TEST_DATABASE_URL`.
+All 14 Postgres tests pass against `network_meaning_test`.
+`npm run smoke`: 86 checks pass. Real-browser runs on a throwaway schema
+covered sign-up, the Admin tab, levels, sharing, the save queue and Stop.
 
 **Known failing**
 
-- Nothing at the end of the session.
+- Nothing in the tests.
+- Known and not fixed, from the reviews: the items marked "Not done" or
+  "Left" in the table above.
+- Not yet tried by anyone but the tests: a second real person on the public
+  site.
 
-**Waiting on Phil** (he chose to let these sit)
+**Waiting on Phil**
+
+Design questions he chose to let sit:
 
 1. Nesting: exactly three levels (idea, containing concept, perspective), or
    can a concept sit inside another concept?
 2. The motivation battery: what adds to it, what draws from it, and is there
    one per person or one per concept?
-3. The background corpus: which one, and does everyone start from the same
-   one? (The evening docs answer part of this: the corpus is the foundation
-   layer, the theology skeleton.)
-4. Gap or battery: `Three-Layers.md` reads motivation off the distance
-   between foundation and environment; the morning statement makes it a
-   store drawn from and added to. Which, or both?
-5. Where do the containing concept and the perspective sit among the three
-   layers?
-6. For the Bobby probe (E10): the hand-authored foundation list, a few lines.
-7. Review of the State view and the Bobby sample (E11): what is right, what
-   to revise, and whether the model may propose that a goal was reached.
+3. Gap or battery: is motivation the distance between layers, a store drawn
+   from and added to, or both? And does it get a map of its own? The
+   made-up worlds show it as the links that cross between maps.
+4. Which map does "he needs milk" belong to? Bobby's world draws a reading
+   of it on each.
+5. For the Bobby probe (E10): the hand-authored foundation list.
+6. Whose world is a stream: the person writing, or the person written
+   about? The pictures of the future (other people's maps, coordination)
+   need this answered first.
+
+Things to look at and say yes or no to:
+
+7. The public site: is open sign-up wanted there? Both reviews advise
+   closing it until this is answered. Today it is open with tight limits.
+   To close it, add `SIGNUP=closed` to `web.config` or `.env`.
+8. The Talk tab still replays a few of Phil's own sentences to every
+   visitor. Remove it, or replace it with a made-up one?
+9. May others add to a shared stream, or only read and copy it?
+10. The made-up worlds, Bobby's and Darlene's: what is wrong, and what
+    complications to add.
+11. Help analysis, the scripting language, the check before AI calls: are
+    they right in use.
+
+Agreed and not yet built ("I think all of your proposals are a yes"):
+scripts saved on the server and shared; a stream writing itself out as a
+script; script lines that check something; the model writing scripts.
 
 **Next session, in order**
 
-1. Walk the State view with Phil on the Bobby sample (pick it in the Stream
-   menu, open State, rewind with the slider). Take his revisions to the
-   made-up data and the design.
-2. Sign in through the browser and run one real ideaify on a short paste of
-   Phil's own. Check the summary line (ideas, readings, goals, dropped), the
-   proposed goals in State, and the `api_calls` row.
-3. Run the Bobby probe (E10) with prompts alone, once Phil supplies the
-   foundation list. The state layer is in; the foundation and environment
-   layers still wait on the probe, because it decides whether foundation
-   objects are matched or proposed. `NEXT-STEP-Three-Layer-Build.md` is the
-   brief.
-4. Take Phil's answers to the questions above, then pick the next experiment
-   in `VISION.md` §9.
-5. Speaker-label two `_archive/` transcripts, then run the archive test from
-   `VISION.md` §7. Experiment E6 (said-on dates, fading in days) bears on it.
+1. Prove one world on real material. This is the architecture review's
+   first step and the one it says not to skip. Phil keeps one real stream
+   of his own on the public site, and one real Ideaify is run on a paste of
+   his own. Most of the open questions are better answered from that use.
+2. Build script lines that check a result (`expect`), the first of the
+   four agreed proposals. They turn every scenario into a regression test
+   for the prompts, which have none.
+3. Speaker-label two `_archive/` transcripts and give entries the date
+   they were said (E6), then run the archive test from `VISION.md` §7.
+4. Run the Bobby probe (E10) once Phil supplies the foundation list.
+5. Take Phil's answers to the questions above.

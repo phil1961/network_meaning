@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: build.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Assembles public/index.html from src/client and src/shared. The same
    idea as the Markdown Editor's build: straight concatenation in filename
-   order, two substitutions into the page shell, no dependencies.
+   order, three substitutions into the page shell (the style, the script,
+   and HELP.md turned into the Help tab), no dependencies.
 
      node build.js            write public/index.html
      node build.js --check    build in memory and fail if it differs
@@ -36,18 +37,53 @@ function modules() {
   const client = fs.readdirSync(CLIENT).filter(f => f.endsWith(".js")).sort().map(f => ({ name: "client/" + f, text: fs.readFileSync(path.join(CLIENT, f), "utf8") }));
   return shared.concat(client);
 }
+/* HELP.md to HTML for the Help tab, so the repo's help and the app's help
+   are one file. A small subset on purpose: # headings, paragraphs, - and
+   1. lists (with wrapped lines), > quotes, ``` fences, **bold**, *italic*,
+   `code`. Anything else in HELP.md shows as plain text. */
+function mdToHtml(md) {
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/\*([^*]+)\*/g, "<i>$1</i>");
+  const lines = md.replace(/\r\n?/g, "\n").split("\n");
+  const out = []; let para = [], list = null, quote = [], i = 0;
+  const flush = () => {
+    if (para.length) { out.push(`<p>${inline(para.join(" "))}</p>`); para = []; }
+    if (list) { out.push(`<${list.tag}>${list.items.map(x => `<li>${inline(x)}</li>`).join("")}</${list.tag}>`); list = null; }
+    if (quote.length) { out.push(`<blockquote>${inline(quote.join(" "))}</blockquote>`); quote = []; }
+  };
+  for (; i < lines.length; i++) {
+    const l = lines[i];
+    if (l.startsWith("```")) { flush(); const code = []; while (++i < lines.length && !lines[i].startsWith("```")) code.push(lines[i]); out.push(`<pre>${esc(code.join("\n"))}</pre>`); continue; }
+    const h = /^(#{1,3})\s+(.*)$/.exec(l);
+    if (h) { flush(); out.push(`<h${h[1].length + 1}>${inline(h[2])}</h${h[1].length + 1}>`); continue; }
+    if (!l.trim()) { flush(); continue; }
+    const item = /^(?:-|(\d+)\.)\s+(.*)$/.exec(l);
+    if (item) { if (para.length || quote.length) flush(); const tag = item[1] ? "ol" : "ul"; if (!list || list.tag !== tag) { flush(); list = { tag, items: [] }; } list.items.push(item[2]); continue; }
+    if (l.startsWith(">")) { if (para.length || list) flush(); quote.push(l.replace(/^>\s?/, "")); continue; }
+    if (list && /^\s+\S/.test(l)) { list.items[list.items.length - 1] += " " + l.trim(); continue; }
+    if (list || quote.length) flush();
+    para.push(l.trim());
+  }
+  flush();
+  return out.join("\n");
+}
+
 function assemble() {
   const page = fs.readFileSync(path.join(CLIENT, "page.html"), "utf8");
+  const helpFile = path.join(ROOT, "HELP.md");
+  if (!fs.existsSync(helpFile)) fail("HELP.md is missing; the Help tab is built from it");
+  const help = mdToHtml(fs.readFileSync(helpFile, "utf8"));
+  if (help.includes("@@")) fail("HELP.md contains @@, which the build uses for its own markers");
   const css = fs.readFileSync(path.join(CLIENT, "style.css"), "utf8");
   const mods = modules();
-  for (const m of ["@@STYLE@@", "@@SCRIPT@@"]) if (page.indexOf(m) < 0) fail("src/client/page.html has no " + m + " marker");
+  for (const m of ["@@STYLE@@", "@@SCRIPT@@", "@@HELP@@"]) if (page.indexOf(m) < 0) fail("src/client/page.html has no " + m + " marker");
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
   const bm = /version:\s*"([^"]+)"/.exec(fs.readFileSync(path.join(CLIENT, "00-build.js"), "utf8"));
   if (!bm || bm[1] !== pkg.version) fail(`BUILD.version in src/client/00-build.js (${bm && bm[1]}) must match package.json (${pkg.version})`);
   const js = '(function(){\n"use strict";\n' + mods.map(m => mark("module " + m.name) + "\n" + m.text).join("\n") + "\n" + mark("end script") + "\n})();";
   if (js.includes("</script")) fail("a module contains the text </script, which would end the page's script tag");
   const style = mark("begin style.css") + "\n" + css + "\n" + mark("end style.css");
-  const out = page.replace("@@STYLE@@", () => style).replace("@@SCRIPT@@", () => js);
+  const out = page.replace("@@STYLE@@", () => style).replace("@@HELP@@", () => help).replace("@@SCRIPT@@", () => js);
   const leftover = out.replace(/@@GARBLE/g, "").indexOf("@@");
   if (leftover >= 0) fail("an unsubstituted @@MARKER@@ survived into the output");
   return { text: out, mods };

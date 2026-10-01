@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/server/normalize.js
-   File Version: 0.2.0
+   File Version: 0.2.1
    ─────────────────────────────────────────────
    Turn the model's raw answer into a step result the replay reducer
    accepts. This is the brake on the flattering mirror: an idea with no
@@ -24,7 +24,8 @@ const clip = (s, n) => { s = String(s ?? "").trim(); return s.length > n ? s.sli
 export function normalize(raw, spans, source, stepId, date, nodes = {}, goals = {}) {
   const out = { add: {}, touch: [], replace: [], links: [], flags: [], goals: [], question: "" };
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { result: out, dropped: 0 };
-  const keyMap = {};
+  const keyMap = Object.create(null); /* the model chooses these keys: no prototype to reach */
+  const own = (o, k) => Object.hasOwn(o || {}, k);
   const pendingReplace = [];
   let ni = 0, ri = 0, gi = 0, dropped = 0;
   const cited = list => [...new Set((Array.isArray(list) ? list : []).map(Number).filter(x => Number.isInteger(x) && x >= 0 && x < spans.length))].sort((a, b) => a - b).slice(0, LIMITS.spansPerIdea);
@@ -36,7 +37,7 @@ export function normalize(raw, spans, source, stepId, date, nodes = {}, goals = 
     if (!sp.length) { dropped++; continue; }
     const words = sp.map(i => spans[i]).join(" ");
     const slots = (Array.isArray(it.slots) ? it.slots : []).map(x => clip(x, 160)).filter(Boolean).slice(0, LIMITS.slotsPerIdea);
-    const match = it.match != null && nodes[String(it.match)] ? String(it.match) : null;
+    const match = it.match != null && own(nodes, String(it.match)) ? String(it.match) : null;
     if (match) { keyMap[key] = match; out.touch.push({ id: match, also: { words, date, source }, slots }); continue; }
     const id = `${stepId}-${++ni}`;
     keyMap[key] = id;
@@ -44,7 +45,7 @@ export function normalize(raw, spans, source, stepId, date, nodes = {}, goals = 
     if (it.replaces != null) pendingReplace.push([id, String(it.replaces)]);
   }
 
-  const resolve = k => { k = String(k ?? ""); return keyMap[k] || (nodes[k] ? k : null); };
+  const resolve = k => { k = String(k ?? ""); return keyMap[k] || (own(nodes, k) ? k : null); };
 
   for (const r of (Array.isArray(raw.readings) ? raw.readings : []).slice(0, LIMITS.readings)) {
     if (!r || typeof r !== "object") continue;
@@ -98,7 +99,7 @@ export function normalize(raw, spans, source, stepId, date, nodes = {}, goals = 
   /* Goals and moves read in the text. A goal's words are its cited spans,
      verbatim. A goal that names an existing open goal contributes moves to
      it instead of starting a new one. */
-  const liveGoal = k => { k = String(k ?? ""); const g = goals[k]; return g && (g.status === "open" || g.status === "proposed" || g.status === "stuck") ? k : null; };
+  const liveGoal = k => { k = String(k ?? ""); const g = own(goals, k) ? goals[k] : null; return g && (g.status === "open" || g.status === "proposed" || g.status === "stuck") ? k : null; };
   for (const g of (Array.isArray(raw.goals) ? raw.goals : []).slice(0, LIMITS.goals)) {
     if (!g || typeof g !== "object") continue;
     const moves = [];

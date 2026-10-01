@@ -1,14 +1,17 @@
 /* ─────────────────────────────────────────────
    File: src/client/65-statelayer.js
-   File Version: 0.2.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The State view: Now (the person's standing facts), Goals (put forth,
    moved toward, reached, stuck, dropped) and the movement toward each goal.
+   At the top, the Help analysis button and the suggestions it brings back.
    Every button here appends an action step, so the state layer rewinds
    and branches with the rest of the stream. Nothing is computed that the
    person did not report: a goal's movement is its moves, in order. */
-const effectGlyph = { closer: "●", same: "○", farther: "◐" };
-const effectWord = { closer: "closer", same: "no change", farther: "farther" };
+/* "unsaid" is a move the model read in the text: nobody has said whether it
+   brought the goal closer, so the page does not say so either. */
+const effectGlyph = { closer: "●", same: "○", farther: "◐", unsaid: "·" };
+const effectWord = { closer: "closer", same: "no change", farther: "farther", unsaid: "read in your text, effect not said" };
 let openForm = null; /* {goalId, kind:"move"|"reach"} or {stateId, kind:"release"} while an inline form is showing */
 
 function newId(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
@@ -17,7 +20,7 @@ function goalCard(id, g) {
   const m = movement(g);
   const beads = g.moves.map(x => `<span class="bead e-${esc(x.effect)}${x.read ? " read" : ""}" title="${esc(x.date)} · ${esc(x.text)} · ${effectWord[x.effect] || x.effect}">${effectGlyph[x.effect] || "○"}</span>`).join("");
   const reached = g.status === "reached";
-  let sum = m.moves ? `${m.moves} move${m.moves > 1 ? "s" : ""}` + (m.closer ? ` · ${m.closer} closer` : "") + (m.same ? ` · ${m.same} no change` : "") + (m.farther ? ` · ${m.farther} farther` : "") + (m.last ? ` · last ${esc(m.last.date)}` : "") : "No moves yet";
+  let sum = m.moves ? `${m.moves} move${m.moves > 1 ? "s" : ""}` + (m.closer ? ` · ${m.closer} closer` : "") + (m.same ? ` · ${m.same} no change` : "") + (m.farther ? ` · ${m.farther} farther` : "") + (m.unsaid ? ` · ${m.unsaid} read in your text` : "") + (m.last ? ` · last ${esc(m.last.date)}` : "") : "No moves yet";
   if (reached) sum += ` · reached ${esc(g.reachedOn || "")}`;
   let h = `<article class="goal st-${esc(g.status)}" data-goal="${esc(id)}">
     <div class="goalhead"><div class="meta"><span class="chip gs-${esc(g.status)}">${esc(goalStatusLabel(g.status))}</span><span class="chip">${esc(g.date || "")}</span>${g.proposed && g.status !== "proposed" ? `<span class="chip reading">read in your text</span>` : ""}</div>
@@ -30,7 +33,7 @@ function goalCard(id, g) {
   const f = openForm && openForm.goalId === id ? openForm : null;
   if (f && f.kind === "move") {
     h += `<form class="inline" data-form="move" data-goal="${esc(id)}"><label class="small" for="mv-${esc(id)}">What happened, in your own words</label>
-      <input class="input" id="mv-${esc(id)}" autocomplete="off" placeholder="e.g. Bobby is at the store. They have milk.">
+      <input class="input" id="mv-${esc(id)}" autocomplete="off" placeholder="e.g. Asked my manager for the morning off. He said yes.">
       <div class="row"><span class="small">This moved the goal:</span>${["closer", "same", "farther"].map((e, i) => `<label class="radio"><input type="radio" name="eff-${esc(id)}" value="${e}" ${i === 0 ? "checked" : ""}> ${effectGlyph[e]} ${effectWord[e]}</label>`).join("")}</div>
       <div class="actions"><button class="btn primary" type="submit">Record the move</button><button class="btn" type="button" data-cancel="1">Cancel</button></div></form>`;
   } else if (f && f.kind === "reach") {
@@ -48,7 +51,55 @@ function goalCard(id, g) {
   return h + `</article>`;
 }
 
+/* Help analysis: the button, and the latest suggestions the stream holds.
+   The suggestions are a step (made by the server), so they rewind with
+   everything else. Each one links to what it rests on. */
+const helpKind = { move: "next move", reached: "reached?", fact: "now", stuck: "stuck?", loose: "loose end", question: "question" };
+let helpBusy = false, helpProblem = "";
+
+function aboutLink(r) {
+  if (r.on === "goal" && S.goals[r.id]) return `<button class="linkbtn" data-goalgo="${esc(r.id)}">${esc(clip(S.goals[r.id].text, 60))}</button>`;
+  if (r.on === "state" && S.state[r.id]) return S.state[r.id].ended ? `<span>${esc(clip(S.state[r.id].text, 60))} (past)</span>` : `<button class="linkbtn" data-factgo="${esc(r.id)}">${esc(clip(S.state[r.id].text, 60))}</button>`;
+  if (r.on === "flag") { const f = S.flags.find(x => x.id === r.id); return f ? `<button class="linkbtn" data-lego="1">${esc(clip(f.text, 60))}</button>` : ""; }
+  if (r.on === "idea" && S.nodes[r.id]) return `<button class="linkbtn" data-go="${esc(r.id)}">${esc(clip(S.nodes[r.id].t, 60))}</button>`;
+  return "";
+}
+function renderHelp() {
+  const a = S.analysis;
+  const btn = $("#helpbtn"); btn.disabled = helpBusy || isRewound(); btn.textContent = helpBusy ? "Thinking…" : "Help analysis";
+  const st = $("#helpstatus"); st.textContent = helpProblem || (helpBusy ? "Reading the state of play. This usually takes 5 to 30 seconds." : "");
+  st.hidden = !st.textContent; st.classList.toggle("bad", !!helpProblem);
+  const body = $("#helpbody"); body.hidden = !a;
+  if (!a) { body.innerHTML = ""; return; }
+  let h = `<div class="meta"><span class="chip reading">my reading</span><span class="chip">${esc(a.date)}</span>${a.model ? `<span class="chip">${esc(a.model)}</span>` : ""}</div>`;
+  if (a.standing) h += `<p class="reading-text">${esc(a.standing)}</p>`;
+  h += a.suggestions.length ? `<ul class="helplist">${a.suggestions.map(s => {
+    const links = s.about.map(aboutLink).filter(Boolean).join(" · ");
+    return `<li class="help k-${esc(s.kind)}"><div class="type">${esc(helpKind[s.kind] || s.kind)}</div><div class="body"><p class="htext">${esc(s.text)}</p>${s.why ? `<p class="hwhy">${esc(s.why)}</p>` : ""}${links ? `<p class="hwhy">About: ${links}</p>` : ""}</div></li>`;
+  }).join("")}</ul>` : `<p class="small">No suggestions. Nothing here needs doing right now.</p>`;
+  if (a.leftOut && a.leftOut.length) h += `<p class="small">${a.leftOut.length} line${a.leftOut.length === 1 ? " in this stream was" : "s in this stream were"} not shown to the AI, because ${a.leftOut.length === 1 ? "it reads" : "they read"} as an order to an AI: ${a.leftOut.map(p => "“" + esc(p) + "”").join(", ")}. Nothing was removed from the stream.</p>`;
+  if (a.since) h += `<p class="small">${a.since} step${a.since === 1 ? "" : "s"} since this was made. Press Help analysis again for a fresh one.</p>`;
+  body.innerHTML = h;
+}
+async function runHelp(date) {
+  if (helpBusy) return;
+  if (isGuest()) { needUserInfo("Help analysis"); return; }
+  if (!me) { showLogin(); return; }
+  if (!await ensureWritable(true)) return;
+  const sid = stream.id;
+  helpBusy = true; helpProblem = ""; renderHelp();
+  try {
+    await saveChain; /* earlier changes must reach the server before it reads the stream */
+    if (saveProblem) throw { message: saveProblem };
+    const r = await api.analyze(sid, date ? { tier: "default", date } : { tier: "default" });
+    if (stream.id === sid) { addStoredStep(r.step); rebuild(); }
+  } catch (e) { if (!e || e.code !== "signed_out") helpProblem = e && e.message ? e.message : "Something went wrong on the way. Try again."; }
+  helpBusy = false; renderHelp();
+}
+function reveal(el) { if (!el) return; const d = el.closest("details"); if (d) d.open = true; el.scrollIntoView({ block: "center" }); }
+
 function renderStateView() {
+  renderHelp();
   const now = currentState(S), past = pastState(S);
   const factRow = s => {
     const f = openForm && openForm.stateId === s.id ? openForm : null;
@@ -60,7 +111,7 @@ function renderStateView() {
   $("#factlist").innerHTML = now.length ? now.map(factRow).join("") : `<li class="empty small">Nothing put forth yet. Say what is true for you right now, or reach a goal.</li>`;
   $("#pastwrap").hidden = !past.length;
   $("#pastsummary").textContent = `Past · ${past.length} fact${past.length === 1 ? "" : "s"} that stopped being true`;
-  $("#pastlist").innerHTML = past.map(s => `<li class="fact ended"><div class="factbody"><p class="ftext">${esc(s.text)}</p><p class="small">${esc(s.date)} → ${esc(s.ended)}${s.endNote ? ` · ${esc(s.endNote)}` : ""}</p></div></li>`).join("");
+  $("#pastlist").innerHTML = past.map(s => `<li class="fact ended" data-state="${esc(s.id)}"><div class="factbody"><p class="ftext">${esc(s.text)}</p><p class="small">${esc(s.date)} → ${esc(s.ended)}${s.endNote ? ` · ${esc(s.endNote)}` : ""}</p></div></li>`).join("");
 
   const order = ["proposed", "open", "stuck", "reached", "dropped"];
   const entries = Object.entries(S.goals).sort((a, b) => order.indexOf(a[1].status) - order.indexOf(b[1].status));
@@ -79,17 +130,20 @@ async function stateAction(action, label, after) {
 }
 
 $("#factform").addEventListener("submit", async e => {
-  e.preventDefault(); const t = $("#facttext").value.trim(); if (!t) { $("#facttext").focus(); return; }
+  e.preventDefault(); const t = entered($("#facttext")); if (!t) { $("#facttext").focus(); return; }
   await stateAction({ type: "state", stateId: newId("s"), text: t }, "state", () => { $("#facttext").value = ""; toast("Added to Now."); });
 });
 $("#goalform").addEventListener("submit", async e => {
-  e.preventDefault(); const t = $("#goaltext").value.trim(); if (!t) { $("#goaltext").focus(); return; }
+  e.preventDefault(); const t = entered($("#goaltext")); if (!t) { $("#goaltext").focus(); return; }
   await stateAction({ type: "goal", goalId: newId("g"), text: t }, "goal", () => { $("#goaltext").value = ""; toast("Goal put forth."); });
 });
 $("#view-state").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.go) { setFocus(b.dataset.go); showView("map"); return; }
-  if (b.dataset.goalgo) { const el = document.querySelector(`[data-goal="${CSS.escape(b.dataset.goalgo)}"]`); if (el) el.scrollIntoView({ block: "center" }); return; }
+  if (b.id === "helpbtn") { runHelp(); return; }
+  if (b.dataset.goalgo) { reveal(document.querySelector(`[data-goal="${CSS.escape(b.dataset.goalgo)}"]`)); return; }
+  if (b.dataset.factgo) { reveal(document.querySelector(`[data-state="${CSS.escape(b.dataset.factgo)}"]`)); return; }
+  if (b.dataset.lego) { showView("loose"); return; }
   if (b.dataset.cancel) { openForm = null; renderStateView(); return; }
   if (b.dataset.release) { if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch first."); return; } openForm = { stateId: b.dataset.release, kind: "release" }; renderStateView(); $(`#rl-${CSS.escape(b.dataset.release)}`)?.focus(); return; }
   const card = b.closest("[data-goal]"); if (!card) return;
@@ -103,7 +157,7 @@ $("#view-state").addEventListener("submit", async e => {
   const f = e.target.closest("form[data-form]"); if (!f) return;
   e.preventDefault();
   if (f.dataset.form === "move") {
-    const id = f.dataset.goal; const text = f.querySelector("input.input").value.trim(); if (!text) { f.querySelector("input.input").focus(); return; }
+    const id = f.dataset.goal; const text = entered(f.querySelector("input.input")); if (!text) { f.querySelector("input.input").focus(); return; }
     const effect = (f.querySelector("input[type=radio]:checked") || {}).value || "same";
     await stateAction({ type: "move", goalId: id, text, effect }, "move", () => toast("Move recorded."));
   } else if (f.dataset.form === "reach") {

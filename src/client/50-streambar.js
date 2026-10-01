@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/50-streambar.js
-   File Version: 0.2.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The bar under the header: which stream, which step, save state. */
 function stepLabel(step) {
@@ -20,18 +20,32 @@ function stepLabel(step) {
       case "move": return `Move (${a.effect || "same"}): ${clip(a.text, 50)}`;
       case "reach": return "Goal reached" + g;
       case "regoal": return ({ stuck: "Ground is stuck", dropped: "Goal dropped", open: "Goal reopened" }[a.status] || "Goal changed") + g;
+      case "item": return `${WORLD_MAPS[a.map] || "Map"}${a.map !== "said" && a.supposed !== false ? ", supposed" : ""}: ${clip(a.text, 50)}`;
+      case "link": return `Linked: ${clip(S.nodes[a.a] ? S.nodes[a.a].t : "…", 26)} · ${a.f || "connects to"} · ${clip(S.nodes[a.b] ? S.nodes[a.b].t : "…", 26)}`;
+      case "ask": return `Open question: ${clip(a.text, 50)}`;
+      case "confirm": return `Confirmed: ${clip(S.nodes[a.id] ? S.nodes[a.id].t : "an item", 50)}`;
+      case "ruleout": return `Ruled out: ${clip(S.nodes[a.id] ? S.nodes[a.id].t : "an item", 50)}`;
+      case "analysis": { const k = (a.suggestions || []).length; return `Help analysis · ${k} suggestion${k === 1 ? "" : "s"}`; }
       default: return "You made a change";
     }
   }
   return step.source || "Text";
 }
+/* What a stream holds, said before it is chosen: its steps, and how many
+   items sit on each of its world maps (Phil, 2026-09-30). */
+function streamTally(steps, maps) {
+  const c = maps || { env: 0, mind: 0, moral: 0 };
+  return `${steps} step${steps === 1 ? "" : "s"} · ` + (c.env || c.mind || c.moral ? `Environment ${c.env || 0}, Mental state ${c.mind || 0}, Assumptions ${c.moral || 0}` : "no world maps");
+}
 function renderStreamBar() {
   const sel = $("#streamsel");
-  let opts = Object.entries(SAMPLES).map(([k, s]) => `<option value="${k}">${esc(s.name)}</option>`).join("");
-  for (const s of savedStreams) opts += `<option value="${esc(s.id)}">${esc(s.name || "Untitled")} · ${s.stepCount || 0} steps</option>`;
-  if (!stream.builtin && stream.id && !savedStreams.some(s => s.id === stream.id)) opts += `<option value="${esc(stream.id)}">${esc(stream.name)}</option>`;
+  let opts = Object.entries(SAMPLES).map(([k, s]) => `<option value="${k}">${esc(s.name)} · ${streamTally(s.steps.length, s.maps || (s.maps = worldCounts(s.steps)))}</option>`).join("");
+  /* the open stream is counted from the steps in hand, so the line is right before the list is fetched again */
+  for (const s of savedStreams) opts += `<option value="${esc(s.id)}">${s.mine === false ? "Shared: " : ""}${esc(s.name || "Untitled")} · ${s.id === stream.id ? streamTally(stream.steps.length, worldCounts(stream.steps)) : streamTally(s.stepCount || 0, s.maps)}${s.mine !== false && s.shared ? " · shared with everyone" : ""}</option>`;
+  if (!stream.builtin && stream.id && !savedStreams.some(s => s.id === stream.id)) opts += `<option value="${esc(stream.id)}">${esc(stream.name)} · ${streamTally(stream.steps.length, worldCounts(stream.steps))}</option>`;
+  if (stream.local) opts += `<option value="local">${esc(stream.name)} · ${streamTally(stream.steps.length, worldCounts(stream.steps))} · not saved</option>`;
   sel.innerHTML = opts;
-  sel.value = stream.builtin ? stream.builtin : stream.id;
+  sel.value = stream.builtin ? stream.builtin : stream.local ? "local" : stream.id;
   const sc = $("#scrub"); sc.max = String(stream.steps.length); sc.value = String(cursor); sc.disabled = !stream.steps.length;
   const cur = cursor ? stream.steps[cursor - 1] : null;
   $("#scrubout").textContent = stream.steps.length ? `${cursor} of ${stream.steps.length}` + (cur ? ` · ${cur.date || ""} · ${stepLabel(cur)}` : " · empty map") : "No steps yet";
@@ -42,13 +56,16 @@ function renderStreamBar() {
 }
 function renderSave() {
   const el = $("#savestate"); el.className = "save";
-  if (!me) { el.textContent = "Signed out"; return; }
+  if (stream.local) { el.textContent = "Guest · not saved"; return; }
+  if (!me) { el.textContent = visiting ? "Guest" : "Signed out"; return; }
   if (stream.builtin) { el.textContent = "Sample · read-only"; return; }
+  if (stream.readonly) { el.textContent = "Shared · read-only"; return; }
   if (saveProblem) { el.textContent = saveProblem; el.classList.add("bad"); return; }
-  if (pendingSaves) { el.textContent = "Saving…"; return; }
+  if (saveQueue.length) { el.textContent = "Saving…"; return; }
   el.textContent = "Saved"; el.classList.add("ok");
 }
-$("#streamsel").addEventListener("change", e => { const v = e.target.value; if (SAMPLES[v]) openSample(v); else openSaved(v); });
+$("#streamsel").addEventListener("change", e => { const v = e.target.value; if (v === "local") return; if (SAMPLES[v]) openSample(v); else openSaved(v); });
+$("#savestate").addEventListener("click", () => { if (saveProblem) retrySaves(); });
 $("#newstream").addEventListener("click", async () => { if (await newEmpty()) { showView("add"); $("#entry").focus(); } });
 $("#scrub").addEventListener("input", e => { cursor = +e.target.value; rebuild(); });
 $("#tolatest").addEventListener("click", () => { cursor = stream.steps.length; rebuild(); });

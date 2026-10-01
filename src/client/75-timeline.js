@@ -1,11 +1,11 @@
 /* ─────────────────────────────────────────────
    File: src/client/75-timeline.js
-   File Version: 0.1.0
+   File Version: 0.1.1
    ─────────────────────────────────────────────
    Being in time: the most active ideas as lanes, pass by pass. */
 function renderTimeline() {
   const t = $("#timeline"); const n = S.ingests;
-  const cand = Object.entries(S.nodes).filter(([, x]) => !x.replaced && !x.anchor);
+  const cand = Object.entries(S.nodes).filter(([, x]) => !x.replaced && !x.anchor && x.touches.length); /* only what was read from a pass has a history in passes */
   if (!n || !cand.length) { t.setAttribute("viewBox", "0 0 960 120"); t.innerHTML = `<text x="480" y="60" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">No passes yet. Add text to see ideas arrive, settle, and fade.</text>`; fixVars(t); return; }
   const lanes = cand.map(([id, x]) => ({ id, x, score: x.touches.length * 3 + degree(S, id) + (x.stuck ? 1 : 0) })).sort((a, b) => b.score - a.score).slice(0, 9)
     .sort((a, b) => Math.min(...a.x.touches) - Math.min(...b.x.touches));

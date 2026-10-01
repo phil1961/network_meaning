@@ -185,6 +185,447 @@ I'll review and revise at a later point after we review the app."
   a goal was reached, or only the person? And where the state layer meets
   containers, perspective and the battery.
 
+**2026-09-30, the help analysis button.** [Phil] "I want a help analysis
+button I can press which makes suggestions given the state of play."
+
+- Said while walking the State view on the Bobby sample.
+- Built the same evening as experiment E12 (`VISION.md` §9), app 0.3.0: a
+  **Help analysis** button at the top of the State view. One model call
+  reads Now, the goals and their moves, the open loose ends and the map,
+  and returns where things stand plus at most six suggestions (next move,
+  reached?, now, stuck?, loose end, question).
+- Claude's choices, not Phil's words: what "the state of play" takes in, the
+  kinds of suggestion, and the rule that a suggestion must point at
+  something in the state of play or be dropped. Suggestions are marked as
+  the machine's reading and change nothing until the person acts.
+- The analysis is a step in the stream, so it rewinds and reloads without a
+  second model call.
+- [lost] Not yet said: whether the button should be on every view, and
+  whether a suggestion should be something to press or only something to
+  read.
+
+**2026-09-30, the scripting language and the stepper.** [Phil] "Great. Now
+imagine creating a scripting language that interacts with the app to make
+it go. Provide a stepper so we can watch as all the actions happens."
+
+- Built the same evening as experiment E13 (`VISION.md` §9), app 0.4.0: a
+  **Script** view where a script is written, one action per line in plain
+  words, and a **stepper** docked under the page on every tab, with Step,
+  Play, Pause and a pace.
+- Claude's choices, not Phil's words: the words of the language; that a
+  script can do only what the buttons can do, so every line is an ordinary
+  step in the stream; pointing at things by a name or by a few of their
+  words in quotes; `date:` to date scripted steps.
+- Two built-in scripts tell the Bobby story, one by hand with no model
+  calls and one where the model reads the goal from the sentence.
+- Asked after the build, answered the same evening (next entry): whether
+  scripts are kept and shared, whether a stream should write itself out as
+  a script, whether a line can check something, and whether the model may
+  write scripts.
+
+**2026-09-30, yes to the script proposals.** [Phil] "I think all of your
+proposals are a yes."
+
+- The four questions above are all agreed. None is built yet; Phil asked to
+  think aloud first. Recorded as a note under E13 in `VISION.md` §9.
+
+**2026-09-30, modelling a world.** [Phil] "I want to stream of consciousness
+some things first. We are modelling a world, in this case its bobby's
+world. It consists of facts about his environment, his mental furniture,
+and his motivations. In the case of Bobby Went To The store to buy milk.
+That's the end goal and it starts in a place where he needs milk."
+
+- [garble?] "its bobby's world" is most likely "it's." Left as said.
+- He said "to buy milk." The sentence locked earlier is "Bobby went to the
+  store to get milk." Noted, not reconciled.
+- The opening of a stream of thought, with more to come. Nothing is built
+  or proposed from it yet.
+- Echoes, noted and not argued: "mental furniture" ↔ "part of the
+  furniture" and "What is the furniture of your consciousness that feels
+  threatened? That's who you are" (Pure-Consciousness); "facts about his
+  environment" ↔ the environment layer (`Three-Layers.md`); "motivations"
+  ↔ the motivation battery and motivation as the gap between layers; "the
+  end goal" and "starts in a place" ↔ the state layer, where a reached
+  goal becomes part of the state.
+- Claude's reading, not Phil's words: a world has three kinds of content
+  (environment facts, mental furniture, motivations), a place it starts,
+  and an end goal. The story is the passage from the one to the other.
+- Against the build: Now holds facts of one kind. Nothing marks a fact as
+  environment, furniture, or motivation. The Bobby sample starts from
+  "There is no milk in the house," a fact about the house; "he needs milk"
+  is not recorded anywhere.
+- [lost] Not yet said: what is in Bobby's mental furniture, and which of
+  the three "he needs milk" belongs to. Claude asked the second; Phil
+  called it a good question and set it aside (next entry).
+
+**2026-09-30, a map and a diagram for each feature.** [Phil] "Good
+question. But before we answer that I think our modelling software ought to
+have maps that represent each of those features. His environment, mental
+state, and assumptions (moral presuppositions). Each of those maps needs
+their own diagram that we can select on and improve."
+
+- Still the stream of thought. Nothing is built or proposed from it yet.
+- The list moved between the two statements, noted and not reconciled:
+  before, "facts about his environment, his mental furniture, and his
+  motivations"; now, "environment, mental state, and assumptions (moral
+  presuppositions)." Furniture has become state, motivations is not in the
+  second list, and assumptions is new.
+- Echoes, noted and not argued: "assumptions (moral presuppositions)" ↔ the
+  foundation layer, "moral precepts," authored in advance
+  (`Three-Layers.md`); "environment" ↔ the environment layer; with those
+  two as maps, `Three-Layers.md` reads motivation off the distance between
+  them, which may be why motivations is not a map of its own here.
+  "Select on and improve" ↔ "alterable" (the containers statement) and
+  "tweaked" (the background corpus statement).
+- Claude's reading, not Phil's words: three maps of one world, each with a
+  diagram of its own. One is chosen to look at, things in it are selected,
+  and it is edited in place.
+- Against the build: one map with one diagram, the ideas drawn from what
+  was said. The State view is lists. No environment map, no assumptions
+  map, and almost nothing can be edited on the diagram.
+- [lost] Not yet said: whether "mental state" is what the app's State view
+  already holds (Now and Goals) or something else; whether motivations get
+  a map (Claude asked; not taken up); and where the map of what was said
+  sits among these.
+
+**2026-09-30, the diagrams as the defining feature.** [Phil] "And what the
+diagrams present to represent those sounds like an awesome defining
+feature. Because the better job our world modelling does of presenting
+those conceptual maps the more wondereful our "engine" component becomes."
+
+- "wondereful" is as typed. Still the stream of thought.
+- Echoes, noted and not argued: "engine" ↔ "this engine of meaning that
+  your life flows through" and "our meaning is the engine that propels our
+  transformations forward" (Fascinating-Discovery), and prong two, the
+  meaning engine (`HANDOFF.md` §8). The diagram generator ↔ prong three,
+  which "comes last" there and was to be "a shared component from the
+  start."
+- Claude's reading, not Phil's words: how the three maps are drawn is not
+  decoration. The engine works on what the maps present, so a better
+  presentation makes a better engine. That moves the diagrams from last in
+  the build order to first.
+- [lost] Not yet said: what each diagram shows. What is on the picture of
+  Bobby's environment, of his mental state, of his assumptions. Claude
+  asked; the next entry is the answer.
+
+**2026-09-30, make one up for Bobby.** [Phil] "I suggest it'll have to
+visuallized with the diagramming capability we've already made a stab at. I
+want you to step back and consider how a world renown psychological
+investigator would assemble it. Make one up for bobby, and we'll ad more
+complications and nuance as we do."
+
+- "visuallized," "renown" and "ad" are as typed.
+- Built the same evening as experiment E14 (`VISION.md` §9), app 0.5.0: four
+  maps of one world (what was said, environment, mental state,
+  assumptions), a selector above the diagram, and a made-up world for
+  Bobby as a built-in sample and a built-in script the stepper can
+  assemble line by line.
+- Claude's choices, not Phil's words: the investigator's method (what is
+  given kept apart from what is supposed; each supposition carrying the
+  question that would check it; "needs" read once on each map), and every
+  item in Bobby's world beyond the two things said.
+- The made-up world has no map of motivation. What moves Bobby shows as the
+  links that cross between maps. Noted for Phil to judge, not settled.
+- [lost] Not yet said: the complications and nuance to add.
+
+**2026-09-30, a blank box takes its suggestion.** [Phil] "Also, a UI
+improvement. Where you make a suggestion in a text box, like "e.g. Get
+Milk", I want to be able to just click the button (Put it forth, etc), and
+if the field is blank it runs with the suggestion and makes that the
+entry."
+
+- Built the same evening, as said, for every box whose suggestion begins
+  "e.g.": state fact, goal, move, and world-map item.
+
+**2026-09-30, other people in Bobby's world.** [Phil] "I imagine a future
+for this app, where we have maps that represent other people in Bobby's
+world. The store clerk, his wife or girl friend, his mechanic. And each
+adds to and fills out their own interior and exterior representations.
+Eventually, they use this software to coordinate their actions."
+
+- A picture of the future, not a request to build.
+- Bears on the question left open under "The goal": what "others" asks of
+  the build. Here the others each keep maps of their own, and use the
+  software together. That is both of the readings listed there, plus a
+  third thing, acting in concert.
+- Echoes, noted and not argued: "interior and exterior representations" ↔
+  "understanding as the controlled collision of an interior map and an
+  exterior map" (the maps-of-the-mind chat cited in Fascinating-Discovery);
+  other people's maps ↔ "The terrain is partly made of other people's
+  engines, and they're probing you back"; ↔ "a field of consciousness of
+  others" (Pure-Consciousness); loving a neighbour "as thyself" as the way
+  one mind models another (`HANDOFF.md` §5).
+- Claude's reading, not Phil's words: interior is the mental state and the
+  assumptions; exterior is the environment. One person's exterior holds
+  other people, each with an interior of their own.
+- Against the build: one sign-in, one world to a stream, and nothing that
+  says whose world it is. In Bobby's made-up world the clerk and the
+  mechanic do not appear, and "someone else lives there" is a supposition
+  with no person behind it.
+
+**2026-09-30, a coordination routine, thousands of people, and the AI
+filling in.** [Phil] "I also imagine a world where this app has a
+centralized coordination routine, and thousands of people use their version
+of the software. I even imagine AI filling out lots of things that nobody
+wants to take the trouble to do. Like attributes for common objects, and
+actions."
+
+- Also a picture of the future.
+- Echoes, noted and not argued: AI filling in the common things ↔ "We need
+  to prepopulate the background environment with a corpus" (the background
+  corpus statement); ↔ a node as "a bundle of expectations with default
+  slots" (the Bobby chat), where attributes of common objects are the
+  defaults.
+- Pulls against, noted and not reconciled: the flattering mirror ("an LLM
+  has no stuckness and will find profound meaning in anything") and
+  `Three-Layers.md`, where the foundation is "authored in advance," never
+  inferred. What the AI fills in would need to be marked as its own.
+- Claude's reading, not Phil's words: the given and supposed marking built
+  today would carry it. What the AI fills in arrives supposed, dashed,
+  until a person confirms it.
+- [lost] Not yet said: what the coordination routine coordinates (goals,
+  moves, shared facts), and who can see whose maps.
+
+**2026-09-30, counts in the Stream menu.** [Phil] "Also, for the Stream
+Drop down selelector, I want to see the number of Environment, Mental
+State, and Assumptions coded on the map. That way when I'm selecting a
+stream I can see before I choose how many of them it has"
+
+- "selelector" is as typed.
+- Built the same evening, as said (app 0.5.1): each line in the Stream menu
+  reads, for example, "Bobby's world · 63 steps · Environment 7, Mental
+  state 7, Assumptions 5," or "no world maps" when a stream has none.
+- The count is the number of items put on each map, including any later
+  ruled out, since those are kept on the map.
+
+**2026-09-30, sign-up and an admin panel.** [Phil] "I want you to add user
+signup mechanism, and for me, a user add ability. Someone should be able to
+signup themselves, and I should be able to use an admin panel to add them
+myself. Email address is the unique. They should get their own personal
+area to add and play with streams, and they should all share Bobby's
+story."
+
+**2026-09-30, three levels.** [Phil] "philipalarson@gmail.com is an admin.
+The database should have at least three levels. User, Guest, and Admin.
+What a user does is stored, what a guest does isn't."
+
+**2026-09-30, a guest and the AI buttons.** [Phil] "Also, a Guest can't use
+the AI Analysis buttons. Those buttons should provide an info box that says
+he has to become a registered user to use it."
+
+- Built together the same evening as experiment E15 (`VISION.md` §9), app
+  0.6.0: a sign-in card that also signs up or lets someone look around as
+  a guest, an **Admin** tab shown only to admins, a level on every account, and
+  streams an admin can share with everyone.
+- This settles part of what "others" asks of the build (under "The goal"):
+  other people each keep streams of their own, in an area nobody else
+  sees.
+- Claude's readings, not Phil's words: a guest is either someone with no
+  account who chose to look around or an account at the guest level, and
+  both are treated the same; "share Bobby's story" is met by the built-in
+  samples being there for everyone and by an admin being able to share a
+  stream read-only; signing up makes a user.
+- [lost] Not yet said: whether others may add to a shared story, and
+  whether people who sign up themselves should start as users or guests.
+
+**2026-09-30, a check before every call to the AI.** [Phil] "Also, for
+every call out to the AI API, whatever the user provides in that context
+call has to be sanity checked for malicious, or stupid inputs"
+
+- Built the same evening as experiment E16 (`VISION.md` §9): junk is
+  refused for everyone; text that reads as orders aimed at the AI is
+  refused for everyone but an admin; the reason is given and the AI is not
+  called.
+- Echo, noted and not argued: "An LLM is pure realm-of-consciousness with
+  no stuckness... Stuckness has to be engineered in" (Meaning-Generator).
+  This is the same engineering, on the way in.
+- Said plainly in E16: a list of phrases cannot catch every attempt.
+
+**2026-09-30, a help doc.** [Phil] "Great. Now I need a help doc, and the
+help doc should contain something on the ultimate vision"
+
+- Built the same evening (app 0.7.0): `HELP.md`, and a Help tab in the app
+  made from the same file. Its last section, "Where this is going," quotes
+  Phil's goal and his statements on modelling a world, other people's
+  maps, and coordination, then says which part exists today.
+- Claude's wording, not Phil's: the four-part summary of the vision in
+  that section (a person's world well drawn; many worlds that meet;
+  coordination; the AI does the tedious part).
+
+**2026-09-30, a document of the method.** [Phil] "Also, I love what you have
+invented so far with regard to deriving the map data. Make sure to create a
+document of your thinking so it can be reliably replicated and to have an
+artifact we can track over time in our repo"
+
+- Written the same evening: `METHOD-Deriving-the-Maps.md`, version 1, with
+  a change log so the method can be tracked as it changes.
+
+**2026-09-30, where the panel is.** [Phil] "Where is the user's panel."
+
+- A question. The admin panel's tab was labelled "People" and hidden from
+  everyone but admins; it is now labelled **Admin**, and the owner's
+  account is made an admin when the server starts.
+
+**2026-09-30, Phil's streams are his own.** [Phil] "Remove Phil's streams
+from the users, and from the guest's accounts."
+
+- Done the same evening: the sample of Phil's archived chats is out of the
+  page everyone receives and is given by the server to the owner alone.
+  Users and guests have the two Bobby samples.
+- Claude's reading, not Phil's words: "Phil's streams" is the built-in
+  sample of his chats, since his saved streams were never visible to
+  anyone else. Hiding it in the menu would have left his words in the page
+  source, so it was moved to the server instead.
+- [lost] Not yet said: whether the Talk tab's demo, which replays a few of
+  Phil's sentences about faith, should also go or be replaced with Bobby.
+
+**2026-09-30, yes to the evidence pieces.** [Phil] "I do want you to add
+those peices when you get a chance, but first."
+
+- "peices" is as typed. The pieces are the three parts of experiment E17
+  in `VISION.md` §9: an Evidence report counted from the steps, a verdict
+  on each Help analysis suggestion, and script lines that check a result.
+  Agreed, not built.
+- Said after reading `ARCHITECTURE.md`, the engineering and architecture
+  review written the same evening, and after asking "What would evidence
+  look like?" and "Can the app benefit by your analysis of the need for
+  evidence now?"
+
+**2026-09-30, spendable resources.** [Phil] "Bobby has access to spendable
+resources, money, time and physical strength. What do you think about
+somehow integrating those features?"
+
+- A question put to Claude, and the first mention of resources. Nothing in
+  the app records what a move cost or what a goal takes.
+- Claude's answer, not Phil's words, is experiment E18 in `VISION.md` §9,
+  *proposed*: money as a store, time as a window, strength as a capacity;
+  a holding in State, a need on a goal, a cost on a move; words before
+  numbers.
+- [lost] Not yet said: whether motivation (the battery) is one of these
+  resources; whether levels are words, amounts, or both; where resources
+  sit on screen.
+
+**2026-09-30, the resources are refreshed.** [Phil] "And he gets those
+refreshed,  in a paycheck, sleep, and food"
+
+- Said a few minutes after the statement above. It names where each
+  resource comes from.
+- Claude's readings, not Phil's words, in the note under E18 in
+  `VISION.md` §9: a source refills a holding and has a rhythm; resources
+  turn into one another in a cycle, and milk, being food, is inside it; a
+  refresh is recorded when it happens, never added by the clock; an
+  expected refresh is something taken for granted, like the car that
+  starts every morning.
+- [lost] Not yet said: whether the lists pair in the order given (money
+  with a paycheck, time with sleep, strength with food).
+
+**2026-09-30, motivation is a resource too.** [Phil] "Yes, motivation
+energy, or desire for the end result is also a resource which can be
+recharged, and spent."
+
+- The "Yes" answers Claude's question whether motivation is one of the
+  spendable resources. It joins the battery statement of the same morning
+  to the resources: four resources, one ledger.
+- Claude's readings, not Phil's words, in the second note under E18 in
+  `VISION.md` §9: "desire for the end result" ties motivation to a goal,
+  so it may be held per goal where money, time and strength are held per
+  person; a dropped goal is one whose desire ran out; a move that brings
+  a goal closer may be what recharges it.
+- [lost] Not yet said: what recharges motivation, and whether it is held
+  per goal or per person.
+
+**2026-09-30, separate them; eating together.** [Phil] "No seperate them
+because sometimes a social goal is to eat together and I want that
+accounted for."
+
+- "seperate" is as typed. A correction to Claude, who had put the four
+  resources on one ledger and folded the battery into them.
+- Certain from the words: eating together can be a social goal; the app
+  must account for it; something Claude joined is to be kept apart. First
+  mention of a social goal, one with other people in it.
+- Claude's readings, not Phil's words, in the third note under E18 in
+  `VISION.md` §9. Likeliest: keep motivation apart from money, time and
+  strength, because a meal is both a refill of strength and a social goal,
+  and on one ledger the second would vanish. On every reading, one event
+  must be able to carry several effects, each shown on its own.
+- [lost] Not yet said: what "them" refers to. Asked.
+
+**2026-09-30, what refreshes motivation.** [Phil] "Reflection on the right
+ideas refreshes motivation and desire"
+
+- Answers what recharges motivation. With the earlier statement, each
+  resource has its source in Phil's words: a paycheck, sleep, food, and
+  reflection on the right ideas.
+- It joins the two halves of the app: the map of ideas is where motivation
+  is refreshed; goals, moves and resources are where it is spent.
+- Claude's readings, not Phil's words, in the fourth note under E18 in
+  `VISION.md` §9: the anchors are the app's existing way for a person to
+  say which ideas are the right ones; the app must not choose them; a
+  reflection can be recorded as a step; and the claim can be tested from
+  the stream (do moves follow reflection?).
+- [lost] Not yet said: which ideas are "the right ideas" and who says so;
+  whether "motivation" and "desire" are one thing or two.
+
+**2026-09-30, motivation is kept apart.** [Phil] "Yes, keep motivation
+apart from money, time and strength"
+
+- Confirms what "separate them" meant. Two kinds, settled: the means
+  (money, time, physical strength; refreshed in a paycheck, sleep and
+  food) and motivation (recharged and spent; refreshed by reflection on
+  the right ideas).
+- In `VISION.md` §9, E18 is the experiment for the means and E8 is again
+  the experiment for motivation, with a ledger of its own.
+- [lost] Not yet said: what draws motivation down, and whether it is held
+  per goal or per person.
+
+**2026-09-30, motivation is held per goal; not building yet.** [Phil]
+"Motivation is held per goal, and yes, we aren't building yet. We have to
+get to a point where you see a coherent picture [...]"
+
+- The end of the sentence is left out at Phil's request. It said that he
+  was not done talking.
+- Settled: each goal carries its own motivation. The means (money, time,
+  strength) stay with the person. Noted under E8 in `VISION.md` §9.
+- How the work goes for now: Phil is still thinking aloud. Record, do not
+  build, and work toward a coherent picture. Claude takes this to cover
+  the evidence pieces (E17) too until Phil says to start.
+- [lost] Not yet said: what draws motivation down; which ideas are "the
+  right ideas"; whether "motivation" and "desire" are one thing or two.
+
+**2026-09-30, two reviews.** [Phil] "Great. Grok created a bug analysis, and
+brother claude created an archecture doc. Read those and take action
+accordingly."
+
+- "archecture" is as typed. Said in the session that built E11 to E16. The
+  reviews are `GROK-REVIEW.md` and `ARCHITECTURE.md`.
+- Acted on the same night (app 0.8.0). `HANDOFF.md` §16 lists every
+  finding with what was done; `VISION.md` §9 E19 is the summary.
+- One finding did not hold on this server: Grok supposed IIS does not tell
+  the app when a visitor used HTTPS. It does, and the session cookie is
+  marked Secure there.
+- Both reviews say the same thing about pace: the app went from 0.2.0 to
+  0.8.0 in one evening and none of it has had its test on real material.
+  The architecture review's first step is to prove one world, kept by Phil
+  for two weeks, before more is built.
+
+**2026-09-30, Darlene.** [Phil] "Add some data to Bobby and the milk stream
+to his Environment, Mental State and Assumptions. Change the goal too that
+way we don't duplicate what already exists. Maybe change Bobby to Darlene."
+
+- Done the same night: the sample is now *Darlene and the appointment*.
+  Every fact, move and map item in it is made up.
+- Claude's choices, not Phil's words: the goal (getting her mother to the
+  eye doctor), a brother who has not called back as the stuck goal, and a
+  supposition that the world rules out ("She takes it for granted that Mom
+  will want to go" meets "Mom says she doesn't want to go").
+
+**2026-09-30, on the server.** [Phil] "I want to see the app mounted on this
+server under: http://www.toughguycomputing.com/network_meaning"
+
+- Done the same night, the way the other apps on that server are mounted.
+  Plain HTTP is sent on to HTTPS.
+- Then: "Awesome. Commit and push when you are done."
+
 ### What the corpus already says about the app
 
 **Input**

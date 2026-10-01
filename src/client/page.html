@@ -1,16 +1,18 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.2.0
-  The page shell. build.js replaces the STYLE marker with src/client/style.css and
+  File Version: 0.8.0
+  The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, and
-  writes public/index.html. Edit here, never in public/.
+  the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
+  never in public/.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Network Meaning</title>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
@@ -29,6 +31,9 @@
       <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
       <button class="tab" role="tab" id="tab-talk" data-view="talk" aria-selected="false">Talk</button>
+      <button class="tab" role="tab" id="tab-script" data-view="script" aria-selected="false">Script</button>
+      <button class="tab" role="tab" id="tab-help" data-view="help" aria-selected="false">Help</button>
+      <button class="tab" role="tab" id="tab-admin" data-view="admin" aria-selected="false" hidden>Admin</button>
     </nav>
     <div class="who" id="who"></div>
   </header>
@@ -58,20 +63,28 @@
       <div class="mapgrid">
         <div class="canvas">
           <div class="canvasbar">
-            <div class="focuslabel" id="focuslabel"></div>
+            <div class="mapsel" id="mapsel" role="tablist" aria-label="Which map"></div>
             <div class="search">
               <input id="q" type="search" placeholder="Find an idea…" autocomplete="off" aria-label="Find an idea">
               <ul class="suggest" id="suggest" hidden></ul>
             </div>
           </div>
+          <div class="canvasbar sub">
+            <div class="focuslabel" id="focuslabel"></div>
+          </div>
           <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas"></svg>
+          <div class="maploose" id="maploose" hidden></div>
           <div class="legend">
-            <span><i class="sw"></i>your words</span>
+            <span><i class="sw"></i>your words, or given</span>
+            <span><i class="sw supposed"></i>supposed</span>
             <span><i class="sw read"></i>my reading</span>
             <span><i class="sw kept"></i>reading you kept</span>
             <span><i class="sw anchor"></i>anchor</span>
             <span><i class="sw slot"></i>open question</span>
-            <span><i class="sw faded"></i>faded or replaced</span>
+            <span><i class="sw faded"></i>faded, replaced or ruled out</span>
+            <span><i class="sw bar m-env"></i>environment</span>
+            <span><i class="sw bar m-mind"></i>mental state</span>
+            <span><i class="sw bar m-moral"></i>assumptions</span>
             <span>+n: more connections beyond this view</span>
           </div>
         </div>
@@ -82,20 +95,28 @@
     <!-- STATE: where you stand, what you're moving toward -->
     <section class="view" id="view-state" role="tabpanel" aria-labelledby="tab-state" hidden>
       <div class="stategrid">
+        <div class="card helpcard" id="helpcard">
+          <div class="row">
+            <button class="btn primary" id="helpbtn" type="button">Help analysis</button>
+            <span class="small">Suggestions given the state of play: Now, your goals and moves, loose ends, and the map. They are my reading. Nothing changes until you act.</span>
+          </div>
+          <div class="status" id="helpstatus" role="status" hidden></div>
+          <div id="helpbody" hidden></div>
+        </div>
         <div class="card" id="nowcard">
           <div class="le-head"><h2>Now</h2><span class="small">What is true for you at this step. A reached goal lands here.</span></div>
           <ul class="factlist" id="factlist"></ul>
           <details class="past" id="pastwrap"><summary id="pastsummary">Past</summary><ul class="factlist past" id="pastlist"></ul></details>
           <form class="inline" id="factform">
             <label class="small" for="facttext">Put a state fact forth, in your own words</label>
-            <div class="row"><input class="input grow" id="facttext" placeholder="e.g. There is no milk in the house." autocomplete="off"><button class="btn primary" type="submit">Add to Now</button></div>
+            <div class="row"><input class="input grow" id="facttext" placeholder="e.g. Mom no longer drives." autocomplete="off"><button class="btn primary" type="submit">Add to Now</button></div>
           </form>
         </div>
         <div class="card" id="goalcard">
           <div class="le-head"><h2>Goals</h2><span class="small">Put forth, moved toward, reached. Every move is a step in the stream.</span></div>
           <form class="inline" id="goalform">
             <label class="small" for="goaltext">Put a goal forth</label>
-            <div class="row"><input class="input grow" id="goaltext" placeholder="e.g. Get milk." autocomplete="off"><button class="btn primary" type="submit">Put it forth</button></div>
+            <div class="row"><input class="input grow" id="goaltext" placeholder="e.g. Get Mom to the eye doctor." autocomplete="off"><button class="btn primary" type="submit">Put it forth</button></div>
           </form>
           <div id="goallist"></div>
         </div>
@@ -197,7 +218,79 @@
         </div>
       </div>
     </section>
+    <!-- SCRIPT: a list of actions in plain words, run by the stepper -->
+    <section class="view" id="view-script" role="tabpanel" aria-labelledby="tab-script" hidden>
+      <div class="addgrid">
+        <div class="card">
+          <h2>Script</h2>
+          <p class="small" style="margin:0">A script is a list of actions, one per line, in plain words. The stepper runs them against the app one at a time, so you can watch each one happen. Everything a script does is an ordinary step in the stream: it can be rewound and branched like anything you press yourself.</p>
+          <div class="field">
+            <label for="scriptsel">Start from</label>
+            <select id="scriptsel"></select>
+          </div>
+          <textarea id="scripttext" spellcheck="false" aria-label="The script" placeholder="fact: There is no milk in the house.&#10;goal milk: Get milk.&#10;move milk closer: Bobby is at the store."></textarea>
+          <div class="status" id="scriptstatus" role="status"></div>
+          <ul class="scripterrors" id="scripterrors" hidden></ul>
+          <div class="actions"><button class="btn primary" id="scriptopen" type="button">Open in the stepper</button></div>
+        </div>
+        <div class="card">
+          <h3>The words a script can use</h3>
+          <dl class="scripthelp" id="scripthelp"></dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- HELP: HELP.md, turned into HTML by build.js. Edit HELP.md, never this. -->
+    <section class="view" id="view-help" role="tabpanel" aria-labelledby="tab-help" hidden>
+      <article class="helpdoc" id="helpdoc">
+@@HELP@@
+      </article>
+    </section>
+
+    <!-- ADMIN: the admin panel. Who has an account; add someone; set a password; disable or enable. -->
+    <section class="view" id="view-admin" role="tabpanel" aria-labelledby="tab-admin" hidden>
+      <div class="le-wrap">
+        <div class="le-head">
+          <h2>Admin: people</h2>
+          <span class="small">Everyone with an account. What a user does is stored in an area of their own. What a guest does is not stored, and a guest cannot use the AI. An admin is a user who can also add people and share a stream with everyone.</span>
+        </div>
+        <form class="card" id="adduser">
+          <h3>Add someone</h3>
+          <div class="row">
+            <input class="input grow" type="email" id="newemail" placeholder="Their email" autocomplete="off" required>
+            <input class="input grow" type="text" id="newpassword" placeholder="A password to give them (8 or more characters)" autocomplete="off" required>
+            <select id="newlevel" aria-label="Level"><option value="user" selected>User</option><option value="guest">Guest</option><option value="admin">Admin</option></select>
+            <button class="btn primary" type="submit">Add them</button>
+          </div>
+          <p class="small" style="margin:0" id="signupnote"></p>
+          <div class="status" id="adminstatus" role="status"></div>
+        </form>
+        <ul class="le-list" id="userlist"></ul>
+      </div>
+    </section>
   </main>
+
+  <!-- The stepper: stays in view on every tab while a script is open. -->
+  <div class="dock" id="dock" hidden>
+    <div class="dockbar">
+      <span class="sb-label">Stepper</span>
+      <span class="dockpos" id="dockpos"></span>
+      <span class="grow"></span>
+      <button class="btn primary" id="dockstep" type="button">Step</button>
+      <button class="btn" id="dockplay" type="button">Play</button>
+      <label class="sb-label" for="dockpace">Pace</label>
+      <select id="dockpace">
+        <option value="2600">Slow</option>
+        <option value="1300" selected>Steady</option>
+        <option value="350">Fast</option>
+      </select>
+      <button class="btn" id="dockrestart" type="button" title="Start the script again from its first line. Steps already made stay in the stream.">Restart</button>
+      <button class="btn" id="dockedit" type="button">Edit</button>
+      <button class="btn" id="dockclose" type="button">Close</button>
+    </div>
+    <ol class="docklines" id="docklines"></ol>
+    <div class="dockmsg" id="dockmsg" role="status"></div>
+  </div>
 </div>
 
 <div class="scrim" id="scrim" hidden>
@@ -214,12 +307,26 @@
 <div class="scrim" id="loginscrim" hidden>
   <form class="modal login" id="loginform" aria-labelledby="logintitle">
     <h2 id="logintitle">Network Meaning</h2>
-    <p class="small" style="margin:0">This is the inside of someone's head. Sign in to open it.</p>
+    <p class="small" style="margin:0" id="loginlead">This is the inside of someone's head. Sign in to open it.</p>
+    <label class="small" for="email">Email</label>
+    <input class="input" type="email" id="email" autocomplete="username">
     <label class="small" for="password">Password</label>
     <input class="input" type="password" id="password" autocomplete="current-password" required>
+    <div class="field" id="invitewrap" hidden>
+      <label class="small" for="invite">Invite code</label>
+      <input class="input" id="invite" autocomplete="off">
+    </div>
     <div class="status" id="loginstatus" role="status"></div>
-    <div class="actions"><button class="btn primary" type="submit" id="loginbtn">Sign in</button></div>
+    <div class="actions" style="align-items:center"><button class="btn primary" type="submit" id="loginbtn">Sign in</button><button class="linkbtn" type="button" id="loginswap" hidden>Create an account</button><button class="linkbtn" type="button" id="loginguest">Look around as a guest</button></div>
+    <p class="small" style="margin:0">New here? Look around as a guest, then open the Help tab.</p>
   </form>
+</div>
+<div class="scrim" id="infoscrim" hidden>
+  <div class="modal login" role="dialog" aria-modal="true" aria-labelledby="infotitle">
+    <h2 id="infotitle"></h2>
+    <p id="infotext" style="margin:0"></p>
+    <div class="actions"><button class="btn primary" type="button" id="infogo" hidden>Create an account</button><button class="btn" type="button" id="infoclose">Close</button></div>
+  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 

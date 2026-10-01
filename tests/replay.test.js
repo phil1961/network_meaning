@@ -1,10 +1,10 @@
 /* ─────────────────────────────────────────────
    File: tests/replay.test.js
-   File Version: 0.2.0
+   File Version: 0.5.0
    ───────────────────────────────────────────── */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { replay, actOf, traceToAnchor, pickFocus, neighbors, mapListing, currentState, pastState, movement, stateListing } from "../src/shared/replay.js";
+import { replay, actOf, traceToAnchor, pickFocus, pickFocusIn, mapMiddle, mapOf, neighbors, mapListing, currentState, pastState, movement, stateListing, actionOk, safeId, WORLD_LINKS } from "../src/shared/replay.js";
 
 const node = (t, extra = {}) => ({ t, kind: "idea", stuck: true, src: "user_said", words: t + " words", slots: [], history: [], ...extra });
 
@@ -120,8 +120,9 @@ test("state layer: a goal is put forth, moves are tracked, and reaching it chang
   assert.equal(g.proposed, true, "it was read in the text first");
   assert.equal(g.acceptedOn, "Sep 30");
   assert.equal(g.moves.length, 3);
-  assert.equal(g.moves[0].read, false, "accepting the goal makes its read moves the person's own");
-  assert.deepEqual(movement(g), { moves: 3, closer: 2, same: 1, farther: 0, last: g.moves[2] });
+  assert.equal(g.moves[0].read, true, "confirming the goal does not turn a move read in the text into the person's own report");
+  assert.equal(g.moves[0].effect, "unsaid", "and no effect is invented for it");
+  assert.deepEqual(movement(g), { moves: 3, closer: 1, same: 1, farther: 0, unsaid: 1, last: g.moves[2] });
   assert.equal(g.reachedOn, "Oct 1");
   const now = currentState(S);
   assert.deepEqual(now.map(s => s.text), ["Bobby has milk."], "the goal is now part of the state; the released facts are gone from now");
@@ -171,6 +172,128 @@ test("state layer: stuck, dropped, rejected, and what is refused", () => {
   const S2 = replay([...steps.slice(0, 1), act(1, "Sep 29", { type: "regoal", goalId: "g-car", status: "dropped" }), act(2, "Sep 29", { type: "reach", goalId: "g-car" })]);
   assert.equal(S2.goals["g-car"].status, "dropped", "a dropped goal cannot be reached");
   assert.deepEqual(currentState(S2), []);
+});
+
+test("help analysis: the latest one is in view, counts the steps since, changes nothing else, and rewinds", () => {
+  const sug = (id, text) => ({ id, kind: "reached", text, why: "w", about: [{ on: "goal", id: "g-milk" }, { on: "", id: "x" }, null] });
+  const steps = bobbySteps().slice(0, 7);
+  const before = replay(steps);
+  assert.equal(before.analysis, null);
+  steps.push(act(7, "Sep 30", { type: "analysis", id: "h1", model: "m", standing: " Bobby is at the store. ", suggestions: [sug("h1-1", "Did Bobby get the milk?"), { kind: "move", text: "  " }, "junk"] }));
+  const S = replay(steps);
+  assert.deepEqual(S.analysis, { id: "h1", date: "Sep 30", model: "m", standing: "Bobby is at the store.", since: 0, leftOut: [],
+    suggestions: [{ id: "h1-1", kind: "reached", text: "Did Bobby get the milk?", why: "w", about: [{ on: "goal", id: "g-milk" }] }] });
+  assert.deepEqual(S.goals, before.goals, "an analysis changes no goal");
+  assert.deepEqual(S.state, before.state, "and no fact");
+  steps.push(act(8, "Oct 1", { type: "reach", goalId: "g-milk", text: "Bobby has milk." }));
+  assert.equal(replay(steps).analysis.since, 1, "one step since it was made");
+  steps.push(act(9, "Oct 1", { type: "analysis", id: "h2", standing: "", suggestions: [] }));
+  const S2 = replay(steps);
+  assert.equal(S2.analysis.id, "h2");
+  assert.equal(S2.analysis.since, 0);
+  assert.deepEqual(S2.analysis.suggestions, []);
+  assert.equal(replay(steps.slice(0, 9)).analysis.id, "h1", "rewinding brings the earlier analysis back");
+});
+
+test("world maps: items are given or supposed, linked across maps, confirmed or ruled out, and nothing is deleted", () => {
+  const steps = [
+    act(0, "Sep 30", { type: "item", id: "w1", map: "said", text: "He needs milk." }),
+    act(1, "Sep 30", { type: "item", id: "w2", map: "env", text: "There is no milk in the house." }),
+    act(2, "Sep 30", { type: "item", id: "w3", map: "mind", text: "He wants milk.", supposed: false }),
+    act(3, "Sep 30", { type: "item", id: "w4", map: "moral", text: "Those at home should not go without." }),
+    act(4, "Sep 30", { type: "item", id: "w2", map: "env", text: "A duplicate id is ignored." }),
+    act(5, "Sep 30", { type: "item", id: "w9", map: "nowhere", text: "An unknown map is ignored." }),
+    act(6, "Sep 30", { type: "link", a: "w1", b: "w2", f: "read as a lack" }),
+    act(7, "Sep 30", { type: "link", a: "w2", b: "w1", f: "the same pair again is ignored" }),
+    act(8, "Sep 30", { type: "link", a: "w2", b: "w3", f: "gives rise to" }),
+    act(9, "Sep 30", { type: "link", a: "w2", b: "ghost", f: "ignored" }),
+    act(10, "Sep 30", { type: "ask", id: "w2", text: "Is the milk gone, or only low?" }),
+    act(11, "Oct 1", { type: "confirm", id: "w2", note: "He looked." }),
+    act(12, "Oct 1", { type: "confirm", id: "w3" }),
+    act(13, "Oct 1", { type: "ruleout", id: "w4", note: "Bobby lives alone." }),
+    act(14, "Oct 1", { type: "ruleout", id: "w1" })
+  ];
+  const S = replay(steps);
+  assert.deepEqual(Object.keys(S.nodes), ["w1", "w2", "w3", "w4"]);
+  assert.deepEqual(Object.values(S.nodes).map(mapOf), ["said", "env", "mind", "moral"]);
+  assert.equal(S.nodes.w1.map, undefined, "what was said is an ordinary idea in the person's words");
+  assert.equal(S.nodes.w1.src, "user_said");
+  assert.equal(S.nodes.w1.ruledOut, undefined, "only a world item can be ruled out");
+  assert.equal(S.nodes.w2.words, "There is no milk in the house.");
+  assert.equal(S.nodes.w2.stuck, true, "the words put forth are fixed; whether they hold is the supposition");
+  assert.equal(replay(steps.slice(0, 11)).nodes.w2.supposed, true, "supposed unless said to be given");
+  assert.equal(S.nodes.w2.supposed, false);
+  assert.equal(S.nodes.w2.confirmedOn, "Oct 1");
+  assert.match(S.nodes.w2.history[0], /Oct 1: confirmed\. He looked\./);
+  assert.equal(S.nodes.w3.supposed, false, "put forth as given");
+  assert.equal(S.nodes.w3.confirmedOn, undefined, "confirming what is already given does nothing");
+  assert.deepEqual(S.nodes.w2.slots, ["Is the milk gone, or only low?"]);
+  assert.deepEqual(S.links, [{ a: "w1", b: "w2", f: "read as a lack", read: false }, { a: "w2", b: "w3", f: "gives rise to", read: false }]);
+  assert.equal(S.nodes.w4.ruledOut, true);
+  assert.equal(S.nodes.w4.replaced, true, "kept, drawn struck through");
+  assert.match(S.nodes.w4.history[0], /ruled out\. Bobby lives alone\./);
+  assert.equal(actOf(S, S.nodes.w2), "settled", "an item put forth by hand does not fade with passes");
+  assert.equal(pickFocusIn(S, "env"), "w2");
+  assert.equal(pickFocusIn(S, "moral"), null, "a map whose only item is ruled out has no middle");
+  assert.equal(mapListing(S), "w1 | idea | He needs milk.", "the model's listing of the map holds what was said, not the world items");
+});
+
+test("hostile and malformed actions do nothing: reserved ids, unknown types, ids that are not ids", () => {
+  const cleanProto = () => Object.keys(Object.prototype).length === 0 && ({}).stuck === undefined && ({}).ended === undefined && ({}).kept === undefined;
+  const steps = sampleSteps();
+  const before = JSON.stringify(replay(steps));
+  for (const action of [
+    { type: "keep", id: "__proto__" }, { type: "discard", id: "__proto__" }, { type: "anchor", id: "constructor" },
+    { type: "release", stateId: "__proto__" }, { type: "state", stateId: "__proto__", text: "x" }, { type: "goal", goalId: "constructor", text: "x" },
+    { type: "move", goalId: "__proto__", text: "x", effect: "closer" }, { type: "reach", goalId: "prototype" }, { type: "regoal", goalId: "__proto__", status: "dropped" },
+    { type: "item", id: "__proto__", map: "env", text: "x" }, { type: "link", a: "__proto__", b: "x", f: "leads to" }, { type: "ask", id: "__proto__", text: "q" },
+    { type: "confirm", id: "toString" }, { type: "ruleout", id: "__proto__" }, { type: "flag", flagId: "__proto__", choice: "accept" },
+    { type: "explode" }, { type: "keep", id: { toString: () => "x" } }, { type: "keep", id: "has space" }, { type: "keep", id: "x".repeat(81) }, null, "keep", ["keep"]
+  ]) {
+    const S = replay([...steps, { kind: "action", seq: 2, date: "d", source: "attack", action }]);
+    assert.equal(JSON.stringify(S), before, JSON.stringify(action));
+    assert.ok(cleanProto(), "nothing was written to the object every other object inherits from: " + JSON.stringify(action));
+  }
+  /* a stored result with a reserved id is skipped too, and replay does not throw */
+  const S = replay([{ kind: "ingest", seq: 0, date: "d", source: "x", result: { add: JSON.parse('{"__proto__": {"t": "x", "stuck": true}, "ok1": {"t": "Fine", "kind": "idea", "stuck": true, "words": "w"}}'), goals: [{ id: "__proto__", t: "x" }], flags: [{ id: "constructor", type: "gap", text: "x" }] } }]);
+  assert.deepEqual(Object.keys(S.nodes), ["ok1"]);
+  assert.deepEqual([Object.keys(S.goals), S.flags], [[], []]);
+  assert.ok(cleanProto());
+  assert.equal(Object.getPrototypeOf(S.nodes), null, "the state's maps have no prototype to reach");
+  assert.deepEqual([safeId("w12"), safeId("t1abc-r2"), safeId("__proto__"), safeId(""), safeId(7), safeId("a b")], [true, true, false, false, false, false]);
+  assert.deepEqual([actionOk({ type: "keep", id: "r1" }), actionOk({ type: "keep", id: "__proto__" }), actionOk({ type: "nope" }), actionOk({ type: "link", a: "x", b: "y y" })], [true, false, false, false]);
+});
+
+test("the person's own words cannot be kept, discarded or relabelled by any route: the reducer decides", () => {
+  const steps = sampleSteps();
+  const before = replay(steps);
+  for (const type of ["keep", "discard"]) {
+    const S = replay([...steps, { kind: "action", seq: 2, date: "d", source: "x", action: { type, id: "x" } }]);
+    assert.deepEqual(S.nodes.x, before.nodes.x, type + " on the person's own words does nothing");
+    assert.equal(S.links.length, before.links.length);
+  }
+  const anchored = replay([...steps, { kind: "action", seq: 2, date: "d", source: "x", action: { type: "anchor", id: "r1" } }]);
+  assert.equal(anchored.nodes.r1.anchor, undefined, "a reading cannot be an anchor");
+  const world = [{ kind: "action", seq: 0, date: "d", source: "x", action: { type: "item", id: "w1", map: "env", text: "A store is near." } }];
+  for (const type of ["keep", "discard"]) assert.ok(replay([...world, { kind: "action", seq: 1, date: "d", source: "x", action: { type, id: "w1" } }]).nodes.w1 && !replay([...world, { kind: "action", seq: 1, date: "d", source: "x", action: { type, id: "w1" } }]).nodes.w1.kept, type + " does nothing to a world item");
+});
+
+test("“later” leaves a loose end open; a map of only ruled-out items still has a middle; the world's link words are one list", () => {
+  const steps = sampleSteps();
+  steps.push({ kind: "action", seq: 2, date: "Sep 22", source: "flag", action: { type: "flag", flagId: "f1", choice: "later" } });
+  const S = replay(steps);
+  assert.equal(S.outcomes.f1, undefined, "no outcome: it is still open");
+  assert.equal(S.flags[0].later, "Sep 22");
+  const w = [
+    { kind: "action", seq: 0, date: "d", source: "x", action: { type: "item", id: "w1", map: "moral", text: "You pay." } },
+    { kind: "action", seq: 1, date: "d", source: "x", action: { type: "ruleout", id: "w1" } }
+  ];
+  const R = replay(w);
+  assert.equal(pickFocusIn(R, "moral"), null);
+  assert.equal(mapMiddle(R, "moral"), "w1", "so the ruled-out item is drawn, struck through, instead of an empty map");
+  assert.equal(mapMiddle(R, "env"), null);
+  assert.ok(WORLD_LINKS.within.includes("rests on") && WORLD_LINKS.across.includes("gives rise to"));
+  assert.equal(new Set(WORLD_LINKS.within).size, WORLD_LINKS.within.length);
 });
 
 test("cursor semantics: replaying a prefix gives the earlier map", () => {
