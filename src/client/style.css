@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.1.0
+   File Version: 0.2.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 :root{
@@ -232,6 +232,46 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .draft .gap{color:var(--open)}
 #draftmd{width:100%;min-height:120px;font-family:var(--font-data);font-size:12px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:13px;z-index:30;max-width:calc(100% - 32px)}
+
+/* ---------- State: Now and Goals ---------- */
+.stategrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start;max-width:1240px;margin:0 auto}
+@media (max-width:960px){.stategrid{grid-template-columns:minmax(0,1fr)}}
+.factlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fact{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;padding:10px 12px;background:var(--paper)}
+.fact.reached{border-left-color:var(--ok)}
+.fact.ended{border-left-color:var(--line);opacity:.7}
+.factbody{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.ftext{margin:0;font-family:var(--font-words);font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.past summary{cursor:pointer;font-size:12px;color:var(--muted)}
+.past .factlist{margin-top:8px}
+form.inline{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}
+form.inline .input{width:100%}
+.input.grow{flex:1;min-width:160px}
+.radio{display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.goal{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper);display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.goal h3{margin:0;font-size:16px;font-family:var(--font-words);font-weight:600}
+.goal.st-reached{border-left:3px solid var(--ok)}
+.goal.st-open{border-left:3px solid var(--accent)}
+.goal.st-proposed{border-left:3px dashed var(--reading)}
+.goal.st-stuck{border-left:3px solid var(--open)}
+.goal.st-dropped{opacity:.6}
+.gwords{font-size:15px}
+.chip.gs-open{color:var(--accent);border-color:var(--accent)}
+.chip.gs-reached{color:var(--ok);border-color:var(--ok)}
+.chip.gs-proposed{color:var(--reading);border-color:var(--reading)}
+.chip.gs-stuck{color:var(--open);border-color:var(--open)}
+.track{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.beads{display:inline-flex;gap:3px;font-size:15px;line-height:1}
+.bead{color:var(--muted)} .bead.e-closer{color:var(--accent)} .bead.e-farther{color:var(--warn)} .bead.read{opacity:.55}
+.bead.reachedmark{color:var(--ok)}
+.moves{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.moves li{display:grid;grid-template-columns:52px 16px minmax(0,1fr);gap:8px;align-items:baseline}
+.moves li.read .mtext{font-style:italic;color:var(--reading)}
+.mdate{font-family:var(--font-data);font-size:11px;color:var(--muted)}
+.mglyph.e-closer{color:var(--accent)} .mglyph.e-farther{color:var(--warn)} .mglyph.e-same{color:var(--muted)}
+.reachednote{margin:0;font-size:13px;color:var(--ok)}
+.ghist summary{cursor:pointer;font-size:12px;color:var(--muted)}
+.empty.small{padding:12px 0}
 
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}

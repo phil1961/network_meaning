@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -112,6 +112,30 @@ try {
   await click("#mic");
   await pause(400);
   ok(await js("document.getElementById('transcript').textContent.includes('car will start')"), "talk demo plays the sample transcript");
+
+  /* the state layer, on the Bobby sample */
+  await js("document.getElementById('streamsel').value = 'bobby'; document.getElementById('streamsel').dispatchEvent(new Event('change'))");
+  await pause(200);
+  ok(await js("document.getElementById('scrubout').textContent.startsWith('14 of 14')"), "Bobby sample has 14 steps");
+  await click("#tab-state");
+  ok(await js("[...document.querySelectorAll('#factlist .fact .ftext')].map(e => e.textContent).join('|')") === "The car makes a grinding noise when it starts.|Bobby has milk.|Bobby is home again.", "Now holds the standing fact, the reached goal, and the latest fact");
+  ok(await js("document.querySelectorAll('#pastlist .fact').length") === 2, "two facts have moved to the past");
+  ok(await js("document.querySelectorAll('#goallist .goal').length") === 2, "two goals are shown");
+  ok(await js("document.querySelector('#goallist .goal.st-reached h3')?.textContent") === "Get milk", "the milk goal is reached");
+  ok(await js("document.querySelectorAll('#goallist .goal.st-reached .moves li').length") === 3, "the milk goal shows three moves");
+  ok(await js("document.querySelector('#goallist .goal.st-reached .reachednote')?.textContent.includes('Bobby has milk.')"), "the reached goal points at the state fact it became");
+  ok(await js("document.querySelector('#goallist .goal.st-stuck h3')?.textContent") === "Fix the car.", "the car goal is stuck");
+  ok(await js("document.getElementById('goalcount').textContent") === "1", "the State tab counts one live goal");
+  await js("document.getElementById('scrub').value = 7; document.getElementById('scrub').dispatchEvent(new Event('input'))");
+  await pause(200);
+  ok(await js("document.querySelector('#goallist .goal.st-proposed h3')?.textContent") === "Get milk", "at step 7 the milk goal is only a reading from the text");
+  ok(await js("!!document.querySelector('#goallist [data-act=\"acceptgoal\"]')"), "and it asks to be confirmed");
+  ok(await js("[...document.querySelectorAll('#factlist .fact .ftext')].map(e => e.textContent).join('|')") === "Bobby is at home.|There is no milk in the house.|The car makes a grinding noise when it starts.", "at step 7 Now shows the three original facts");
+  ok(await js("document.getElementById('facttext').disabled === true"), "forms are disabled while rewound");
+  await click("#tolatest");
+  await click("#tab-map");
+  ok(await js("document.querySelector('#panel h2')?.textContent") === "Bobby went to the store to get milk", "the Bobby map focuses the sentence");
+  ok(await js("document.getElementById('lecount').textContent") === "1", "one loose end: did Bobby get the milk?");
   ok(errors.length === 0, "no script errors during the walkthrough", errors.join(" | "));
 } catch (e) {
   fail++; console.log("  FAIL  " + (e && e.message ? e.message : e));

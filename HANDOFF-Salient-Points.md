@@ -139,6 +139,52 @@ consideration of easily future challenges."
 - No new experiment was added for this one. It bears on E6 (time) and E8 (a
   level that is drawn from and added to).
 
+**2026-09-30, evening, phone session.** Three docs written by Claude on the
+phone from Phil's voice session, brought into the repo unchanged:
+`Three-Layers.md`, `Story-and-Game.md`, `NEXT-STEP-Three-Layer-Build.md`.
+Claude's phrasing of Phil's framing, with Claude's contributions marked
+inside them, so not quoted here as [Phil].
+
+- The three layers: foundation (authored in advance, the theology skeleton),
+  environment (the person's situation, "has to be asked for"), interaction
+  (what the person said, the map today). `VISION.md` §9 adopts the names.
+- Lines up with the morning: the foundation is the morning's "background
+  corpus"; the environment is "the social environment and environment" of
+  the containers statement and the "existing physical and social structure"
+  of the parting thought.
+- [lost] Pulls against the morning, unsettled: `Three-Layers.md` has the
+  foundation "fixed before anyone talks to the tool"; the morning statement
+  has the corpus's relationships "tweaked." And motivation as the *gap*
+  between layers versus motivation as a *battery* drawn from and added to.
+- [lost] Not said anywhere: where the containing concept and the perspective
+  sit among the three layers.
+- Phil flagged, unsettled: stuck versus plastic may be a dimension rather
+  than a layer.
+- Next build step, from the brief: the Bobby probe, now experiment E10 in
+  `VISION.md` §9, to run before any layer is added to the app.
+
+**2026-09-30, the state layer.** [Phil] "Okay, I see another layer, and that
+would be the user's state. When a goal is put forth, the state must
+eventually change so that the goal is now part of the person's state.
+Movement towards the goal is tracked. For our Bobby went to the store to get
+milk scenario in mind. Design me an app that can reflect that. You dont need
+to worry too much about how the layers interact, unless you actually have a
+good idea. But lets build this."
+
+[Phil] "Also, feel free to make up as much data as you want. Take a stab,
+I'll review and revise at a later point after we review the app."
+
+- Built the same day as experiment E11 (`VISION.md` §9) and the State view
+  in the app: Now (state facts), Goals (put forth or read in the text, then
+  confirmed), moves with the person's reading of each (closer, no change,
+  farther), reached, ground is stuck, dropped. Reaching a goal puts a new
+  fact into Now that points back to the goal.
+- The built-in sample *Bobby and the milk* is made-up data for Phil to
+  revise, per his second statement.
+- [lost] Open after the build: should the model be allowed to propose that
+  a goal was reached, or only the person? And where the state layer meets
+  containers, perspective and the battery.
+
 ### What the corpus already says about the app
 
 **Input**

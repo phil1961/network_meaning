@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/40-streams.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Opening, forking, branching, deleting streams and appending steps.
    Ingest steps are made by the server (80-add.js); action steps are
@@ -32,9 +32,10 @@ async function openSaved(id) {
     rebuild();
   } catch (e) { if (e.code !== "signed_out") toast("Couldn't open that stream. Try again."); }
 }
-function openSample() {
-  stream = { id: null, name: SAMPLE_NAME, builtin: true, steps: SAMPLE_STEPS.map(clone) };
-  cursor = stream.steps.length; focus = "furnished"; lsSet("nm.lastStream", "sample"); rebuild();
+function openSample(key = "sample") {
+  const s = SAMPLES[key] || SAMPLES.sample; key = SAMPLES[key] ? key : "sample";
+  stream = { id: null, name: s.name, builtin: key, steps: s.steps.map(clone) };
+  cursor = stream.steps.length; focus = key === "sample" ? "furnished" : null; lsSet("nm.lastStream", key); rebuild();
 }
 async function newEmpty() {
   try {
@@ -46,7 +47,7 @@ async function newEmpty() {
   } catch (e) { if (e.code !== "signed_out") toast(e.message || "Couldn't create a stream."); return false; }
 }
 async function branchHere() {
-  const base = stream.builtin ? "Sample" : stream.name;
+  const base = stream.builtin ? stream.name.replace(/^Sample: /, "") : stream.name;
   const name = `${base} (branch at step ${cursor})`;
   try {
     const s = stream.builtin
@@ -75,7 +76,7 @@ async function ensureWritable(onTopOfSample) {
   if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch from here first."); return false; }
   if (!stream.builtin) return true;
   const steps = onTopOfSample ? stream.steps.map(snapshotStep) : [];
-  const name = onTopOfSample ? "Sample + your text · " + stamp(new Date().toISOString()) : "Untitled · " + stamp(new Date().toISOString());
+  const name = onTopOfSample ? stream.name.replace(/^Sample: /, "") + " + yours · " + stamp(new Date().toISOString()) : "Untitled · " + stamp(new Date().toISOString());
   try {
     const s = await api.createStream({ name, steps });
     stream = { id: s.id, name: s.name, builtin: false, steps: onTopOfSample ? stream.steps.map(clone) : [] };

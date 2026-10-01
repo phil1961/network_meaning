@@ -1,12 +1,13 @@
 /* ─────────────────────────────────────────────
    File: src/client/20-sample.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
-   The built-in sample stream: ordinary ingest steps that never went to a
-   server. Ideas and quotes are Phil's own words from the archived chats;
-   dates and timestamps are illustrative. When the sample is forked, these
-   steps are copied into the new stream as they are, so a saved stream
-   never depends on this file again. */
+   The built-in sample streams: ordinary steps that never went to a server.
+   The first is Phil's archived chats; ideas and quotes are his own words,
+   dates and timestamps illustrative. The second is Bobby and the milk, the
+   state-layer scenario, with made-up data for review. When a sample is
+   forked, its steps are copied into the new stream as they are, so a saved
+   stream never depends on this file again. */
 const SAMPLE_NAME = "Sample: Phil's archived chats";
 const SAMPLE_STEPS = (function () {
   const P = "Pure-Conscousness.md";
@@ -78,3 +79,44 @@ const SAMPLE_STEPS = (function () {
   steps[4].result.question = "You said faith becomes “part of the furniture” once it's habitual. Then you said Peter sank when he started thinking. Is thinking what breaks the furniture, or is it something else?";
   return steps;
 })();
+
+/* Bobby went to the store to get milk: the state layer walked through in
+   time. State facts are put forth, a goal is read in the text and accepted,
+   moves are recorded, and reaching the goal changes the state. A second
+   goal shows the ground being stuck. All data made up (2026-09-30). */
+const BOBBY_NAME = "Sample: Bobby and the milk";
+const BOBBY_STEPS = (function () {
+  const act = (date, source, action) => ({ kind: "action", at: null, date, source, action });
+  const STORY = "Bobby, the story";
+  const steps = [
+    act("Sep 28", "state", { type: "state", stateId: "s-home", text: "Bobby is at home." }),
+    act("Sep 28", "state", { type: "state", stateId: "s-nomilk", text: "There is no milk in the house." }),
+    act("Sep 28", "state", { type: "state", stateId: "s-car", text: "The car makes a grinding noise when it starts." }),
+    act("Sep 28", "goal", { type: "goal", goalId: "g-car", text: "Fix the car." }),
+    act("Sep 29", "move", { type: "move", goalId: "g-car", text: "Called the mechanic. The first opening is next month.", effect: "same" }),
+    act("Sep 29", "regoal", { type: "regoal", goalId: "g-car", status: "stuck", note: "Nothing moves until next month." }),
+    { kind: "ingest", at: null, date: "Sep 30", source: STORY, text: "Bobby went to the store to get milk.", model: null, tier: null, result: {
+      add: {
+        bobby1: { t: "Bobby went to the store to get milk", kind: "idea", stuck: true, src: "user_said", words: "Bobby went to the store to get milk.", date: "Sep 30", at: "¶ 1", file: STORY, slots: ["Which store?", "How did he get there?", "Why milk?"], history: [] },
+        bobbyr1: { t: "Someone at home is expecting the milk", kind: "idea", stuck: false, src: "inferred", reading: "Nobody goes out for milk they don't need. The sentence implies a house, a lack, and probably a person waiting.", basis: ["bobby1"], slots: [], history: [] }
+      },
+      touch: [], replace: [],
+      links: [{ a: "bobby1", b: "bobbyr1", f: "my reading", read: true }],
+      flags: [{ id: "b-open", type: "unanswered", text: "Did Bobby get the milk?", detail: "Sep 30 · Bobby, the story. It says he went. It doesn't say he came back with it.", nodes: ["bobby1"], phrase: "", suggestion: "", question: "Did Bobby get the milk?" }],
+      goals: [{ id: "g-milk", t: "Get milk", words: "Bobby went to the store to get milk.", at: "¶ 1", ideaId: "bobby1", moves: [{ text: "Bobby went to the store to get milk.", at: "¶ 1" }] }],
+      question: "Did Bobby get the milk?"
+    } },
+    act("Sep 30", "goal", { type: "acceptgoal", goalId: "g-milk" }),
+    act("Sep 30", "state", { type: "release", stateId: "s-home", note: "He left for the store." }),
+    act("Sep 30", "move", { type: "move", goalId: "g-milk", text: "Bobby is at the store. They have milk.", effect: "closer" }),
+    act("Sep 30", "move", { type: "move", goalId: "g-milk", text: "The line is long. Bobby is still at the store.", effect: "same" }),
+    act("Oct 1", "reach", { type: "reach", goalId: "g-milk", text: "Bobby has milk." }),
+    act("Oct 1", "state", { type: "release", stateId: "s-nomilk", note: "He brought some home." }),
+    act("Oct 1", "state", { type: "state", stateId: "s-home2", text: "Bobby is home again." })
+  ];
+  steps.forEach((s, i) => { s.seq = i; });
+  return steps;
+})();
+
+/* Every built-in sample, by key. "sample" stays the default. */
+const SAMPLES = { sample: { name: SAMPLE_NAME, steps: SAMPLE_STEPS }, bobby: { name: BOBBY_NAME, steps: BOBBY_STEPS } };

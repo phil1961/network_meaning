@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/server/ideaify.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    The one Claude call. The prompt template lives here, on the server with
    the key, never in the browser. The answer is constrained to a JSON
@@ -9,7 +9,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { splitSpans } from "../shared/spans.js";
-import { mapListing } from "../shared/replay.js";
+import { mapListing, stateListing } from "../shared/replay.js";
 import { normalize, KINDS, FLAG_TYPES, LIMITS } from "./normalize.js";
 
 export const MODELS = {
@@ -19,11 +19,14 @@ export const MODELS = {
 };
 const LINK_CHOICES = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to"];
 
-export function buildPrompt(spans, source, listing) {
-  return `You are the "ideaification" step of a meaning-map app. A person gives the app text: their notes, a voice transcript, or a chat transcript. Turn it into ideas and links for their map.
+export function buildPrompt(spans, source, listing, stateList = "(no state facts or goals yet)") {
+  return `You are the "ideaification" step of a meaning-map app. A person gives the app text: their notes, a voice transcript, or a chat transcript. Turn it into ideas and links for their map, and notice any goals and moves toward them.
 
 THE PERSON'S EXISTING MAP (id | kind | title):
 ${listing}
+
+THE PERSON'S STATE AND GOALS (state | id | fact; goal | id | status | text | moves so far):
+${stateList}
 
 NEW TEXT from source "${source}", cut into numbered spans:
 ${spans.map((s, i) => `[${i}] ${s}`).join("\n")}
@@ -46,13 +49,14 @@ RULES
    echo: a new idea resonates with an existing map idea it isn't linked to. Name both in "nodes".
    Give each flag a short "text", a one-line "detail", "nodes" (keys or map ids), and a "question" you would ask the person to resolve it.
 10. Scale to the text: roughly one idea per 3 or 4 spans, at most ${LIMITS.ideas} ideas. Prefer fewer, sharper ideas. Cite at most ${LIMITS.spansPerIdea} spans per idea.
-11. "question": the ONE question you would ask the person next, in their own words, aimed at the most interesting tension or open slot. Short enough to hear while driving.`;
+11. "goals": something the text says the person (or the person it is about) is trying to do, get, or reach. At most ${LIMITS.goals}. Each cites the spans that state it. "moves" under a goal are things the text says were actually done toward it, each citing its spans; at most ${LIMITS.movesPerGoal}. If the goal is already in THE PERSON'S STATE AND GOALS, set "existing" to that goal id and give only the new moves. A wish with no action is a goal with no moves. Never invent a goal the text does not state.
+12. "question": the ONE question you would ask the person next, in their own words, aimed at the most interesting tension or open slot. If a goal has moves but the text never says whether it was reached, asking that is a good question. Short enough to hear while driving.`;
 }
 
 /* The wire schema. Kept permissive on strings, strict on structure. */
 export const OUTPUT_SCHEMA = {
   type: "object", additionalProperties: false,
-  required: ["ideas", "readings", "links", "flags", "question"],
+  required: ["ideas", "readings", "links", "flags", "goals", "question"],
   properties: {
     ideas: { type: "array", items: { type: "object", additionalProperties: false,
       required: ["key", "title", "kind", "spans", "match", "replaces", "slots"],
@@ -71,6 +75,11 @@ export const OUTPUT_SCHEMA = {
       required: ["type", "text", "detail", "nodes", "phrase", "suggestion", "question"],
       properties: { type: { type: "string", enum: FLAG_TYPES }, text: { type: "string" }, detail: { type: "string" },
         nodes: { type: "array", items: { type: "string" } }, phrase: { type: "string" }, suggestion: { type: "string" }, question: { type: "string" } } } },
+    goals: { type: "array", items: { type: "object", additionalProperties: false,
+      required: ["key", "title", "spans", "existing", "moves"],
+      properties: { key: { type: "string" }, title: { type: "string" }, spans: { type: "array", items: { type: "integer" } }, existing: { type: ["string", "null"] },
+        moves: { type: "array", items: { type: "object", additionalProperties: false, required: ["text", "spans"],
+          properties: { text: { type: "string" }, spans: { type: "array", items: { type: "integer" } } } } } } } },
     question: { type: "string" }
   }
 };
@@ -86,10 +95,10 @@ export async function ideaify({ text, source, tier = "default", state, stepId, d
   const spans = splitSpans(text);
   if (!spans.length) throw { code: "empty_input", message: "There's no readable text in that entry." };
   const model = (MODELS[tier] || MODELS.default)();
-  const prompt = buildPrompt(spans, source, mapListing(state));
+  const prompt = buildPrompt(spans, source, mapListing(state), stateListing(state));
   const t0 = Date.now();
   const { raw, inputTokens, outputTokens } = await callModel({ model, prompt, signal });
-  const { result, dropped } = normalize(raw, spans, source, stepId, date, state.nodes);
+  const { result, dropped } = normalize(raw, spans, source, stepId, date, state.nodes, state.goals || {});
   return { result, dropped, usage: { model, latency_ms: Date.now() - t0, input_tokens: inputTokens, output_tokens: outputTokens, spans: spans.length, dropped } };
 }
 

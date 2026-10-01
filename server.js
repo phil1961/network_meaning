@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: server.js
-   File Version: 0.1.1
+   File Version: 0.1.2
    ─────────────────────────────────────────────
    Network Meaning: the HTTP entry point. Node's built-in http server, no
    framework. Serves the one built page and a small JSON API. Under IIS,
@@ -28,7 +28,10 @@ import { ideaify, MODELS } from "./src/server/ideaify.js";
 import { replay } from "./src/shared/replay.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-try { process.loadEnvFile(path.join(here, ".env")); } catch { /* environment only */ }
+/* .env is read only when this file is the program. A test that imports
+   handle() sets its own environment and must not pick up the real one. */
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) { try { process.loadEnvFile(path.join(here, ".env")); } catch { /* environment only */ } }
 
 const PKG = JSON.parse(fs.readFileSync(path.join(here, "package.json"), "utf8"));
 const PORT = parseInt(process.env.PORT || "8787", 10);
@@ -162,7 +165,6 @@ async function handle(req, res) {
   }
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   (async () => {
     if (!hasDatabase()) log("warning: DATABASE_URL is not set; only /health and the page will work");

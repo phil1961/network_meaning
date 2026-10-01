@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/80-add.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Add text: paste, drop, split long text into passes, send each pass to
    the server's /ingest, append the returned step. The one question. */
@@ -20,7 +20,8 @@ async function ingestOne(text, source, tier) {
   focus = null; rebuild();
   const res = r.step.result || {};
   const nIdeas = Object.values(res.add || {}).filter(n => n.stuck).length, nRead = Object.values(res.add || {}).filter(n => !n.stuck).length;
-  lastSummary = { source, ideas: nIdeas, readings: nRead, again: (res.touch || []).length, links: (res.links || []).length, flags: (res.flags || []).length, dropped: r.dropped || 0 };
+  const goals = res.goals || [];
+  lastSummary = { source, ideas: nIdeas, readings: nRead, again: (res.touch || []).length, links: (res.links || []).length, flags: (res.flags || []).length, goals: goals.filter(g => !g.existing).length, moves: goals.reduce((n, g) => n + (g.moves || []).length, 0), dropped: r.dropped || 0 };
   dismissedQ = null;
   return r;
 }
@@ -80,7 +81,7 @@ function renderAdd() {
   const sm = $("#summary");
   if (lastSummary && !busy) {
     const L = lastSummary; sm.hidden = false;
-    sm.innerHTML = `<p><b>Added from ${esc(L.source)}:</b> ${L.ideas} ideas in your words, ${L.readings} readings, ${L.again} said again, ${L.links} links, ${L.flags} loose ends.</p>` + (L.dropped > 0 ? `<p class="small">${L.dropped} suggested ideas were dropped because they didn't point to your text.</p>` : "") + `<div class="actions"><button class="btn" data-gomap="1">See it on the map</button>${L.flags ? `<button class="btn" data-gole="1">Review loose ends</button>` : ""}</div>`;
+    sm.innerHTML = `<p><b>Added from ${esc(L.source)}:</b> ${L.ideas} ideas in your words, ${L.readings} readings, ${L.again} said again, ${L.links} links, ${L.flags} loose ends${L.goals || L.moves ? `, ${L.goals} goal${L.goals === 1 ? "" : "s"} read in the text to confirm, ${L.moves} move${L.moves === 1 ? "" : "s"}` : ""}.</p>` + (L.dropped > 0 ? `<p class="small">${L.dropped} suggested items were dropped because they didn't point to your text.</p>` : "") + `<div class="actions"><button class="btn" data-gomap="1">See it on the map</button>${L.goals || L.moves ? `<button class="btn" data-gostate="1">Review goals</button>` : ""}${L.flags ? `<button class="btn" data-gole="1">Review loose ends</button>` : ""}</div>`;
   } else sm.hidden = true;
   const cq = currentQuestion(); const qb = $("#qbox");
   if (cq && !busy) { qb.hidden = false; $("#qboxfrom").textContent = cq.from; $("#qboxtext").textContent = cq.text; $("#sendanswer").disabled = !me || rew; }
@@ -100,7 +101,7 @@ $("#addactions").addEventListener("click", e => {
   if (b.id === "stop") { if (ctl) ctl.abort(); return; }
   if (b.dataset.run) runIngest(b.dataset.run === "ontop" || b.dataset.run === "go");
 });
-$("#summary").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.gomap) showView("map"); if (b.dataset.gole) showView("loose"); });
+$("#summary").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.gomap) showView("map"); if (b.dataset.gostate) showView("state"); if (b.dataset.gole) showView("loose"); });
 $("#entry").addEventListener("input", renderCharCount);
 $("#queue").addEventListener("click", e => { const b = e.target.closest("[data-unq]"); if (b) { fileQueue.splice(+b.dataset.unq, 1); renderQueue(); } });
 $("#sendanswer").addEventListener("click", async () => {

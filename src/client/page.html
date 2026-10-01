@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.1.0
+  File Version: 0.2.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css and
   the SCRIPT marker with the shared and client modules, in filename order, and
   writes public/index.html. Edit here, never in public/.
@@ -24,6 +24,7 @@
     <div class="brand"><h1>Network Meaning</h1><span class="pill" id="buildpill">v0</span></div>
     <nav role="tablist" aria-label="Views">
       <button class="tab" role="tab" id="tab-map" data-view="map" aria-selected="true">Map</button>
+      <button class="tab" role="tab" id="tab-state" data-view="state" aria-selected="false">State<span class="count" id="goalcount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
       <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
@@ -75,6 +76,29 @@
           </div>
         </div>
         <aside class="panel" id="panel"></aside>
+      </div>
+    </section>
+
+    <!-- STATE: where you stand, what you're moving toward -->
+    <section class="view" id="view-state" role="tabpanel" aria-labelledby="tab-state" hidden>
+      <div class="stategrid">
+        <div class="card" id="nowcard">
+          <div class="le-head"><h2>Now</h2><span class="small">What is true for you at this step. A reached goal lands here.</span></div>
+          <ul class="factlist" id="factlist"></ul>
+          <details class="past" id="pastwrap"><summary id="pastsummary">Past</summary><ul class="factlist past" id="pastlist"></ul></details>
+          <form class="inline" id="factform">
+            <label class="small" for="facttext">Put a state fact forth, in your own words</label>
+            <div class="row"><input class="input grow" id="facttext" placeholder="e.g. There is no milk in the house." autocomplete="off"><button class="btn primary" type="submit">Add to Now</button></div>
+          </form>
+        </div>
+        <div class="card" id="goalcard">
+          <div class="le-head"><h2>Goals</h2><span class="small">Put forth, moved toward, reached. Every move is a step in the stream.</span></div>
+          <form class="inline" id="goalform">
+            <label class="small" for="goaltext">Put a goal forth</label>
+            <div class="row"><input class="input grow" id="goaltext" placeholder="e.g. Get milk." autocomplete="off"><button class="btn primary" type="submit">Put it forth</button></div>
+          </form>
+          <div id="goallist"></div>
+        </div>
       </div>
     </section>
 

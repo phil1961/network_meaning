@@ -559,14 +559,30 @@ Still open, by weight:
   into both docs as he gives them, and Claude's enhancements go into
   `VISION.md` §9 as labelled experiments under lab test. §9 holds E1 to E9,
   all proposed, none built.
+- **Three docs from the evening phone session are in the repo** unchanged:
+  `Three-Layers.md`, `Story-and-Game.md`, `NEXT-STEP-Three-Layer-Build.md`.
+  `VISION.md` §9 takes its layer vocabulary (foundation, environment,
+  interaction) from them, revises E4 and E9 by note, and adds E10, the Bobby
+  probe from the build brief.
+- **The state layer is built (app version 0.2.0).** Phil's fourth layer, the
+  person's state: facts true now, goals put forth, moves toward each goal,
+  and a reached goal becoming a fact. Eight new action types in
+  `src/shared/replay.js`; no database change. The model's answer has a
+  `goals` field with cited spans, validated in `normalize.js` by the same
+  drop-if-uncited rule. New State view (`src/client/65-statelayer.js`) and
+  a second built-in sample, *Bobby and the milk*, 14 hand-made steps of
+  made-up data. `VISION.md` §9 E11 has the design and the test so far. Two
+  real model runs read the Bobby sentence as one proposed goal with one move
+  and asked "Did Bobby get the milk and bring it home?"
+- **The gate passes again.** `server.js` now reads `.env` only when it is
+  the program, so `tests/server.test.js` no longer picks up the real
+  database. `npm run gate`: 34 tests, 30 pass, 4 skip without
+  `TEST_DATABASE_URL`; with it, 34 pass. `npm run smoke`: 37 checks pass,
+  16 of them on the Bobby sample and the State view.
 
 **Known failing**
 
-- `tests/server.test.js`, "health reports the missing database honestly,"
-  expects 503 and gets 200, so `npm run gate` fails. The test deletes
-  `DATABASE_URL`, but importing `server.js` loads `.env` and puts it back.
-  It passed before only because no `.env` existed. Suggested fix: load `.env`
-  in `server.js` only when it is run directly, as `migrate.js` does.
+- Nothing at the end of the session.
 
 **Waiting on Phil** (he chose to let these sit)
 
@@ -575,14 +591,31 @@ Still open, by weight:
 2. The motivation battery: what adds to it, what draws from it, and is there
    one per person or one per concept?
 3. The background corpus: which one, and does everyone start from the same
-   one?
+   one? (The evening docs answer part of this: the corpus is the foundation
+   layer, the theology skeleton.)
+4. Gap or battery: `Three-Layers.md` reads motivation off the distance
+   between foundation and environment; the morning statement makes it a
+   store drawn from and added to. Which, or both?
+5. Where do the containing concept and the perspective sit among the three
+   layers?
+6. For the Bobby probe (E10): the hand-authored foundation list, a few lines.
+7. Review of the State view and the Bobby sample (E11): what is right, what
+   to revise, and whether the model may propose that a goal was reached.
 
 **Next session, in order**
 
-1. Fix the `.env` leak into `tests/server.test.js` so the gate passes again.
-2. Sign in through the browser and run one real ideaify on a short paste.
-   Check the summary line (ideas, readings, dropped) and the `api_calls` row.
-3. Take Phil's answers to the three questions, then pick which experiment in
-   `VISION.md` §9 to lab test first.
-4. Speaker-label two `_archive/` transcripts, then run the archive test from
+1. Walk the State view with Phil on the Bobby sample (pick it in the Stream
+   menu, open State, rewind with the slider). Take his revisions to the
+   made-up data and the design.
+2. Sign in through the browser and run one real ideaify on a short paste of
+   Phil's own. Check the summary line (ideas, readings, goals, dropped), the
+   proposed goals in State, and the `api_calls` row.
+3. Run the Bobby probe (E10) with prompts alone, once Phil supplies the
+   foundation list. The state layer is in; the foundation and environment
+   layers still wait on the probe, because it decides whether foundation
+   objects are matched or proposed. `NEXT-STEP-Three-Layer-Build.md` is the
+   brief.
+4. Take Phil's answers to the questions above, then pick the next experiment
+   in `VISION.md` §9.
+5. Speaker-label two `_archive/` transcripts, then run the archive test from
    `VISION.md` §7. Experiment E6 (said-on dates, fading in days) bears on it.

@@ -1,34 +1,38 @@
 /* ─────────────────────────────────────────────
    File: src/server/normalize.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Turn the model's raw answer into a step result the replay reducer
    accepts. This is the brake on the flattering mirror: an idea with no
    span citation is dropped, and an idea's words are assembled verbatim
-   from the spans it cites, never from anything the model wrote. Pure. */
+   from the spans it cites, never from anything the model wrote. The same
+   rule holds for goals and moves read in the text. Pure. */
 
 import { spanLabel } from "../shared/spans.js";
 import { LINK_LABELS } from "../shared/replay.js";
 
 export const KINDS = ["idea", "image", "question", "quote", "term", "person"];
 export const FLAG_TYPES = ["garble", "unanswered", "gap", "tension", "correction", "echo"];
-export const LIMITS = { ideas: 30, readings: 3, flags: 12, spansPerIdea: 12, slotsPerIdea: 2 };
+export const LIMITS = { ideas: 30, readings: 3, flags: 12, spansPerIdea: 12, slotsPerIdea: 2, goals: 6, movesPerGoal: 4 };
 
 const clip = (s, n) => { s = String(s ?? "").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
 
 /* nodes: the existing map (state.nodes) so "match" and link targets resolve.
-   Returns { result, dropped } where dropped counts uncited ideas. */
-export function normalize(raw, spans, source, stepId, date, nodes = {}) {
-  const out = { add: {}, touch: [], replace: [], links: [], flags: [], question: "" };
+   goals: the existing goals (state.goals) so a move can land on one.
+   Returns { result, dropped } where dropped counts uncited ideas, goals and
+   moves. */
+export function normalize(raw, spans, source, stepId, date, nodes = {}, goals = {}) {
+  const out = { add: {}, touch: [], replace: [], links: [], flags: [], goals: [], question: "" };
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { result: out, dropped: 0 };
   const keyMap = {};
   const pendingReplace = [];
-  let ni = 0, ri = 0, dropped = 0;
+  let ni = 0, ri = 0, gi = 0, dropped = 0;
+  const cited = list => [...new Set((Array.isArray(list) ? list : []).map(Number).filter(x => Number.isInteger(x) && x >= 0 && x < spans.length))].sort((a, b) => a - b).slice(0, LIMITS.spansPerIdea);
 
   for (const it of (Array.isArray(raw.ideas) ? raw.ideas : []).slice(0, LIMITS.ideas)) {
     if (!it || typeof it !== "object") continue;
     const key = String(it.key ?? "");
-    const sp = [...new Set((Array.isArray(it.spans) ? it.spans : []).map(Number).filter(x => Number.isInteger(x) && x >= 0 && x < spans.length))].sort((a, b) => a - b).slice(0, LIMITS.spansPerIdea);
+    const sp = cited(it.spans);
     if (!sp.length) { dropped++; continue; }
     const words = sp.map(i => spans[i]).join(" ");
     const slots = (Array.isArray(it.slots) ? it.slots : []).map(x => clip(x, 160)).filter(Boolean).slice(0, LIMITS.slotsPerIdea);
@@ -90,6 +94,26 @@ export function normalize(raw, spans, source, stepId, date, nodes = {}) {
       phrase: f.phrase ? clip(f.phrase, 80) : "", suggestion: f.suggestion ? clip(f.suggestion, 80) : "",
       question: f.question ? clip(f.question, 300) : ""
     });
+  }
+  /* Goals and moves read in the text. A goal's words are its cited spans,
+     verbatim. A goal that names an existing open goal contributes moves to
+     it instead of starting a new one. */
+  const liveGoal = k => { k = String(k ?? ""); const g = goals[k]; return g && (g.status === "open" || g.status === "proposed" || g.status === "stuck") ? k : null; };
+  for (const g of (Array.isArray(raw.goals) ? raw.goals : []).slice(0, LIMITS.goals)) {
+    if (!g || typeof g !== "object") continue;
+    const moves = [];
+    for (const m of (Array.isArray(g.moves) ? g.moves : []).slice(0, LIMITS.movesPerGoal)) {
+      if (!m || typeof m !== "object") continue;
+      const msp = cited(m.spans);
+      if (!msp.length) { dropped++; continue; }
+      moves.push({ text: msp.map(i => spans[i]).join(" "), at: spanLabel(msp) });
+    }
+    const existing = liveGoal(g.existing);
+    if (existing) { if (moves.length) out.goals.push({ id: existing, existing: true, moves }); continue; }
+    const sp = cited(g.spans);
+    if (!sp.length) { dropped++; continue; }
+    const words = sp.map(i => spans[i]).join(" ");
+    out.goals.push({ id: `${stepId}-g${++gi}`, t: clip(g.title || words, 80), words, at: spanLabel(sp), ideaId: null, moves });
   }
   if (typeof raw.question === "string") out.question = clip(raw.question, 300);
   return { result: out, dropped };

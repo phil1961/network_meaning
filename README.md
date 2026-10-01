@@ -31,14 +31,25 @@ node server.js                # applies sql/ migrations, then listens on PORT (d
 ```
 
 Open http://127.0.0.1:8787, sign in with `APP_PASSWORD`, and paste text into
-**Add text**. The built-in sample stream works without a database or key;
+**Add text**. The built-in sample streams work without a database or key;
 ideaifying needs both.
 
-Create the database once (any name, put it in `DATABASE_URL`):
+Create the database once (any name, put it in `DATABASE_URL`). The owner
+must be the role in `DATABASE_URL`, or migrations cannot create tables:
 
 ```
-psql -U postgres -c "CREATE DATABASE network_meaning"
+psql -U postgres -c "CREATE DATABASE network_meaning OWNER network_meaning"
 ```
+
+## The State view
+
+Beside the map, the app keeps the person's **state**: facts that are true
+for them now, **goals** put forth, and every **move** toward a goal. When a
+goal is reached, the state changes so that the goal is now part of it. All
+of it is action steps in the stream, so it rewinds and branches with the
+map. Goals and moves stated in pasted text are read out by the model and
+wait for the person to confirm them. The built-in sample *Bobby and the
+milk* walks through it; the data there is made up.
 
 ## Gates
 
@@ -58,7 +69,7 @@ TEST_DATABASE_URL=... npm test   # also runs the Postgres tests in a throwaway s
 | `server.js` | HTTP entry point: the page, `/health`, and the JSON API |
 | `src/server/` | `db.js` (pool), `migrate.js` (numbered SQL), `auth.js` (signed cookie), `ideaify.js` (prompt + Claude call), `normalize.js` (validate the answer), `streams.js` (append-only store) |
 | `src/shared/` | `replay.js` (steps → map), `spans.js` (text → spans); ESM for the server, inlined for the page |
-| `src/client/` | `page.html`, `style.css`, numbered modules in load order |
+| `src/client/` | `page.html`, `style.css`, numbered modules in load order (`65-statelayer.js` is the State view) |
 | `sql/` | `001-init.sql` and later migrations |
 | `tests/` | `node --test` suites and `smoke.browser.js` |
 | `build.js` | Assembler and `--check` gate |
@@ -83,4 +94,5 @@ The **Depth** control maps to `MODEL_QUICK`, `MODEL_DEFAULT`, `MODEL_COMPLEX`
 in `.env` (defaults: Haiku 4.5, Sonnet 5.5, Opus 5.5). The answer is
 constrained to a JSON schema on the server, then validated by
 `normalize.js`: an idea with no span citation is dropped and counted, and an
-idea's words are always assembled from the spans it cites.
+idea's words are always assembled from the spans it cites. Goals and moves
+read in the text follow the same rule.

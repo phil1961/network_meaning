@@ -73,6 +73,32 @@ does not show how well a subject is understood, and nothing records the
 challenge that moved it. No new experiment was added for this one. It bears
 on E6 and E8 in §9.
 
+**2026-09-30, evening, phone session.** Three docs written by Claude on the
+phone from Phil's voice session, brought into this repo unchanged:
+`Three-Layers.md` (foundation, environment, interaction; motivation read off
+the gap between the first two), `Story-and-Game.md` (story supplies time;
+the game is generated when a goal is named), and
+`NEXT-STEP-Three-Layer-Build.md` (the Bobby probe). They are Claude's
+phrasing of Phil's framing, with Claude's own contributions marked inside
+them, so they are not quoted here as Phil's words. §9 takes its layer
+vocabulary from them, revises E4 and E9, and adds E10.
+
+**2026-09-30, the state layer.** "Okay, I see another layer, and that would
+be the user's state. When a goal is put forth, the state must eventually
+change so that the goal is now part of the person's state. Movement towards
+the goal is tracked. For our Bobby went to the store to get milk scenario in
+mind. Design me an app that can reflect that. You dont need to worry too
+much about how the layers interact, unless you actually have a good idea.
+But lets build this."
+
+And, while it was being built: "Also, feel free to make up as much data as
+you want. Take a stab, I'll review and revise at a later point after we
+review the app."
+
+This one was built the same day. It is experiment E11 in §9, status
+*testing*, and the State view in the app. The Bobby data in the app is made
+up, for Phil to revise.
+
 ---
 
 ## 1. The experience in one paragraph
@@ -511,7 +537,11 @@ test says so and Phil agrees. Status is one of *proposed*, *building*,
 E1 to E4 respond to Phil's 2026-09-30 statement on containers and
 perspective, E5 to E7 to "Time has to be considered. How?", E8 to the
 motivation battery, and E9 to the background corpus (all under "The goal"
-above).
+above). E10 and the revisions to E4 and E9 respond to the three docs from
+the phone session of 2026-09-30 evening: `Three-Layers.md`,
+`Story-and-Game.md` and `NEXT-STEP-Three-Layer-Build.md`, now in this repo.
+E11 is the state layer Phil asked to have built. Earlier experiments are
+revised by a note that refers to them, never rewritten in place.
 
 **E1. A containing concept is an ordinary idea that other ideas sit within.**
 *Status: proposed, not built.*
@@ -642,6 +672,119 @@ chapter or one short book.
 *Needs from Phil before building:* which corpus, and whether everyone starts
 from the same one.
 
+**Vocabulary, adopted 2026-09-30 from `Three-Layers.md`:** three layers.
+*Foundation:* authored in advance, moral precepts, the theology skeleton.
+*Environment:* the person's own situation (job, family, place, the
+conditions they feel themselves to be in), which has to be asked for.
+*Interaction:* what the person said, which is what the app maps today.
+Stuck versus plastic is a property of items on every layer, so it is treated
+here as a dimension, not a fourth layer (Phil flagged this and did not settle
+it).
+
+**E4, revised 2026-09-30 evening.** E4 said the tool cannot see the
+environment. In the three-layer vocabulary, E4 is about the *environment
+layer*: what the person's situation shows them under a perspective. It is
+asked for, never inferred without confirmation, and each answer is the
+person's own words, stuck. `Three-Layers.md` leaves open whether the
+environment is asked for directly or inferred from the interaction layer
+and confirmed; E10 is where that gets tested.
+
+**E9, revised 2026-09-30 evening.** The "background corpus" of E9 is the
+*foundation layer*. The environment is not a corpus and is not part of E9.
+One reconciliation, Claude's, not yet Phil's: `Three-Layers.md` calls the
+foundation "fixed before anyone talks to the tool," and Phil said the same
+morning that the corpus's "concepts and relationships can be tweaked." Both
+hold if the foundation's words are stuck and the relationships among them
+are plastic, which is how E9 is written. Needs Phil's yes.
+
+**E10. The Bobby probe: one thin sentence, two layers built beneath it.**
+*Status: proposed, not built. From `NEXT-STEP-Three-Layer-Build.md`.*
+Before any layer is added to the app, run the probe with prompts alone.
+Input: "Bobby went to the store to get milk." A foundation list authored by
+Phil by hand, a few lines (two commandments, three virtues, the sacrifice).
+One model call asked for two things: environment facts the sentence implies,
+each citing its span and marked as a reading until confirmed; and foundation
+objects the sentence lands on or near, by lookup against the authored list.
+The brief's predictions, phone Claude's: the environment partly derives
+(somewhere to be, a store within reach, a need for milk, plausibly someone at
+home); the foundation does not derive at all until someone asks why the milk
+matters.
+*For:* the predictions hold, and the run shows plainly whether foundation
+objects should be *matched* against an authored set or *proposed* and then
+confirmed. That one answer decides the schema, so it has to come out of the
+probe, not precede it. *Against:* the model derives foundation precepts from
+the bare sentence with confidence, which would mean the foundation can be
+inferred and the design consequence in the brief ("authored and matched
+against, never inferred") is wrong.
+*Then:* the same run on a paragraph with real stakes, and compare. Thin
+sentence first, because it costs one call and tests the prediction directly.
+*Persistence, if the probe leads to a build:* the environment is kept per
+person, but as its own stream, so it replays, rewinds and branches like the
+foundation (E9) and the interaction layer. A plain per-person table would
+break "what did I think in March."
+*Needs from Phil before running:* the hand-authored foundation list.
+
+**E11. The state layer: Now, goals, moves, and the moment a goal becomes
+part of the state.**
+*Status: built and testing, 2026-09-30. Phil's design; the data is made up
+for review.*
+A fourth layer beside foundation, environment and interaction: the person's
+**state**. Three things in it, all in the person's words and all kept:
+- *State facts:* what is true for the person now ("There is no milk in the
+  house"). A fact can stop being true; it keeps both dates and moves to the
+  past. Nothing is deleted.
+- *Goals:* put forth by the person, or read in their text by the model. A
+  goal read in the text is a *proposal*, plastic, until the person says
+  "yes, this is a goal" or "not a goal." Its words are the cited spans,
+  verbatim, by the same rule as ideas.
+- *Moves:* what was done toward a goal, each with the person's own reading
+  of its effect: closer, no change, farther. Movement toward a goal is the
+  list of its moves in order. No distance is invented; the app shows only
+  what was reported, as beads on a track and a count.
+When a goal is **reached**, the state changes: a new fact enters Now,
+marked as coming from that goal, and the goal keeps a pointer to it. That is
+the sentence "the state must eventually change so that the goal is now part
+of the person's state," made literal. A goal can also be marked *ground is
+stuck* (from `Story-and-Game.md`: the app must be able to say so instead of
+nagging), *dropped*, or reopened; a move on a stuck goal reopens it.
+*How it is built:* eight action types in the one reducer (`state`,
+`release`, `goal`, `acceptgoal`, `rejectgoal`, `move`, `reach`, `regoal`),
+so the state layer rewinds, branches and replays with the map, and the
+database schema did not change. The model's answer gained a `goals` field
+(title, cited spans, moves with cited spans, and `existing` to land a move
+on a goal already put forth); the prompt shows the model the current state
+facts and live goals. A State view in the app: Now, Past, Goals.
+*Test so far:* the built-in sample *Bobby and the milk*, 14 hand-made steps,
+rewinds cleanly: at step 7 the goal is only a reading from the text and Now
+holds the three original facts; at step 14 "Bobby has milk" is a fact that
+came from the goal. Two real model runs on 2026-09-30: "Bobby went to the
+store to get milk" came back as one proposed goal with one move and the
+question "Did Bobby get the milk and bring it home?"; a second paragraph
+landed a move on the already-open car goal and proposed the milk goal again.
+*For:* Phil can walk the Bobby sample and say the state layer shows what he
+meant, and a real paragraph of his own yields goals and moves he recognizes.
+*Against:* goals the model reads are mostly wrong or trivial, or the
+closer/same/farther reading is not something a person will bother to give.
+*Open, Claude's:* the model never proposes that a goal was reached, even
+when the text says he "came home with two gallons of milk." Reaching is the
+person's call today. Whether the model should at least ask "was that
+reached?" as its one question is worth deciding. Also open: how the state
+layer meets the containers, perspective and battery. The state facts are
+the obvious place for the battery's level to live, if it is a level.
+
 **Open, and it changes E1 and E2:** whether the nesting is exactly three
 levels (idea, containing concept, perspective) or a concept can sit within
 another concept. Asked 2026-09-30, not yet answered.
+
+**Open, from reading the morning and evening of 2026-09-30 together:**
+- *Gap or battery.* `Three-Layers.md` reads motivation off the distance
+  between foundation and environment, a quantity at an instant. Phil's
+  morning statement makes motivation a battery, a store drawn from and
+  added to over time. A distance and a store are different quantities. They
+  could be force and stored energy, but that is Claude's guess. E8 waits on
+  this.
+- *Where containers and perspective sit.* Nothing in the three-layer docs
+  maps the containing concept or the perspective onto the layers. Two
+  candidates, both Claude's: a perspective is the person's position between
+  floor and environment; a containing concept is the foundation object an
+  idea lands on. Neither is Phil's.

@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.1.0
+  File Version: 0.2.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css and
   the SCRIPT marker with the shared and client modules, in filename order, and
   writes public/index.html. Edit here, never in public/.
@@ -18,7 +18,7 @@
 /* ==== begin style.css ==== */
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.1.0
+   File Version: 0.2.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 :root{
@@ -251,6 +251,46 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 #draftmd{width:100%;min-height:120px;font-family:var(--font-data);font-size:12px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:13px;z-index:30;max-width:calc(100% - 32px)}
 
+/* ---------- State: Now and Goals ---------- */
+.stategrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start;max-width:1240px;margin:0 auto}
+@media (max-width:960px){.stategrid{grid-template-columns:minmax(0,1fr)}}
+.factlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fact{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;padding:10px 12px;background:var(--paper)}
+.fact.reached{border-left-color:var(--ok)}
+.fact.ended{border-left-color:var(--line);opacity:.7}
+.factbody{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.ftext{margin:0;font-family:var(--font-words);font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.past summary{cursor:pointer;font-size:12px;color:var(--muted)}
+.past .factlist{margin-top:8px}
+form.inline{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:10px}
+form.inline .input{width:100%}
+.input.grow{flex:1;min-width:160px}
+.radio{display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.goal{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper);display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.goal h3{margin:0;font-size:16px;font-family:var(--font-words);font-weight:600}
+.goal.st-reached{border-left:3px solid var(--ok)}
+.goal.st-open{border-left:3px solid var(--accent)}
+.goal.st-proposed{border-left:3px dashed var(--reading)}
+.goal.st-stuck{border-left:3px solid var(--open)}
+.goal.st-dropped{opacity:.6}
+.gwords{font-size:15px}
+.chip.gs-open{color:var(--accent);border-color:var(--accent)}
+.chip.gs-reached{color:var(--ok);border-color:var(--ok)}
+.chip.gs-proposed{color:var(--reading);border-color:var(--reading)}
+.chip.gs-stuck{color:var(--open);border-color:var(--open)}
+.track{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.beads{display:inline-flex;gap:3px;font-size:15px;line-height:1}
+.bead{color:var(--muted)} .bead.e-closer{color:var(--accent)} .bead.e-farther{color:var(--warn)} .bead.read{opacity:.55}
+.bead.reachedmark{color:var(--ok)}
+.moves{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.moves li{display:grid;grid-template-columns:52px 16px minmax(0,1fr);gap:8px;align-items:baseline}
+.moves li.read .mtext{font-style:italic;color:var(--reading)}
+.mdate{font-family:var(--font-data);font-size:11px;color:var(--muted)}
+.mglyph.e-closer{color:var(--accent)} .mglyph.e-farther{color:var(--warn)} .mglyph.e-same{color:var(--muted)}
+.reachednote{margin:0;font-size:13px;color:var(--ok)}
+.ghist summary{cursor:pointer;font-size:12px;color:var(--muted)}
+.empty.small{padding:12px 0}
+
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .sw.kept{border:1.5px solid var(--reading);background:var(--accent-soft)}
@@ -268,6 +308,7 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
     <div class="brand"><h1>Network Meaning</h1><span class="pill" id="buildpill">v0</span></div>
     <nav role="tablist" aria-label="Views">
       <button class="tab" role="tab" id="tab-map" data-view="map" aria-selected="true">Map</button>
+      <button class="tab" role="tab" id="tab-state" data-view="state" aria-selected="false">State<span class="count" id="goalcount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
       <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
@@ -319,6 +360,29 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
           </div>
         </div>
         <aside class="panel" id="panel"></aside>
+      </div>
+    </section>
+
+    <!-- STATE: where you stand, what you're moving toward -->
+    <section class="view" id="view-state" role="tabpanel" aria-labelledby="tab-state" hidden>
+      <div class="stategrid">
+        <div class="card" id="nowcard">
+          <div class="le-head"><h2>Now</h2><span class="small">What is true for you at this step. A reached goal lands here.</span></div>
+          <ul class="factlist" id="factlist"></ul>
+          <details class="past" id="pastwrap"><summary id="pastsummary">Past</summary><ul class="factlist past" id="pastlist"></ul></details>
+          <form class="inline" id="factform">
+            <label class="small" for="facttext">Put a state fact forth, in your own words</label>
+            <div class="row"><input class="input grow" id="facttext" placeholder="e.g. There is no milk in the house." autocomplete="off"><button class="btn primary" type="submit">Add to Now</button></div>
+          </form>
+        </div>
+        <div class="card" id="goalcard">
+          <div class="le-head"><h2>Goals</h2><span class="small">Put forth, moved toward, reached. Every move is a step in the stream.</span></div>
+          <form class="inline" id="goalform">
+            <label class="small" for="goaltext">Put a goal forth</label>
+            <div class="row"><input class="input grow" id="goaltext" placeholder="e.g. Get milk." autocomplete="off"><button class="btn primary" type="submit">Put it forth</button></div>
+          </form>
+          <div id="goallist"></div>
+        </div>
       </div>
     </section>
 
@@ -449,7 +513,7 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 /* ==== module shared/replay.js ==== */
 /* ─────────────────────────────────────────────
    File: src/shared/replay.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    The map is a projection of the stream. State = replay(steps[0..cursor)).
    This reducer runs on the server (to give the model the current map) and
@@ -461,15 +525,27 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
      { kind:"action", seq, at, date, source, action:{type, id?, flagId?, choice?} }
    result shape (validated by normalize.js before it is ever stored):
      { add:{id:node}, touch:[{id, also, slots}], replace:[{id, by}],
-       links:[{a,b,f,read}], flags:[flag], question:"" }                   */
+       links:[{a,b,f,read}], flags:[flag], goals:[goal], question:"" }
+
+   The state layer (Phil, 2026-09-30): the person's standing facts, the
+   goals they put forth, and the moves made toward each goal. A goal is
+   reached when the state changes so that the goal is now part of it.
+     st.state  {id: {text, date, from:"said"|"reached", goalId?, ended?}}
+     st.goals  {id: {text, date, status, proposed, moves:[{date, text, effect}], ...}}
+   status: proposed (the machine read it in the text; plastic until the
+   person accepts it) | open | reached | stuck | dropped.
+   Actions: state, release, goal, acceptgoal, rejectgoal, move, reach, regoal. */
 
 const LINK_LABELS = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to", "connects to", "my reading"];
 /* Links a traceback may walk. A path through a contradiction or a
    replacement is not a derivation. */
 const DERIVATION_LABELS = LINK_LABELS.filter(l => l !== "tension with" && l !== "replaces");
 
+const MOVE_EFFECTS = ["closer", "same", "farther"];
+const GOAL_STATUSES = ["proposed", "open", "reached", "stuck", "dropped"];
+
 function emptyState() {
-  return { nodes: {}, links: [], flags: [], outcomes: {}, ingests: 0, passes: [], question: null };
+  return { nodes: {}, links: [], flags: [], outcomes: {}, ingests: 0, passes: [], question: null, state: {}, goals: {} };
 }
 
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -504,11 +580,81 @@ function applyResult(st, r, meta) {
     if (st.nodes[l.a] && st.nodes[l.b] && !st.links.some(x => x.a === l.a && x.b === l.b)) st.links.push({ ...l });
   }
   for (const f of r.flags || []) st.flags.push({ ...f, nodes: [...(f.nodes || [])] });
+  /* Goals the model read in the text arrive as proposals. The words are the
+     person's (verbatim spans); calling them a goal is the machine's reading. */
+  for (const g of r.goals || []) {
+    if (!g || !g.id) continue;
+    const readMoves = (g.moves || []).map(m => ({ date: meta.date, text: m.text, at: m.at || "", effect: "closer", read: true }));
+    if (g.existing) {
+      const ex = st.goals[g.id];
+      if (ex && ex.status !== "reached" && ex.status !== "dropped" && readMoves.length) { ex.moves.push(...readMoves); ex.history.push(`${meta.date}: ${readMoves.length} move${readMoves.length > 1 ? "s" : ""} read in ${meta.source}.`); }
+      continue;
+    }
+    if (st.goals[g.id]) continue;
+    st.goals[g.id] = { text: g.t, words: g.words || "", at: g.at || "", date: meta.date, source: meta.source, status: "proposed", proposed: true, ideaId: g.ideaId || null,
+      moves: readMoves, history: [`${meta.date}: read as a goal in ${meta.source}.`] };
+  }
   if (r.question) st.question = { text: r.question, source: meta.source };
+}
+
+function stateText(s) { return String(s ?? "").trim(); }
+
+/* The state layer's actions. Everything is kept: a released fact keeps its
+   dates, a dropped goal keeps its moves. */
+function applyStateAction(st, a, step) {
+  const g = a.goalId ? st.goals[a.goalId] : null;
+  switch (a.type) {
+    case "state": {
+      if (!a.stateId || st.state[a.stateId] || !stateText(a.text)) return true;
+      st.state[a.stateId] = { text: stateText(a.text), date: step.date, from: "said", goalId: null, ended: null };
+      return true;
+    }
+    case "release": {
+      const s = st.state[a.stateId]; if (s && !s.ended) { s.ended = step.date; s.endNote = stateText(a.note) || ""; }
+      return true;
+    }
+    case "goal": {
+      if (!a.goalId || st.goals[a.goalId] || !stateText(a.text)) return true;
+      st.goals[a.goalId] = { text: stateText(a.text), words: "", at: "", date: step.date, source: step.source || "", status: "open", proposed: false, ideaId: a.ideaId || null, moves: [], history: [`${step.date}: put forth.`] };
+      return true;
+    }
+    case "acceptgoal": {
+      if (g && g.status === "proposed") { g.status = "open"; g.acceptedOn = step.date; g.history.push(`${step.date}: you confirmed this is a goal.`); g.moves.forEach(m => { m.read = false; }); }
+      return true;
+    }
+    case "rejectgoal": {
+      if (g && g.status === "proposed") { g.status = "dropped"; g.endedOn = step.date; g.history.push(`${step.date}: you said this is not a goal.`); }
+      return true;
+    }
+    case "move": {
+      if (!g || !stateText(a.text) || g.status === "reached" || g.status === "dropped") return true;
+      g.moves.push({ date: step.date, text: stateText(a.text), effect: MOVE_EFFECTS.includes(a.effect) ? a.effect : "same", read: false });
+      if (g.status === "stuck") { g.status = "open"; g.history.push(`${step.date}: moved again after being stuck.`); }
+      return true;
+    }
+    case "reach": {
+      if (!g || g.status === "reached" || g.status === "dropped") return true;
+      const sid = a.stateId || "s-" + a.goalId;
+      const text = stateText(a.text) || g.text;
+      if (!st.state[sid]) st.state[sid] = { text, date: step.date, from: "reached", goalId: a.goalId, ended: null };
+      g.status = "reached"; g.reachedOn = step.date; g.stateId = sid; g.history.push(`${step.date}: reached. “${text}” is now part of your state.`);
+      return true;
+    }
+    case "regoal": {
+      if (!g || g.status === "reached") return true;
+      const to = ["stuck", "dropped", "open"].includes(a.status) ? a.status : null;
+      if (!to || to === g.status) return true;
+      g.status = to; if (to !== "open") g.endedOn = step.date; else g.endedOn = null;
+      g.history.push(`${step.date}: ${to === "stuck" ? "the ground is stuck" : to === "dropped" ? "dropped" : "reopened"}${stateText(a.note) ? ". " + stateText(a.note) : "."}`);
+      return true;
+    }
+    default: return false;
+  }
 }
 
 function applyAction(st, step) {
   const a = step.action || {};
+  if (applyStateAction(st, a, step)) return;
   const n = a.id ? st.nodes[a.id] : null;
   if (a.type === "keep" && n) {
     /* A kept reading becomes stuck (it can no longer be rewired) but it
@@ -612,6 +758,31 @@ function traceToAnchor(st, start) {
   return [];
 }
 
+/* ---- queries over the state layer ---- */
+
+function currentState(st) { return Object.entries(st.state).filter(([, s]) => !s.ended).map(([id, s]) => ({ id, ...s })); }
+function pastState(st) { return Object.entries(st.state).filter(([, s]) => s.ended).map(([id, s]) => ({ id, ...s })); }
+
+/* Movement toward a goal, read off its moves: how many brought it closer,
+   how many did nothing, how many set it back, and the last move. No
+   invented distance; only what the person reported. */
+function movement(g) {
+  const m = { moves: g.moves.length, closer: 0, same: 0, farther: 0, last: g.moves.length ? g.moves[g.moves.length - 1] : null };
+  for (const x of g.moves) m[x.effect] = (m[x.effect] || 0) + 1;
+  return m;
+}
+
+const goalStatusLabel = s => ({ proposed: "read in your text", open: "open", reached: "reached", stuck: "ground is stuck", dropped: "dropped" }[s] || s);
+
+/* The state and goals the model sees, so it can tell a new goal from one
+   already put forth and notice a move toward an open goal. */
+function stateListing(st, cap = 40) {
+  const now = currentState(st).slice(-cap).map(s => `state | ${s.id} | ${s.text}`);
+  const goals = Object.entries(st.goals).filter(([, g]) => g.status === "open" || g.status === "proposed" || g.status === "stuck").slice(-cap)
+    .map(([id, g]) => `goal | ${id} | ${g.status} | ${g.text} | ${g.moves.length} moves`);
+  return now.concat(goals).join("\n") || "(no state facts or goals yet)";
+}
+
 /* The listing the model sees of what is already on the map. Most recently
    touched first; capped so the prompt stays bounded. */
 function mapListing(st, cap = 160) {
@@ -686,13 +857,15 @@ function spanLabel(sp) {
 /* ==== module client/00-build.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.1.0",
+  version: "0.2.0",
   corrections: [
+    ["The map had no place for where you stand or what you are moving toward",
+     "A State view: facts that are true for you now, goals put forth, every move toward a goal, and the moment a reached goal becomes part of your state. Goals stated in your text are read out for you to confirm. The Bobby sample walks through it."],
     ["The prototype lived inside a claude.ai artifact and could only save to that page's private store",
      "It is now its own app: a Node server with a Postgres stream store, signed in with a password. Text is ideaified on the server, where the prompt and the key live."],
     ["Keeping a reading turned the machine's sentence into \"your words\"",
@@ -737,13 +910,14 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privat
 /* ==== module client/20-sample.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/20-sample.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
-   The built-in sample stream: ordinary ingest steps that never went to a
-   server. Ideas and quotes are Phil's own words from the archived chats;
-   dates and timestamps are illustrative. When the sample is forked, these
-   steps are copied into the new stream as they are, so a saved stream
-   never depends on this file again. */
+   The built-in sample streams: ordinary steps that never went to a server.
+   The first is Phil's archived chats; ideas and quotes are his own words,
+   dates and timestamps illustrative. The second is Bobby and the milk, the
+   state-layer scenario, with made-up data for review. When a sample is
+   forked, its steps are copied into the new stream as they are, so a saved
+   stream never depends on this file again. */
 const SAMPLE_NAME = "Sample: Phil's archived chats";
 const SAMPLE_STEPS = (function () {
   const P = "Pure-Conscousness.md";
@@ -816,16 +990,58 @@ const SAMPLE_STEPS = (function () {
   return steps;
 })();
 
+/* Bobby went to the store to get milk: the state layer walked through in
+   time. State facts are put forth, a goal is read in the text and accepted,
+   moves are recorded, and reaching the goal changes the state. A second
+   goal shows the ground being stuck. All data made up (2026-09-30). */
+const BOBBY_NAME = "Sample: Bobby and the milk";
+const BOBBY_STEPS = (function () {
+  const act = (date, source, action) => ({ kind: "action", at: null, date, source, action });
+  const STORY = "Bobby, the story";
+  const steps = [
+    act("Sep 28", "state", { type: "state", stateId: "s-home", text: "Bobby is at home." }),
+    act("Sep 28", "state", { type: "state", stateId: "s-nomilk", text: "There is no milk in the house." }),
+    act("Sep 28", "state", { type: "state", stateId: "s-car", text: "The car makes a grinding noise when it starts." }),
+    act("Sep 28", "goal", { type: "goal", goalId: "g-car", text: "Fix the car." }),
+    act("Sep 29", "move", { type: "move", goalId: "g-car", text: "Called the mechanic. The first opening is next month.", effect: "same" }),
+    act("Sep 29", "regoal", { type: "regoal", goalId: "g-car", status: "stuck", note: "Nothing moves until next month." }),
+    { kind: "ingest", at: null, date: "Sep 30", source: STORY, text: "Bobby went to the store to get milk.", model: null, tier: null, result: {
+      add: {
+        bobby1: { t: "Bobby went to the store to get milk", kind: "idea", stuck: true, src: "user_said", words: "Bobby went to the store to get milk.", date: "Sep 30", at: "¶ 1", file: STORY, slots: ["Which store?", "How did he get there?", "Why milk?"], history: [] },
+        bobbyr1: { t: "Someone at home is expecting the milk", kind: "idea", stuck: false, src: "inferred", reading: "Nobody goes out for milk they don't need. The sentence implies a house, a lack, and probably a person waiting.", basis: ["bobby1"], slots: [], history: [] }
+      },
+      touch: [], replace: [],
+      links: [{ a: "bobby1", b: "bobbyr1", f: "my reading", read: true }],
+      flags: [{ id: "b-open", type: "unanswered", text: "Did Bobby get the milk?", detail: "Sep 30 · Bobby, the story. It says he went. It doesn't say he came back with it.", nodes: ["bobby1"], phrase: "", suggestion: "", question: "Did Bobby get the milk?" }],
+      goals: [{ id: "g-milk", t: "Get milk", words: "Bobby went to the store to get milk.", at: "¶ 1", ideaId: "bobby1", moves: [{ text: "Bobby went to the store to get milk.", at: "¶ 1" }] }],
+      question: "Did Bobby get the milk?"
+    } },
+    act("Sep 30", "goal", { type: "acceptgoal", goalId: "g-milk" }),
+    act("Sep 30", "state", { type: "release", stateId: "s-home", note: "He left for the store." }),
+    act("Sep 30", "move", { type: "move", goalId: "g-milk", text: "Bobby is at the store. They have milk.", effect: "closer" }),
+    act("Sep 30", "move", { type: "move", goalId: "g-milk", text: "The line is long. Bobby is still at the store.", effect: "same" }),
+    act("Oct 1", "reach", { type: "reach", goalId: "g-milk", text: "Bobby has milk." }),
+    act("Oct 1", "state", { type: "release", stateId: "s-nomilk", note: "He brought some home." }),
+    act("Oct 1", "state", { type: "state", stateId: "s-home2", text: "Bobby is home again." })
+  ];
+  steps.forEach((s, i) => { s.seq = i; });
+  return steps;
+})();
+
+/* Every built-in sample, by key. "sample" stays the default. */
+const SAMPLES = { sample: { name: SAMPLE_NAME, steps: SAMPLE_STEPS }, bobby: { name: BOBBY_NAME, steps: BOBBY_STEPS } };
+
 /* ==== module client/30-state.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/30-state.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    App state. S is the replayed map (see src/shared/replay.js, inlined
    above). stream is the current stream, cursor how many of its steps are
-   applied, focus the idea in the middle of the map. */
+   applied, focus the idea in the middle of the map. builtin is the sample
+   key ("sample", "bobby") for a built-in stream, false for a saved one. */
 let S = emptyState();
-let stream = { id: null, name: SAMPLE_NAME, builtin: true, steps: SAMPLE_STEPS.map(clone) };
+let stream = { id: null, name: SAMPLE_NAME, builtin: "sample", steps: SAMPLE_STEPS.map(clone) };
 let cursor = stream.steps.length;
 let focus = "furnished";
 let me = null;            /* {id, email} once signed in */
@@ -878,7 +1094,7 @@ const api = (function () {
 /* ==== module client/40-streams.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/40-streams.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Opening, forking, branching, deleting streams and appending steps.
    Ingest steps are made by the server (80-add.js); action steps are
@@ -910,9 +1126,10 @@ async function openSaved(id) {
     rebuild();
   } catch (e) { if (e.code !== "signed_out") toast("Couldn't open that stream. Try again."); }
 }
-function openSample() {
-  stream = { id: null, name: SAMPLE_NAME, builtin: true, steps: SAMPLE_STEPS.map(clone) };
-  cursor = stream.steps.length; focus = "furnished"; lsSet("nm.lastStream", "sample"); rebuild();
+function openSample(key = "sample") {
+  const s = SAMPLES[key] || SAMPLES.sample; key = SAMPLES[key] ? key : "sample";
+  stream = { id: null, name: s.name, builtin: key, steps: s.steps.map(clone) };
+  cursor = stream.steps.length; focus = key === "sample" ? "furnished" : null; lsSet("nm.lastStream", key); rebuild();
 }
 async function newEmpty() {
   try {
@@ -924,7 +1141,7 @@ async function newEmpty() {
   } catch (e) { if (e.code !== "signed_out") toast(e.message || "Couldn't create a stream."); return false; }
 }
 async function branchHere() {
-  const base = stream.builtin ? "Sample" : stream.name;
+  const base = stream.builtin ? stream.name.replace(/^Sample: /, "") : stream.name;
   const name = `${base} (branch at step ${cursor})`;
   try {
     const s = stream.builtin
@@ -953,7 +1170,7 @@ async function ensureWritable(onTopOfSample) {
   if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch from here first."); return false; }
   if (!stream.builtin) return true;
   const steps = onTopOfSample ? stream.steps.map(snapshotStep) : [];
-  const name = onTopOfSample ? "Sample + your text · " + stamp(new Date().toISOString()) : "Untitled · " + stamp(new Date().toISOString());
+  const name = onTopOfSample ? stream.name.replace(/^Sample: /, "") + " + yours · " + stamp(new Date().toISOString()) : "Untitled · " + stamp(new Date().toISOString());
   try {
     const s = await api.createStream({ name, steps });
     stream = { id: s.id, name: s.name, builtin: false, steps: onTopOfSample ? stream.steps.map(clone) : [] };
@@ -981,23 +1198,38 @@ async function recordAction(action, label) {
 /* ==== module client/50-streambar.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/50-streambar.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    The bar under the header: which stream, which step, save state. */
 function stepLabel(step) {
   if (step.kind === "action") {
     const a = step.action || {};
-    return { keep: "You kept a reading", discard: "You discarded a reading", anchor: "You changed an anchor", flag: "You resolved a loose end" }[a.type] || "You made a change";
+    const g = a.goalId && S.goals && S.goals[a.goalId] ? ` · ${clip(S.goals[a.goalId].text, 40)}` : "";
+    switch (a.type) {
+      case "keep": return "You kept a reading";
+      case "discard": return "You discarded a reading";
+      case "anchor": return "You changed an anchor";
+      case "flag": return "You resolved a loose end";
+      case "state": return `State: ${clip(a.text, 60)}`;
+      case "release": return "A state fact stopped being true";
+      case "goal": return `Goal put forth: ${clip(a.text, 50)}`;
+      case "acceptgoal": return "You confirmed a goal" + g;
+      case "rejectgoal": return "Not a goal" + g;
+      case "move": return `Move (${a.effect || "same"}): ${clip(a.text, 50)}`;
+      case "reach": return "Goal reached" + g;
+      case "regoal": return ({ stuck: "Ground is stuck", dropped: "Goal dropped", open: "Goal reopened" }[a.status] || "Goal changed") + g;
+      default: return "You made a change";
+    }
   }
   return step.source || "Text";
 }
 function renderStreamBar() {
   const sel = $("#streamsel");
-  let opts = `<option value="sample">${esc(SAMPLE_NAME)}</option>`;
+  let opts = Object.entries(SAMPLES).map(([k, s]) => `<option value="${k}">${esc(s.name)}</option>`).join("");
   for (const s of savedStreams) opts += `<option value="${esc(s.id)}">${esc(s.name || "Untitled")} · ${s.stepCount || 0} steps</option>`;
   if (!stream.builtin && stream.id && !savedStreams.some(s => s.id === stream.id)) opts += `<option value="${esc(stream.id)}">${esc(stream.name)}</option>`;
   sel.innerHTML = opts;
-  sel.value = stream.builtin ? "sample" : stream.id;
+  sel.value = stream.builtin ? stream.builtin : stream.id;
   const sc = $("#scrub"); sc.max = String(stream.steps.length); sc.value = String(cursor); sc.disabled = !stream.steps.length;
   const cur = cursor ? stream.steps[cursor - 1] : null;
   $("#scrubout").textContent = stream.steps.length ? `${cursor} of ${stream.steps.length}` + (cur ? ` · ${cur.date || ""} · ${stepLabel(cur)}` : " · empty map") : "No steps yet";
@@ -1014,7 +1246,7 @@ function renderSave() {
   if (pendingSaves) { el.textContent = "Saving…"; return; }
   el.textContent = "Saved"; el.classList.add("ok");
 }
-$("#streamsel").addEventListener("change", e => { const v = e.target.value; if (v === "sample") openSample(); else openSaved(v); });
+$("#streamsel").addEventListener("change", e => { const v = e.target.value; if (SAMPLES[v]) openSample(v); else openSaved(v); });
 $("#newstream").addEventListener("click", async () => { if (await newEmpty()) { showView("add"); $("#entry").focus(); } });
 $("#scrub").addEventListener("input", e => { cursor = +e.target.value; rebuild(); });
 $("#tolatest").addEventListener("click", () => { cursor = stream.steps.length; rebuild(); });
@@ -1186,6 +1418,124 @@ $("#copymd").addEventListener("click", () => {
   try { navigator.clipboard.writeText(ta.value).then(() => toast("Copied."), fallback); } catch (err) { fallback(); }
 });
 
+/* ==== module client/65-statelayer.js ==== */
+/* ─────────────────────────────────────────────
+   File: src/client/65-statelayer.js
+   File Version: 0.2.0
+   ─────────────────────────────────────────────
+   The State view: Now (the person's standing facts), Goals (put forth,
+   moved toward, reached, stuck, dropped) and the movement toward each goal.
+   Every button here appends an action step, so the state layer rewinds
+   and branches with the rest of the stream. Nothing is computed that the
+   person did not report: a goal's movement is its moves, in order. */
+const effectGlyph = { closer: "●", same: "○", farther: "◐" };
+const effectWord = { closer: "closer", same: "no change", farther: "farther" };
+let openForm = null; /* {goalId, kind:"move"|"reach"} or {stateId, kind:"release"} while an inline form is showing */
+
+function newId(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+
+function goalCard(id, g) {
+  const m = movement(g);
+  const beads = g.moves.map(x => `<span class="bead e-${esc(x.effect)}${x.read ? " read" : ""}" title="${esc(x.date)} · ${esc(x.text)} · ${effectWord[x.effect] || x.effect}">${effectGlyph[x.effect] || "○"}</span>`).join("");
+  const reached = g.status === "reached";
+  let sum = m.moves ? `${m.moves} move${m.moves > 1 ? "s" : ""}` + (m.closer ? ` · ${m.closer} closer` : "") + (m.same ? ` · ${m.same} no change` : "") + (m.farther ? ` · ${m.farther} farther` : "") + (m.last ? ` · last ${esc(m.last.date)}` : "") : "No moves yet";
+  if (reached) sum += ` · reached ${esc(g.reachedOn || "")}`;
+  let h = `<article class="goal st-${esc(g.status)}" data-goal="${esc(id)}">
+    <div class="goalhead"><div class="meta"><span class="chip gs-${esc(g.status)}">${esc(goalStatusLabel(g.status))}</span><span class="chip">${esc(g.date || "")}</span>${g.proposed && g.status !== "proposed" ? `<span class="chip reading">read in your text</span>` : ""}</div>
+    <h3>${esc(g.text)}</h3></div>`;
+  if (g.words) h += `<p class="words gwords">${esc(g.words)}</p><div class="src"><span>${esc(g.date || "")}</span><span>${esc(g.at || "")}</span><span>${esc(g.source || "")}</span>${g.ideaId && S.nodes[g.ideaId] ? `<button class="linkbtn" data-go="${esc(g.ideaId)}">on the map</button>` : ""}</div>`;
+  h += `<div class="track"><span class="beads">${beads}${reached ? `<span class="bead reachedmark" title="reached">★</span>` : ""}</span><span class="small">${sum}</span></div>`;
+  if (g.moves.length) h += `<ol class="moves">${g.moves.map(x => `<li class="${x.read ? "read" : ""}"><span class="mdate">${esc(x.date)}</span><span class="mglyph e-${esc(x.effect)}">${effectGlyph[x.effect] || "○"}</span><span class="mtext">${esc(x.text)}${x.read ? ` <span class="small">(read in your text)</span>` : ""}</span></li>`).join("")}</ol>`;
+  if (reached && g.stateId && S.state[g.stateId]) h += `<p class="reachednote">Now part of your state: <b>${esc(S.state[g.stateId].text)}</b>${S.state[g.stateId].ended ? ` <span class="small">(no longer true since ${esc(S.state[g.stateId].ended)})</span>` : ""}</p>`;
+  if (g.history && g.history.length > 1) h += `<details class="ghist"><summary>History</summary><ul class="hist">${g.history.map(x => `<li>${esc(x)}</li>`).join("")}</ul></details>`;
+  const f = openForm && openForm.goalId === id ? openForm : null;
+  if (f && f.kind === "move") {
+    h += `<form class="inline" data-form="move" data-goal="${esc(id)}"><label class="small" for="mv-${esc(id)}">What happened, in your own words</label>
+      <input class="input" id="mv-${esc(id)}" autocomplete="off" placeholder="e.g. Bobby is at the store. They have milk.">
+      <div class="row"><span class="small">This moved the goal:</span>${["closer", "same", "farther"].map((e, i) => `<label class="radio"><input type="radio" name="eff-${esc(id)}" value="${e}" ${i === 0 ? "checked" : ""}> ${effectGlyph[e]} ${effectWord[e]}</label>`).join("")}</div>
+      <div class="actions"><button class="btn primary" type="submit">Record the move</button><button class="btn" type="button" data-cancel="1">Cancel</button></div></form>`;
+  } else if (f && f.kind === "reach") {
+    h += `<form class="inline" data-form="reach" data-goal="${esc(id)}"><label class="small" for="rc-${esc(id)}">What is true now that this is reached? It becomes a fact in Now.</label>
+      <input class="input" id="rc-${esc(id)}" autocomplete="off" value="${esc(g.text)}">
+      <div class="actions"><button class="btn primary" type="submit">Reached</button><button class="btn" type="button" data-cancel="1">Cancel</button></div></form>`;
+  } else {
+    let acts = "";
+    if (g.status === "proposed") acts = `<button class="btn primary" data-act="acceptgoal">Yes, this is a goal</button><button class="btn" data-act="rejectgoal">Not a goal</button>`;
+    else if (g.status === "open") acts = `<button class="btn primary" data-open="move">Record a move</button><button class="btn" data-open="reach">Reached</button><button class="btn" data-act="stuck">Ground is stuck</button><button class="btn danger" data-act="dropped">Drop</button>`;
+    else if (g.status === "stuck") acts = `<button class="btn primary" data-open="move">Record a move</button><button class="btn" data-act="open">Reopen</button><button class="btn danger" data-act="dropped">Drop</button>`;
+    else if (g.status === "dropped" && !g.proposed) acts = `<button class="btn" data-act="open">Take it up again</button>`;
+    if (acts) h += `<div class="actions">${isRewound() ? acts.replace(/<button /g, "<button disabled ") : acts}</div>`;
+  }
+  return h + `</article>`;
+}
+
+function renderStateView() {
+  const now = currentState(S), past = pastState(S);
+  const factRow = s => {
+    const f = openForm && openForm.stateId === s.id ? openForm : null;
+    return `<li class="fact${s.from === "reached" ? " reached" : ""}" data-state="${esc(s.id)}"><div class="factbody"><p class="ftext">${esc(s.text)}</p>
+      <p class="small">since ${esc(s.date)}${s.from === "reached" && S.goals[s.goalId] ? ` · reached goal: <button class="linkbtn" data-goalgo="${esc(s.goalId)}">${esc(S.goals[s.goalId].text)}</button>` : ""}</p>
+      ${f ? `<form class="inline" data-form="release" data-state="${esc(s.id)}"><input class="input" id="rl-${esc(s.id)}" placeholder="What changed? (optional)" autocomplete="off"><div class="actions"><button class="btn primary" type="submit">No longer true</button><button class="btn" type="button" data-cancel="1">Cancel</button></div></form>` : ""}</div>
+      ${f ? "" : `<button class="btn" data-release="${esc(s.id)}">No longer true</button>`}</li>`;
+  };
+  $("#factlist").innerHTML = now.length ? now.map(factRow).join("") : `<li class="empty small">Nothing put forth yet. Say what is true for you right now, or reach a goal.</li>`;
+  $("#pastwrap").hidden = !past.length;
+  $("#pastsummary").textContent = `Past · ${past.length} fact${past.length === 1 ? "" : "s"} that stopped being true`;
+  $("#pastlist").innerHTML = past.map(s => `<li class="fact ended"><div class="factbody"><p class="ftext">${esc(s.text)}</p><p class="small">${esc(s.date)} → ${esc(s.ended)}${s.endNote ? ` · ${esc(s.endNote)}` : ""}</p></div></li>`).join("");
+
+  const order = ["proposed", "open", "stuck", "reached", "dropped"];
+  const entries = Object.entries(S.goals).sort((a, b) => order.indexOf(a[1].status) - order.indexOf(b[1].status));
+  const live = entries.filter(([, g]) => g.status !== "dropped"), dropped = entries.filter(([, g]) => g.status === "dropped");
+  $("#goallist").innerHTML = (live.length ? live.map(([id, g]) => goalCard(id, g)).join("") : `<p class="empty small">No goals yet. Put one forth above, or add text: goals stated in it are read out for you to confirm.</p>`)
+    + (dropped.length ? `<details class="ghist"><summary>Dropped · ${dropped.length}</summary>${dropped.map(([id, g]) => goalCard(id, g)).join("")}</details>` : "");
+  const open = entries.filter(([, g]) => g.status === "open" || g.status === "proposed" || g.status === "stuck").length;
+  const c = $("#goalcount"); c.textContent = open; c.hidden = !open;
+  const rew = isRewound();
+  document.querySelectorAll("#factform input, #factform button, #goalform input, #goalform button").forEach(el => { el.disabled = rew; });
+}
+
+async function stateAction(action, label, after) {
+  if (!await recordAction(action, label)) return;
+  openForm = null; rebuild(); if (after) after();
+}
+
+$("#factform").addEventListener("submit", async e => {
+  e.preventDefault(); const t = $("#facttext").value.trim(); if (!t) { $("#facttext").focus(); return; }
+  await stateAction({ type: "state", stateId: newId("s"), text: t }, "state", () => { $("#facttext").value = ""; toast("Added to Now."); });
+});
+$("#goalform").addEventListener("submit", async e => {
+  e.preventDefault(); const t = $("#goaltext").value.trim(); if (!t) { $("#goaltext").focus(); return; }
+  await stateAction({ type: "goal", goalId: newId("g"), text: t }, "goal", () => { $("#goaltext").value = ""; toast("Goal put forth."); });
+});
+$("#view-state").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.go) { setFocus(b.dataset.go); showView("map"); return; }
+  if (b.dataset.goalgo) { const el = document.querySelector(`[data-goal="${CSS.escape(b.dataset.goalgo)}"]`); if (el) el.scrollIntoView({ block: "center" }); return; }
+  if (b.dataset.cancel) { openForm = null; renderStateView(); return; }
+  if (b.dataset.release) { if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch first."); return; } openForm = { stateId: b.dataset.release, kind: "release" }; renderStateView(); $(`#rl-${CSS.escape(b.dataset.release)}`)?.focus(); return; }
+  const card = b.closest("[data-goal]"); if (!card) return;
+  const id = card.dataset.goal;
+  if (b.dataset.open) { if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch first."); return; } openForm = { goalId: id, kind: b.dataset.open }; renderStateView(); $(`#${b.dataset.open === "move" ? "mv" : "rc"}-${CSS.escape(id)}`)?.focus(); return; }
+  const act = b.dataset.act; if (!act) return;
+  if (act === "acceptgoal" || act === "rejectgoal") await stateAction({ type: act, goalId: id }, "goal", () => toast(act === "acceptgoal" ? "Goal confirmed." : "Marked as not a goal."));
+  else await stateAction({ type: "regoal", goalId: id, status: act }, "goal", () => toast(act === "stuck" ? "Marked: the ground is stuck. It stays here; a move reopens it." : act === "dropped" ? "Dropped. It stays in the history." : "Reopened."));
+});
+$("#view-state").addEventListener("submit", async e => {
+  const f = e.target.closest("form[data-form]"); if (!f) return;
+  e.preventDefault();
+  if (f.dataset.form === "move") {
+    const id = f.dataset.goal; const text = f.querySelector("input.input").value.trim(); if (!text) { f.querySelector("input.input").focus(); return; }
+    const effect = (f.querySelector("input[type=radio]:checked") || {}).value || "same";
+    await stateAction({ type: "move", goalId: id, text, effect }, "move", () => toast("Move recorded."));
+  } else if (f.dataset.form === "reach") {
+    const id = f.dataset.goal; const text = f.querySelector("input.input").value.trim();
+    await stateAction({ type: "reach", goalId: id, stateId: newId("s"), text }, "reach", () => toast("Reached. It is part of your state now."));
+  } else if (f.dataset.form === "release") {
+    const id = f.dataset.state; const note = f.querySelector("input.input").value.trim();
+    await stateAction({ type: "release", stateId: id, note }, "state", () => toast("Moved to the past."));
+  }
+});
+
 /* ==== module client/70-loose.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/70-loose.js
@@ -1271,7 +1621,7 @@ $("#timeline").addEventListener("keydown", e => { if (e.key === "Enter" || e.key
 /* ==== module client/80-add.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/80-add.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Add text: paste, drop, split long text into passes, send each pass to
    the server's /ingest, append the returned step. The one question. */
@@ -1291,7 +1641,8 @@ async function ingestOne(text, source, tier) {
   focus = null; rebuild();
   const res = r.step.result || {};
   const nIdeas = Object.values(res.add || {}).filter(n => n.stuck).length, nRead = Object.values(res.add || {}).filter(n => !n.stuck).length;
-  lastSummary = { source, ideas: nIdeas, readings: nRead, again: (res.touch || []).length, links: (res.links || []).length, flags: (res.flags || []).length, dropped: r.dropped || 0 };
+  const goals = res.goals || [];
+  lastSummary = { source, ideas: nIdeas, readings: nRead, again: (res.touch || []).length, links: (res.links || []).length, flags: (res.flags || []).length, goals: goals.filter(g => !g.existing).length, moves: goals.reduce((n, g) => n + (g.moves || []).length, 0), dropped: r.dropped || 0 };
   dismissedQ = null;
   return r;
 }
@@ -1351,7 +1702,7 @@ function renderAdd() {
   const sm = $("#summary");
   if (lastSummary && !busy) {
     const L = lastSummary; sm.hidden = false;
-    sm.innerHTML = `<p><b>Added from ${esc(L.source)}:</b> ${L.ideas} ideas in your words, ${L.readings} readings, ${L.again} said again, ${L.links} links, ${L.flags} loose ends.</p>` + (L.dropped > 0 ? `<p class="small">${L.dropped} suggested ideas were dropped because they didn't point to your text.</p>` : "") + `<div class="actions"><button class="btn" data-gomap="1">See it on the map</button>${L.flags ? `<button class="btn" data-gole="1">Review loose ends</button>` : ""}</div>`;
+    sm.innerHTML = `<p><b>Added from ${esc(L.source)}:</b> ${L.ideas} ideas in your words, ${L.readings} readings, ${L.again} said again, ${L.links} links, ${L.flags} loose ends${L.goals || L.moves ? `, ${L.goals} goal${L.goals === 1 ? "" : "s"} read in the text to confirm, ${L.moves} move${L.moves === 1 ? "" : "s"}` : ""}.</p>` + (L.dropped > 0 ? `<p class="small">${L.dropped} suggested items were dropped because they didn't point to your text.</p>` : "") + `<div class="actions"><button class="btn" data-gomap="1">See it on the map</button>${L.goals || L.moves ? `<button class="btn" data-gostate="1">Review goals</button>` : ""}${L.flags ? `<button class="btn" data-gole="1">Review loose ends</button>` : ""}</div>`;
   } else sm.hidden = true;
   const cq = currentQuestion(); const qb = $("#qbox");
   if (cq && !busy) { qb.hidden = false; $("#qboxfrom").textContent = cq.from; $("#qboxtext").textContent = cq.text; $("#sendanswer").disabled = !me || rew; }
@@ -1371,7 +1722,7 @@ $("#addactions").addEventListener("click", e => {
   if (b.id === "stop") { if (ctl) ctl.abort(); return; }
   if (b.dataset.run) runIngest(b.dataset.run === "ontop" || b.dataset.run === "go");
 });
-$("#summary").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.gomap) showView("map"); if (b.dataset.gole) showView("loose"); });
+$("#summary").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.gomap) showView("map"); if (b.dataset.gostate) showView("state"); if (b.dataset.gole) showView("loose"); });
 $("#entry").addEventListener("input", renderCharCount);
 $("#queue").addEventListener("click", e => { const b = e.target.closest("[data-unq]"); if (b) { fileQueue.splice(+b.dataset.unq, 1); renderQueue(); } });
 $("#sendanswer").addEventListener("click", async () => {
@@ -1460,15 +1811,16 @@ $("#qlater").addEventListener("click", () => { $("#qcard").hidden = true; toast(
 /* ==== module client/97-app.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/97-app.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Views, sign-in, and boot. Last module: everything above is defined. */
-function renderAll() { renderStreamBar(); renderMap(); renderLE(); renderTimeline(); renderAdd(); }
+function renderAll() { renderStreamBar(); renderMap(); renderStateView(); renderLE(); renderTimeline(); renderAdd(); }
 function showView(v) {
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
   document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
   if (v === "timeline") renderTimeline();
   if (v === "add") renderAdd();
+  if (v === "state") renderStateView();
   try { history.replaceState(null, "", "#" + v); } catch (e) { /* file:// */ }
 }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
@@ -1497,14 +1849,16 @@ $("#who").addEventListener("click", async e => {
 async function afterSignIn() {
   await refreshList();
   const last = lsGet("nm.lastStream");
-  if (last && last !== "sample" && savedStreams.some(s => s.id === last)) await openSaved(last);
+  if (last && SAMPLES[last] && last !== stream.builtin) openSample(last);
+  else if (last && !SAMPLES[last] && savedStreams.some(s => s.id === last)) await openSaved(last);
   else rebuild();
 }
 
 /* boot */
 $("#buildpill").textContent = "v" + BUILD.version;
-renderSteps(0); rebuild();
-const h0 = (location.hash || "").slice(1); if (["map", "add", "loose", "timeline", "talk"].includes(h0)) showView(h0);
+renderSteps(0);
+{ const last = lsGet("nm.lastStream"); if (last && SAMPLES[last] && last !== "sample") openSample(last); else rebuild(); }
+const h0 = (location.hash || "").slice(1); if (["map", "state", "add", "loose", "timeline", "talk"].includes(h0)) showView(h0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderMap());
 (async () => {
   try { me = await api.me(); renderWho(); await afterSignIn(); }

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/normalize.test.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ───────────────────────────────────────────── */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -100,7 +100,47 @@ test("ideaify runs the prompt through an injected model and returns a step resul
 
 test("the output schema is strict on structure and names every field the prompt promises", () => {
   assert.equal(OUTPUT_SCHEMA.additionalProperties, false);
-  assert.deepEqual(OUTPUT_SCHEMA.required, ["ideas", "readings", "links", "flags", "question"]);
+  assert.deepEqual(OUTPUT_SCHEMA.required, ["ideas", "readings", "links", "flags", "goals", "question"]);
   const prompt = buildPrompt(["a."], "src", "(empty)");
-  for (const word of ["spans", "match", "replaces", "readings", "basis", "slots", "links", "flags", "question"]) assert.match(prompt, new RegExp(`"${word}"`));
+  for (const word of ["spans", "match", "replaces", "readings", "basis", "slots", "links", "flags", "goals", "moves", "existing", "question"]) assert.match(prompt, new RegExp(`"${word}"`));
+  assert.match(prompt, /no state facts or goals yet/);
+});
+
+const bobby = ["Bobby went to the store to get milk.", "He also wants to fix the car someday.", "The store was out of eggs."];
+
+test("goals and moves are assembled verbatim from cited spans; uncited ones are dropped and counted", () => {
+  const { result, dropped } = normalize({
+    ideas: [{ key: "i1", title: "Bobby went for milk", kind: "idea", spans: [0], match: null, replaces: null, slots: [] }], readings: [], links: [], flags: [],
+    goals: [
+      { key: "g1", title: "Get milk", spans: [0], existing: null, moves: [{ text: "went to the store", spans: [0] }, { text: "invented move", spans: [] }] },
+      { key: "g2", title: "Fix the car", spans: [1], existing: null, moves: [] },
+      { key: "g3", title: "Invented goal", spans: [], existing: null, moves: [] }
+    ], question: "Did Bobby get the milk?"
+  }, bobby, "story", "s8", "Sep 30", {}, {});
+  assert.equal(dropped, 2, "one uncited move and one uncited goal");
+  assert.equal(result.goals.length, 2);
+  assert.equal(result.goals[0].id, "s8-g1");
+  assert.equal(result.goals[0].t, "Get milk");
+  assert.equal(result.goals[0].words, bobby[0], "the goal's words are the span, not the title");
+  assert.equal(result.goals[0].at, "¶ 1");
+  assert.deepEqual(result.goals[0].moves.map(m => m.text), [bobby[0]], "a move's text is its cited span");
+  assert.equal(result.goals[1].moves.length, 0, "a wish with no action is a goal with no moves");
+});
+
+test("a goal naming an existing open goal contributes moves to it instead of starting a new one", () => {
+  const goals = { "g-milk": { text: "Get milk", status: "open", moves: [] }, "g-done": { text: "Done", status: "reached", moves: [] } };
+  const { result } = normalize({
+    ideas: [], readings: [], links: [], flags: [],
+    goals: [
+      { key: "g1", title: "Get milk", spans: [0], existing: "g-milk", moves: [{ text: "went to the store", spans: [0] }] },
+      { key: "g2", title: "Eggs", spans: [2], existing: "g-done", moves: [] },
+      { key: "g3", title: "Nothing new", spans: [1], existing: "g-milk", moves: [] }
+    ], question: ""
+  }, bobby, "story", "s9", "Sep 30", {}, goals);
+  assert.equal(result.goals.length, 2);
+  assert.deepEqual(result.goals[0], { id: "g-milk", existing: true, moves: [{ text: bobby[0], at: "¶ 1" }] });
+  assert.equal(result.goals[1].id, "s9-g1", "a reached goal cannot take moves, so this becomes a new proposal");
+  const S = replay([{ kind: "ingest", seq: 0, date: "Sep 30", source: "story", result }]);
+  assert.equal(S.goals["s9-g1"].status, "proposed");
+  assert.equal(S.goals["g-milk"], undefined, "moves for a goal the stream does not have are ignored");
 });

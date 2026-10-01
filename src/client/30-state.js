@@ -1,12 +1,13 @@
 /* ─────────────────────────────────────────────
    File: src/client/30-state.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    App state. S is the replayed map (see src/shared/replay.js, inlined
    above). stream is the current stream, cursor how many of its steps are
-   applied, focus the idea in the middle of the map. */
+   applied, focus the idea in the middle of the map. builtin is the sample
+   key ("sample", "bobby") for a built-in stream, false for a saved one. */
 let S = emptyState();
-let stream = { id: null, name: SAMPLE_NAME, builtin: true, steps: SAMPLE_STEPS.map(clone) };
+let stream = { id: null, name: SAMPLE_NAME, builtin: "sample", steps: SAMPLE_STEPS.map(clone) };
 let cursor = stream.steps.length;
 let focus = "furnished";
 let me = null;            /* {id, email} once signed in */

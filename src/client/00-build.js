@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.1.0",
+  version: "0.2.0",
   corrections: [
+    ["The map had no place for where you stand or what you are moving toward",
+     "A State view: facts that are true for you now, goals put forth, every move toward a goal, and the moment a reached goal becomes part of your state. Goals stated in your text are read out for you to confirm. The Bobby sample walks through it."],
     ["The prototype lived inside a claude.ai artifact and could only save to that page's private store",
      "It is now its own app: a Node server with a Postgres stream store, signed in with a password. Text is ideaified on the server, where the prompt and the key live."],
     ["Keeping a reading turned the machine's sentence into \"your words\"",
