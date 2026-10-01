@@ -803,3 +803,66 @@ script; script lines that check something; the model writing scripts.
    they were said (E6), then run the archive test from `VISION.md` §7.
 4. Run the Bobby probe (E10) once Phil supplies the foundation list.
 5. Take Phil's answers to the questions above.
+
+## 17. Evidence, a word on each suggestion, checks, and two account changes (2026-09-30, late night, app 0.9.0)
+
+Built by a second Claude session (the one that wrote `ARCHITECTURE.md`)
+after Phil authorized it: "I do want you to add those peices when you get a
+chance," then "Also, I need a Change Password Capability for Users while
+you are at it," and "Yes, add that feature too" for the invite code. This
+section supersedes two lines above it: item 2 of "Next session" (script
+lines that check) is done, and of the four agreed script proposals three
+remain.
+
+**What was built**
+
+- **Evidence (E17, part 1).** A new **Evidence** tab. `src/shared/evidence.js`
+  is a pure function over the steps of one stream. It counts what became of
+  the machine's claims: readings kept, discarded and undecided; goals read
+  in text confirmed and refused; loose ends raised, settled and put off;
+  suppositions confirmed and ruled out; items dropped for citing nothing;
+  and the split by model. It rewinds with the Step slider. No model call,
+  no database.
+- **A word on each suggestion (E17, part 2).** Each Help analysis suggestion
+  has three buttons: New to me, Already knew, Wrong. The word is an action
+  step of type `verdict` (`analysisId`, `suggestionId`, `mark`). It marks
+  the suggestion and changes nothing else, and it does not count as a step
+  "since" the analysis. Script word: `mark "…" new`.
+- **Script lines that check (E17, part 3; E13).** `expect [no] kind thing
+  [word]`, for a fact, past, goal, idea, reading, item, loose, link or
+  suggestion. A check changes nothing and never stops a run. The stepper
+  marks it held or not and shows "2 of 3 checks held"; `scriptToSteps()`
+  returns `checks`, so a script runs headless as a test.
+- **Change password.** Beside Sign out. `POST /api/me/password {current,
+  password}`. A wrong current password is a 403, so the person stays
+  signed in; eight wrong tries and it waits a quarter of an hour. The
+  owner can use it too: the current one is `APP_PASSWORD` or one set this
+  way, and `APP_PASSWORD` goes on working. Open sessions are not ended.
+- **Who may sign up, from the Admin tab.** Open, by invite code, or closed.
+  Kept in a new `settings` table (`sql/003-settings.sql`, the third
+  migration, applied when the server starts). A setting made there wins
+  over `SIGNUP` and `SIGNUP_CODE`; "Use the server's setting" removes it.
+  `GET` and `PATCH /api/admin/settings`. The invite code is kept as plain
+  text, because the admin has to be able to read it back.
+- **The Darlene sample ends with a made-up Help analysis** of three
+  suggestions (54 steps, was 53), so a guest, who cannot call the AI, can
+  see suggestions and give a word on each. It is not made by any model and
+  says so in its model chip.
+
+**Tests**
+
+- `npm run gate`: 84 tests, 68 pass, 16 skip without `TEST_DATABASE_URL`.
+- `npm run smoke`: 101 checks pass, including Evidence on the Darlene
+  sample, a guest's word on a suggestion, and a script of checks.
+- **Not run by the session that wrote them:** the two new Postgres tests
+  in `tests/db.test.js` (changing a password; the sign-up setting). That
+  session cannot read `.env`, so it had no test database. Run
+  `TEST_DATABASE_URL=… npm test` to run them. The password dialog and the
+  Admin tab's sign-up card are also not covered by the smoke test, which
+  has no signed-in user.
+
+**Recorded, not built** (Phil: "we aren't building yet"): spendable
+resources and motivation. `VISION.md` §9, E18 and the notes on E8: the
+means (money, time, physical strength, refreshed in a paycheck, sleep and
+food) are kept apart from motivation (held per goal, refreshed by
+reflection on the right ideas). Phil is still thinking aloud on these.

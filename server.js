@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: server.js
-   File Version: 0.6.0
+   File Version: 0.7.0
    ─────────────────────────────────────────────
    Network Meaning: the HTTP entry point. Node's built-in http server, no
    framework. Serves the one built page and a small JSON API. Under IIS,
@@ -13,9 +13,12 @@
      GET  /api/auth                   who may sign up: open | code | closed
      POST /api/login  {email, password}   (a blank email is the owner)
      POST /api/signup {email, password, code?}      POST /api/logout      GET /api/me
+     POST /api/me/password {current, password}      change your own password
      GET  /api/samples                the owner's own sample stream, for the owner alone
      GET  /api/admin/users            POST /api/admin/users {email, password, level?}   (admin only)
      PATCH /api/admin/users/:id {password?, disabled?, level?}                      (admin only)
+     GET  /api/admin/settings         PATCH /api/admin/settings {signup, code?}        (admin only)
+                                      signup: open | code | closed | server (back to the server's own setting)
    Levels: what a user does is stored; a guest can read and try things in
    the page, and every route that would store something refuses them; an
    admin is a user who can also add people and share streams.
@@ -176,7 +179,7 @@ async function handleApi(req, res, url) {
   const p = url.pathname.slice(BASE.length + 4); /* strip "/api" */
   const m = req.method;
 
-  if (p === "/auth" && m === "GET") return send(res, 200, { signup: auth.signupMode() });
+  if (p === "/auth" && m === "GET") return send(res, 200, { signup: (await auth.signupSettings()).mode });
   if (p === "/login" && m === "POST") {
     const body = await readJson(req);
     /* eight wrong tries from one place for one email, and that place waits a quarter of an hour */
@@ -189,9 +192,9 @@ async function handleApi(req, res, url) {
   }
   if (p === "/signup" && m === "POST") {
     const body = await readJson(req);
-    const mode = auth.signupMode();
+    const su = await auth.signupSettings(), mode = su.mode;
     if (mode === "closed") throw new HttpError(403, "signup_closed", "Signing up is closed. Ask to be added.");
-    if (mode === "code" && !auth.signupCodeMatches(body.code)) { await new Promise(r => setTimeout(r, 400)); throw new HttpError(403, "bad_code", "That invite code isn't right."); }
+    if (mode === "code" && !auth.codeMatches(body.code, su.code)) { await new Promise(r => setTimeout(r, 400)); throw new HttpError(403, "bad_code", "That invite code isn't right."); }
     /* a handful of new accounts an hour from one place (SIGNUPS_PER_HOUR, default 5) */
     const key = `signup:${caller(req)}`, perHour = parseInt(process.env.SIGNUPS_PER_HOUR || "5", 10);
     if (auth.usesSoFar(key, 3600000) >= perHour) throw new HttpError(429, "slow_down", "Too many new accounts from here in the last hour. Try again later, or ask to be added.");
@@ -204,12 +207,34 @@ async function handleApi(req, res, url) {
 
   const user = await requireUser(req);
   if (p === "/me" && m === "GET") return send(res, 200, user);
+  /* Anyone signed in can change their own password, by giving the current one. Eight wrong tries and the account waits a quarter of an hour.
+     A wrong current password is a 403, not a 401: the person is still signed in. */
+  if (p === "/me/password" && m === "POST") {
+    const b = await readJson(req), key = `password:${user.id}`;
+    if (auth.usesSoFar(key, 900000) >= 8) throw new HttpError(429, "slow_down", "Too many wrong tries. Wait a quarter of an hour, then try again.");
+    let done;
+    try { done = await auth.changeOwnPassword(user.id, b.current, b.password); } catch (e) { if (e && e.code) throw new HttpError(400, e.code, e.message); throw e; }
+    if (!done) { auth.countUse(key, 900000); await new Promise(r => setTimeout(r, 400)); throw new HttpError(403, "bad_password", "The current password isn't right."); }
+    auth.clearUse(key);
+    log(`user=${user.id} changed their own password`);
+    return send(res, 200, { ok: true });
+  }
   /* the owner's own sample stream is the owner's alone; everyone else has the samples built into the page */
   if (p === "/samples" && m === "GET") return send(res, 200, user.email === auth.ownerEmail() ? OWNER_SAMPLES : []);
 
   /* the admin panel: see who has an account, add someone, set a password, disable or enable */
   if (p.startsWith("/admin/")) {
     if (!user.admin) throw new HttpError(403, "not_admin", "That is for an admin.");
+    /* who may sign up: the admin can see it and set it here, without editing a file on the server */
+    const signupNow = s => ({ signup: s.mode, code: s.code, from: s.from });
+    if (p === "/admin/settings" && m === "GET") return send(res, 200, signupNow(await auth.signupSettings()));
+    if (p === "/admin/settings" && m === "PATCH") {
+      const b = await readJson(req);
+      let s;
+      try { s = await auth.setSignup({ mode: String(b.signup ?? ""), code: b.code }, user.id); } catch (e) { if (e && e.code) throw new HttpError(400, e.code, e.message); throw e; }
+      log(`admin=${user.id} set signup=${s.mode} from=${s.from}`);
+      return send(res, 200, signupNow(s));
+    }
     if (p === "/admin/users" && m === "GET") return send(res, 200, await auth.listUsers());
     if (p === "/admin/users" && m === "POST") {
       const b = await readJson(req);

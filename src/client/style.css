@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.7.0
+   File Version: 0.8.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 :root{
@@ -353,3 +353,28 @@ form.inline .input{width:100%}
 .modal.login{max-width:380px;gap:10px}
 .modal.login .input{width:100%}
 .reading-text.kept{border-left-style:solid}
+
+/* ---------- Evidence: what became of the machine's claims ---------- */
+.evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+.evgrid .empty{grid-column:1/-1}
+.card.ev{gap:8px}
+.card.ev h3{margin:0;font-size:15px}
+.card.ev.wide{grid-column:1/-1}
+.evscroll{overflow-x:auto}
+.evt{border-collapse:collapse;width:100%;font-size:13px}
+.evt th,.evt td{padding:4px 0;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.evt th{font-weight:400;color:var(--muted);padding-right:12px}
+.evt td{font-family:var(--font-data);text-align:right;white-space:nowrap;color:var(--ink)}
+.evt tr.good td{color:var(--ok)} .evt tr.warn td{color:var(--warn)}
+.evt.cols th,.evt.cols td{padding:4px 10px 4px 0;white-space:nowrap}
+.evt.cols thead th{border-top:0;font-family:var(--font-data);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.evt.cols tbody th{color:var(--ink);font-family:var(--font-data)}
+.evt.cols td{text-align:left}
+/* your word on a suggestion */
+.verdict{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.btn.mini{padding:1px 8px;font-size:12px;font-weight:400}
+.btn.mini.on{border-color:var(--ink);background:var(--accent-soft);font-weight:500}
+/* a check in a script that did not hold */
+.docklines li.missed .mk{color:var(--warn)}
+.docklines li.missed{color:var(--warn)}
+.who .linkbtn{font-size:12px}

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/35-api.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The only place the browser talks to the server. Relative URLs, so the
    app works under an IIS sub-path. Every failure is thrown as
@@ -29,6 +29,9 @@ const api = (function () {
     users: () => call("GET", "/admin/users"),
     addUser: (email, password, level) => call("POST", "/admin/users", { email, password, level }),
     changeUser: (id, body) => call("PATCH", "/admin/users/" + id, body),
+    changePassword: (current, password) => call("POST", "/me/password", { current, password }),
+    settings: () => call("GET", "/admin/settings"),
+    setSettings: body => call("PATCH", "/admin/settings", body),
     shareStream: (id, shared) => call("PATCH", "/streams/" + id, { shared }),
     logout: () => call("POST", "/logout"),
     listStreams: () => call("GET", "/streams"),

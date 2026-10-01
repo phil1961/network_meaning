@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/shared/script.js
-   File Version: 0.2.0
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    The scripting language (Phil, 2026-09-30): "a scripting language that
    interacts with the app to make it go," run by a stepper "so we can watch
@@ -14,10 +14,26 @@
    server. parseScript() reads the text; planStep() turns one line into what
    the app should do, given the state at that moment. The client runner
    (src/client/85-script.js) carries the plan out. No imports: the client
-   build inlines this file and strips the export keywords. */
+   build inlines this file and strips the export keywords.
+
+   A line can also check something ("expect goal milk reached"), so a script
+   is a test as well (Phil agreed, 2026-09-30; VISION.md §9, E13 and E17). A
+   check changes nothing and never stops a run: it holds or it does not,
+   and the stepper counts how many held. */
 
 export const SCRIPT_EFFECTS = ["closer", "same", "farther"];
-export const SCRIPT_VIEWS = ["map", "state", "add", "loose", "timeline", "talk", "script", "said", "environment", "mental", "assumptions"];
+export const SCRIPT_VIEWS = ["map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "said", "environment", "mental", "assumptions"];
+export const SCRIPT_VERDICTS = ["new", "knew", "wrong"];
+/* What "expect" can look for, and the one extra word each kind may take. */
+export const EXPECT_KINDS = {
+  fact: { noun: "fact in Now" }, past: { noun: "past fact" },
+  goal: { noun: "goal", words: ["proposed", "open", "reached", "stuck", "dropped"] },
+  idea: { noun: "idea in the person's words" }, reading: { noun: "reading" },
+  item: { noun: "item on a world map", words: ["supposed", "given", "confirmed", "ruledout"] },
+  loose: { noun: "loose end", words: ["open", "settled"] },
+  link: { noun: "link", two: true },
+  suggestion: { noun: "Help analysis suggestion", words: ["new", "knew", "wrong"] }
+};
 export const SCRIPT_HOW = ["supposed", "given"];
 /* The verb that puts an item on a world map, and the "show" word that opens it. */
 const ITEM_MAP = { said: "said", environment: "env", mental: "mind", assumption: "moral" };
@@ -34,6 +50,7 @@ export const SCRIPT_VERBS = {
   reach: { ref: "goal", text: 0 }, stuck: { ref: "goal", text: 0 }, drop: { ref: "goal", text: 0 },
   reopen: { ref: "goal" }, accept: { ref: "goal" }, reject: { ref: "goal" },
   text: { source: true, text: 1, block: true }, help: {},
+  mark: { ref: "suggestion", word: SCRIPT_VERDICTS }, expect: { expect: true },
   show: { word: SCRIPT_VIEWS }, focus: { ref: "idea" },
   keep: { ref: "idea" }, discard: { ref: "idea" }, anchor: { ref: "idea" },
   resolve: { ref: "flag", word: SCRIPT_CHOICES },
@@ -60,6 +77,9 @@ export const SCRIPT_HELP = [
   ["text \"Source\": The words.", "Add text and ideaify it. Calls the model. For several lines, put \"\"\" after the colon and \"\"\" on its own line to close."],
   ["accept \"milk\"   reject \"milk\"", "Confirm, or refuse, a goal the model read in the text."],
   ["help", "Press Help analysis. Calls the model."],
+  ["mark \"…\" new", "Give your word on a Help analysis suggestion: new (new to me), knew (already knew), or wrong."],
+  ["expect goal milk reached", "Check something. A check changes nothing and does not stop the run; the stepper says whether it held and counts how many did. It can look for a fact, past, goal, idea, reading, item, loose, link or suggestion."],
+  ["expect no idea \"…\"   expect link need want", "“no” checks that nothing matches. A link takes two things. A goal can be checked for proposed, open, reached, stuck or dropped; an item for supposed, given, confirmed or ruledout; a loose end for open or settled; a suggestion for new, knew or wrong."],
   ["keep \"…\"   discard \"…\"   anchor \"…\"", "Keep or discard a reading; pin or unpin an idea as an anchor."],
   ["resolve \"…\" drop", "Settle a loose end: accept, keep, link, unrelated, talk, later, both, drop, or ok."],
   ["said need: He needs milk.", "Put something that was said on the map by hand, with an optional name. No model call."],
@@ -69,7 +89,7 @@ export const SCRIPT_HELP = [
   ["link nomilk want: gives rise to", "Link two items or ideas, on one map or across maps. The words after the colon say how the first bears on the second."],
   ["ask store: Which store?", "Hang an open question on an item or idea."],
   ["confirm store: He said so.   ruleout store", "A supposition is confirmed, or ruled out. A ruled-out item is kept, struck through."],
-  ["focus \"…\"   show state", "Look at an idea on the map, or switch view: map, state, add, loose, timeline, talk, script. “show environment”, “show mental”, “show assumptions” and “show said” open that map."],
+  ["focus \"…\"   show state", "Look at an idea on the map, or switch view: map, state, add, loose, timeline, evidence, talk, script. “show environment”, “show mental”, “show assumptions” and “show said” open that map."],
   ["rewind 7   latest   branch", "View an earlier step, come back to the latest, or branch from the step in view."],
   ["note: Anything.", "Say something in the stepper. Changes nothing."],
   ["milk  or  \"a few words\"", "Point at a thing by the name a script line gave it, or by a few of its words in quotes. The words must match exactly one thing the line could act on."]
@@ -112,6 +132,7 @@ export function parseScript(src) {
     const verb = first && !first.q ? first.v.toLowerCase() : "";
     const spec = Object.hasOwn(SCRIPT_VERBS, verb) ? SCRIPT_VERBS[verb] : null;
     if (!spec) { bad(`“${first ? first.v : t}” is not a word a script can use.`); continue; }
+    if (spec.expect) { const e = parseExpect(toks, sp, line, t); if (e.error) bad(e.error); else steps.push(e.step); continue; }
     const step = { line, raw: t, verb, text: sp.text };
     const opensBelow = spec.block && sp.colon && !sp.text && i + 1 < lines.length && lines[i + 1].trim() === '"""';
     if (opensBelow) i++;
@@ -158,7 +179,33 @@ export function parseScript(src) {
   return { steps, errors };
 }
 
-const REF_NOUN = { state: "fact", goal: "goal", idea: "idea", flag: "loose end" };
+/* "expect [no] kind thing [thing] [word]" to a step, or { error } in plain words. */
+function parseExpect(toks, sp, line, raw) {
+  const kinds = Object.keys(EXPECT_KINDS).join(", ");
+  if (sp.colon) return { error: "“expect” takes nothing after a colon. Point at the thing by its name, or by a few of its words in quotes." };
+  const no = !!(toks.length && !toks[0].q && toks[0].v.toLowerCase() === "no"); if (no) toks.shift();
+  const k = toks.shift();
+  const kind = k && !k.q ? k.v.toLowerCase() : "";
+  if (!Object.hasOwn(EXPECT_KINDS, kind)) return { error: `“expect” needs to say what to look for${k ? `, and “${k.v}” is not one of them` : ""}. Use one of: ${kinds}.` };
+  const spec = EXPECT_KINDS[kind];
+  const ref = toks.shift();
+  if (!ref || !ref.v) return { error: `“expect ${kind}” needs to say which: a name, or a few of its words in quotes.` };
+  const step = { line, raw, verb: "expect", text: "", no, kind, ref };
+  if (spec.two) {
+    const ref2 = toks.shift();
+    if (!ref2 || !ref2.v) return { error: "“expect link” needs two things: each a name, or a few words in quotes." };
+    step.ref2 = ref2;
+  }
+  if (toks.length && spec.words) {
+    const w = toks.shift();
+    if (w.q || !spec.words.includes(w.v.toLowerCase())) return { error: `“expect ${kind}” doesn't know “${w.v}”. Use one of: ${spec.words.join(", ")}.` };
+    step.word = w.v.toLowerCase();
+  }
+  if (toks.length) return { error: `Didn't expect “${toks[0].v}” here. To point at something by its words, put them in quotes.` };
+  return { step };
+}
+
+const REF_NOUN = { state: "fact", goal: "goal", idea: "idea", flag: "loose end", suggestion: "suggestion" };
 const hasOwn = (o, k) => Object.hasOwn(o || {}, k);
 
 /* Which things a verb may act on, mirroring what the page offers. */
@@ -183,6 +230,7 @@ export function findRef(st, names, on, ref, verb) {
   const pool = on === "state" ? Object.entries(st.state).map(([id, s]) => ({ id, x: s, main: s.text, all: s.text }))
     : on === "goal" ? Object.entries(st.goals).map(([id, g]) => ({ id, x: g, main: g.text, all: g.text + " " + (g.words || "") }))
     : on === "idea" ? Object.entries(st.nodes).map(([id, n]) => ({ id, x: n, main: n.t, all: n.t + " " + (n.words || n.reading || "") }))
+    : on === "suggestion" ? (st.analysis ? st.analysis.suggestions : []).filter(s => s.id).map(s => ({ id: s.id, x: s, main: s.text, all: s.text + " " + (s.why || "") }))
     : st.flags.filter(f => !hasOwn(st.outcomes, f.id)).map(f => ({ id: f.id, x: f, main: f.text, all: f.text }));
   const fits = REF_FITS[verb] || (() => true);
   if (!ref.q && hasOwn(names, ref.v)) {
@@ -204,6 +252,55 @@ export function findRef(st, names, on, ref, verb) {
   return { error: `“${ref.v}” matches ${some.length} ${noun}s. Use more of its words.` };
 }
 
+/* Everything of one kind that "expect" may look among: { id, on, x, all }. */
+function expectPool(st, kind) {
+  const nodes = pick => Object.entries(st.nodes).filter(([, n]) => pick(n)).map(([id, n]) => ({ id, on: "idea", x: n, all: n.t + " " + (n.words || n.reading || "") }));
+  switch (kind) {
+    case "fact": return Object.entries(st.state).filter(([, s]) => !s.ended).map(([id, s]) => ({ id, on: "state", x: s, all: s.text }));
+    case "past": return Object.entries(st.state).filter(([, s]) => s.ended).map(([id, s]) => ({ id, on: "state", x: s, all: s.text }));
+    case "goal": return Object.entries(st.goals).map(([id, g]) => ({ id, on: "goal", x: g, all: g.text + " " + (g.words || "") }));
+    case "idea": return nodes(n => !n.map && n.stuck !== false && !n.kept);
+    case "reading": return nodes(n => !n.map && (n.stuck === false || n.kept));
+    case "item": return nodes(n => !!n.map);
+    case "thing": return nodes(() => true);
+    case "loose": return st.flags.map(f => ({ id: f.id, on: "flag", x: f, all: [f.text, f.detail, f.phrase, f.suggestion, f.question].filter(Boolean).join(" ") }));
+    case "suggestion": return (st.analysis ? st.analysis.suggestions : []).map(s => ({ id: s.id, on: "suggestion", x: s, all: s.text + " " + (s.why || "") }));
+    default: return [];
+  }
+}
+function expectMatches(st, names, kind, ref) {
+  const pool = expectPool(st, kind);
+  if (!ref.q && hasOwn(names, ref.v)) { const n = names[ref.v]; return pool.filter(p => p.id === n.id && p.on === n.on); }
+  const want = ref.v.toLowerCase();
+  return pool.filter(p => p.all.toLowerCase().includes(want));
+}
+const EXPECT_WORD = {
+  goal: (p, w) => p.x.status === w,
+  item: (p, w) => (w === "ruledout" ? !!p.x.ruledOut : p.x.ruledOut ? false : w === "supposed" ? !!p.x.supposed : w === "confirmed" ? !!p.x.confirmedOn : !p.x.supposed && !p.x.confirmedOn),
+  loose: (p, w, st) => hasOwn(st.outcomes, p.id) === (w === "settled"),
+  suggestion: (p, w) => p.x.verdict === w
+};
+/* Does one "expect" line hold against this state? Returns { ok, text }, the
+   text saying in plain words what was looked for and what was found. */
+export function checkExpect(s, st, names) {
+  const spec = EXPECT_KINDS[s.kind];
+  const say = r => (r.q ? `“${r.v}”` : r.v);
+  let found, what;
+  if (spec.two) {
+    const A = expectMatches(st, names, "thing", s.ref), B = expectMatches(st, names, "thing", s.ref2);
+    found = st.links.filter(l => (A.some(p => p.id === l.a) && B.some(p => p.id === l.b)) || (A.some(p => p.id === l.b) && B.some(p => p.id === l.a))).length;
+    what = `a link between ${say(s.ref)} and ${say(s.ref2)}`;
+  } else {
+    let hits = expectMatches(st, names, s.kind, s.ref);
+    if (s.word) hits = hits.filter(p => EXPECT_WORD[s.kind](p, s.word, st));
+    found = hits.length;
+    what = `a ${spec.noun} matching ${say(s.ref)}` + (s.word ? ` that is ${s.word === "ruledout" ? "ruled out" : s.word === "new" ? "marked new to me" : s.word === "knew" ? "marked already knew" : s.word === "wrong" ? "marked wrong" : s.word}` : "");
+  }
+  const ok = s.no ? found === 0 : found > 0;
+  const saw = found === 0 ? "none" : found === 1 ? "one" : String(found);
+  return { ok, text: (ok ? "Held: " : "Did not hold: ") + (s.no ? "expected no such thing as " : "expected ") + what + `. Found ${saw}.` };
+}
+
 /* One parsed line to what the app should do, given the state now.
    names: { name: { on, id } } bound by earlier lines. newId(prefix) makes
    an id for a new fact or goal. Returns one of:
@@ -211,8 +308,10 @@ export function findRef(st, names, on, ref, verb) {
      { do:"ingest", text, source }  { do:"analyze" }   model calls
      { do:"stream", name }  { do:"date", date }  { do:"note", text }
      { do:"show", view, map? }  { do:"focus", id }  { do:"rewind", to }  { do:"latest" }  { do:"branch" }
+     { do:"check", ok, text }   an "expect" line: whether it held, and what was found
      { error }   the line can't run against this state. */
 export function planStep(s, st, names, newId) {
+  if (s.verb === "expect") return { do: "check", ...checkExpect(s, st, names) };
   const spec = SCRIPT_VERBS[s.verb];
   let id = null;
   if (spec && spec.ref) { const r = findRef(st, names, spec.ref, s.ref, s.verb); if (r.error) return r; id = r.id; }
@@ -233,6 +332,7 @@ export function planStep(s, st, names, newId) {
     case "reject": return act({ type: "rejectgoal", goalId: id }, "goal");
     case "text": return { do: "ingest", text: s.text, source: (s.source || "Script").slice(0, 200) };
     case "help": return { do: "analyze" };
+    case "mark": return { do: "action", action: { type: "verdict", analysisId: st.analysis.id, suggestionId: id, mark: s.word }, at: { on: "suggestion", id }, bind: null };
     case "show": return hasOwn(SHOW_MAP, s.word) ? { do: "show", view: "map", map: SHOW_MAP[s.word] } : { do: "show", view: s.word };
     case "said": case "environment": case "mental": case "assumption": {
       const nid = newId("w"), map = ITEM_MAP[s.verb];
@@ -259,18 +359,20 @@ export function planStep(s, st, names, newId) {
 /* Run a script's action lines with no page and no server: each plan
    becomes a step, and the next line sees the replayed state. Lines that
    only change the view are skipped; a line that can't run stops it. Used
-   for the built-in world sample and by the tests. replayFn is replay(). */
+   for the built-in world sample and by the tests. replayFn is replay().
+   checks: one { line, ok, text } for each "expect" line, in order. */
 export function scriptToSteps(text, replayFn) {
-  const p = parseScript(text); const steps = [], names = {}; let date = "", n = 0, error = p.errors[0] || null;
+  const p = parseScript(text); const steps = [], names = {}, checks = []; let date = "", n = 0, error = p.errors[0] || null;
   for (const s of error ? [] : p.steps) {
     const plan = planStep(s, replayFn(steps), names, pre => pre + (++n));
     if (plan.error) { error = { line: s.line, message: plan.error }; break; }
+    if (plan.do === "check") { checks.push({ line: s.line, ok: plan.ok, text: plan.text }); continue; }
     if (plan.do === "date") date = plan.date;
     if (plan.do !== "action") continue;
     steps.push({ kind: "action", seq: steps.length, at: null, date, source: "script", action: plan.action });
     if (plan.bind) names[plan.bind.name] = { on: plan.bind.on, id: plan.bind.id };
   }
-  return { steps, names, error };
+  return { steps, names, error, checks };
 }
 
 /* Built-in scripts. The first calls no model: every line is an action. */

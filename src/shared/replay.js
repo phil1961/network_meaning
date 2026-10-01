@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/shared/replay.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The map is a projection of the stream. State = replay(steps[0..cursor)).
    This reducer runs on the server (to give the model the current map) and
@@ -27,7 +27,10 @@
    made by the server (src/server/analyze.js) and stored as an action step
    of type "analysis". Only the latest is in view:
      st.analysis  {id, date, model, standing, suggestions:[{id, kind, text, why, about:[{on, id}]}], since, leftOut:[phrases]}
-   since counts the steps applied after it, so the page can say it is stale. */
+   since counts the steps applied after it, so the page can say it is stale.
+   The person can give their word on each suggestion (action "verdict":
+   new to me, already knew, or wrong). That marks the suggestion and changes
+   nothing else; it is what src/shared/evidence.js counts. */
 
 export const LINK_LABELS = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to", "connects to", "my reading"];
 /* Links a traceback may walk. A path through a contradiction or a
@@ -74,8 +77,10 @@ export const UNSAID = "unsaid";
    such as "__proto__" could only ever be an ordinary key; ids are checked
    as well so that nothing odd is stored. The server uses actionOk() to
    refuse a bad action before it is saved. */
-export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis"];
-const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b"];
+export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis", "verdict"];
+const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b", "analysisId", "suggestionId"];
+/* The person's word on one Help analysis suggestion. */
+export const VERDICTS = ["new", "knew", "wrong"];
 export function safeId(v) { return typeof v === "string" && /^[A-Za-z0-9_.:-]{1,80}$/.test(v) && v !== "__proto__" && v !== "constructor" && v !== "prototype"; }
 export function actionOk(a) {
   if (!a || typeof a !== "object" || Array.isArray(a) || !ACTION_TYPES.includes(a.type)) return false;
@@ -98,7 +103,9 @@ export function replay(steps) {
 
 export function applyStep(st, step) {
   if (!step) return;
-  if (st.analysis) st.analysis.since++;
+  /* A verdict is about the analysis itself, not a change in the state of play, so it does not make the analysis stale. */
+  const verdict = step.kind === "action" && step.action && step.action.type === "verdict";
+  if (st.analysis && !verdict) st.analysis.since++;
   if (step.kind === "ingest") applyResult(st, step.result || {}, step);
   else if (step.kind === "action") applyAction(st, step);
 }
@@ -197,6 +204,12 @@ function applyStateAction(st, a, step) {
         .map(s => ({ id: s.id || "", kind: s.kind || "question", text: stateText(s.text), why: stateText(s.why), about: (Array.isArray(s.about) ? s.about : []).filter(r => r && r.on && r.id).map(r => ({ on: r.on, id: r.id })) }));
       st.analysis = { id: a.id || "", date: step.date, model: a.model || "", standing: stateText(a.standing), suggestions: sug, since: 0,
         leftOut: (Array.isArray(a.leftOut) ? a.leftOut : []).map(stateText).filter(Boolean).slice(0, 5) };
+      return true;
+    }
+    case "verdict": {
+      /* The person's word on one suggestion of the analysis in view. The latest word stands. */
+      const s = st.analysis && a.analysisId && st.analysis.id === a.analysisId ? st.analysis.suggestions.find(x => x.id && x.id === a.suggestionId) : null;
+      if (s && VERDICTS.includes(a.mark)) { s.verdict = a.mark; s.verdictOn = step.date; }
       return true;
     }
     default: return false;

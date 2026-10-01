@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.8.0
+  File Version: 0.9.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, and
   the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
@@ -20,7 +20,7 @@
 /* ==== begin style.css ==== */
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.7.0
+   File Version: 0.8.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 :root{
@@ -374,6 +374,31 @@ form.inline .input{width:100%}
 .modal.login .input{width:100%}
 .reading-text.kept{border-left-style:solid}
 
+/* ---------- Evidence: what became of the machine's claims ---------- */
+.evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+.evgrid .empty{grid-column:1/-1}
+.card.ev{gap:8px}
+.card.ev h3{margin:0;font-size:15px}
+.card.ev.wide{grid-column:1/-1}
+.evscroll{overflow-x:auto}
+.evt{border-collapse:collapse;width:100%;font-size:13px}
+.evt th,.evt td{padding:4px 0;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.evt th{font-weight:400;color:var(--muted);padding-right:12px}
+.evt td{font-family:var(--font-data);text-align:right;white-space:nowrap;color:var(--ink)}
+.evt tr.good td{color:var(--ok)} .evt tr.warn td{color:var(--warn)}
+.evt.cols th,.evt.cols td{padding:4px 10px 4px 0;white-space:nowrap}
+.evt.cols thead th{border-top:0;font-family:var(--font-data);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.evt.cols tbody th{color:var(--ink);font-family:var(--font-data)}
+.evt.cols td{text-align:left}
+/* your word on a suggestion */
+.verdict{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.btn.mini{padding:1px 8px;font-size:12px;font-weight:400}
+.btn.mini.on{border-color:var(--ink);background:var(--accent-soft);font-weight:500}
+/* a check in a script that did not hold */
+.docklines li.missed .mk{color:var(--warn)}
+.docklines li.missed{color:var(--warn)}
+.who .linkbtn{font-size:12px}
+
 /* ==== end style.css ==== */
 </style>
 </head>
@@ -387,6 +412,7 @@ form.inline .input{width:100%}
       <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
       <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
+      <button class="tab" role="tab" id="tab-evidence" data-view="evidence" aria-selected="false">Evidence</button>
       <button class="tab" role="tab" id="tab-talk" data-view="talk" aria-selected="false">Talk</button>
       <button class="tab" role="tab" id="tab-script" data-view="script" aria-selected="false">Script</button>
       <button class="tab" role="tab" id="tab-help" data-view="help" aria-selected="false">Help</button>
@@ -550,6 +576,18 @@ form.inline .input{width:100%}
       </div>
     </section>
 
+    <!-- EVIDENCE: what became of the machine's claims, counted from the steps -->
+    <section class="view" id="view-evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden>
+      <div class="tl-wrap">
+        <div class="le-head">
+          <h2>Evidence</h2>
+          <span class="small" id="evidencewhen"></span>
+        </div>
+        <p class="small" style="margin:0">What became of the AI's claims in this stream, counted from its steps: what it proposed, and what you did with it. It counts the machine, not you. Use the Step slider to see the counts as they stood earlier.</p>
+        <div class="evgrid" id="evidencebody"></div>
+      </div>
+    </section>
+
     <!-- TALK -->
     <section class="view" id="view-talk" role="tabpanel" aria-labelledby="tab-talk" hidden>
       <div class="talk">
@@ -612,6 +650,7 @@ form.inline .input{width:100%}
 <p>There are three levels of person:</p>
 <ul><li><b>Guest.</b> Can look and try. Nothing is stored. The AI buttons explain that they are for registered users.</li><li><b>User.</b> What you do is stored in your own area. Nobody else sees your streams. You can use the AI, up to a daily number of calls.</li><li><b>Admin.</b> A user who can also add people, set their level, give someone a new password, disable an account, and share a stream with everyone.</li></ul>
 <p>If you made something as a guest and then create an account or sign in as a user, the stream you were working on is saved for you.</p>
+<p>To change your password, press <b>Change password</b> beside <b>Sign out</b> at the top right. You give your current password and the new one.</p>
 <p>The app does not send email. If you forget your password, an admin sets a new one and tells you.</p>
 <h3>Streams</h3>
 <p>A <b>stream</b> is one world and its whole history. The <b>Stream</b> menu at the top lists the built-in samples, your own streams, and any stream an admin has shared with everyone. Each line says how many steps the stream has and how many items are on its Environment, Mental state and Assumptions maps, so you can see what it holds before you choose it.</p>
@@ -625,13 +664,14 @@ form.inline .input{width:100%}
 <p>Select any box to put it in the middle. The panel on the right shows its exact words, its open questions and what it connects to. Following a link into another map changes the map in view.</p>
 <p>To improve a map, select an item and use the panel: <b>Confirm it</b>, <b>Rule it out</b>, or <b>Add</b> a new item joined to the one in the middle.</p>
 <h3>State: where things stand</h3>
-<ul><li><b>Now</b> holds what is true at this step. A fact can stop being true; it moves to <b>Past</b> and keeps both dates.</li><li><b>Goals</b> are put forth by you, or read in your text by the AI and offered for you to confirm. Each <b>move</b> toward a goal says whether it brought the goal closer, changed nothing, or set it back. A move the AI read in your text says none of those: it is shown as read in your text, and nothing is assumed about it.</li><li>When a goal is <b>reached</b>, a new fact lands in Now. A goal can also be marked <b>ground is stuck</b>, or dropped.</li><li><b>Help analysis</b> reads where things stand and makes a few suggestions. Each one points at what it rests on, and nothing changes until you act.</li></ul>
+<ul><li><b>Now</b> holds what is true at this step. A fact can stop being true; it moves to <b>Past</b> and keeps both dates.</li><li><b>Goals</b> are put forth by you, or read in your text by the AI and offered for you to confirm. Each <b>move</b> toward a goal says whether it brought the goal closer, changed nothing, or set it back. A move the AI read in your text says none of those: it is shown as read in your text, and nothing is assumed about it.</li><li>When a goal is <b>reached</b>, a new fact lands in Now. A goal can also be marked <b>ground is stuck</b>, or dropped.</li><li><b>Help analysis</b> reads where things stand and makes a few suggestions. Each one points at what it rests on, and nothing changes until you act. Under each suggestion you can give your word on it: <b>New to me</b>, <b>Already knew</b>, or <b>Wrong</b>. That is how the app learns whether its suggestions are worth having. The sample <i>Darlene and the appointment</i> ends with a made-up analysis you can try this on.</li></ul>
 <p>Where a box shows a suggestion such as "e.g. Get milk.", pressing its button with the box empty uses the suggestion as your entry.</p>
 <h3>Add text</h3>
 <p>Paste, type or drop text: notes, a transcript, an exported chat. <b>Ideaify</b> sends it to the AI, which pulls out the ideas, links them, and notices goals and loose ends. Every idea must point at the words it came from, and its quote is built from those words, not from anything the AI wrote. Ideas that point at nothing are dropped and counted. After each pass the app asks at most one question; your answer is treated like any other text.</p>
-<h3>Loose Ends and Timeline</h3>
+<h3>Loose Ends, Timeline and Evidence</h3>
 <p><b>Loose Ends</b> is the list of things the app noticed and will not decide for you: a word that looks mis-transcribed, a question never answered, two ideas that echo each other, a contradiction. Each has one or two buttons. <b>Later</b> leaves a loose end open and moves it down the list.</p>
 <p><b>Timeline</b> shows the ideas that came from text, pass by pass: arriving, settling, fading.</p>
+<p><b>Evidence</b> counts what became of the AI's claims in the stream you have open. Every time you keep or discard a reading, confirm or refuse a goal the AI read in your text, settle a loose end, or give your word on a suggestion, that is a step, and Evidence adds them up: how many readings you kept, how many goals you confirmed, how many items the AI proposed that pointed at nothing and were dropped. It also splits the counts by which model made each claim. It counts the machine, not you. Move the <b>Step</b> slider and it shows the counts as they stood then.</p>
 <h3>Script and the stepper</h3>
 <p>A <b>script</b> is a list of actions, one per line, in plain words. It can do anything the buttons can do, and nothing they cannot.</p>
 <pre>stream: Bobby, scripted
@@ -640,6 +680,11 @@ goal milk: Get milk.
 move milk closer: Bobby is at the store.
 reach milk: Bobby has milk.</pre>
 <p>Open a script in the <b>stepper</b> and it docks under the page. <b>Step</b> runs one line. <b>Play</b> runs them in turn at the pace you choose. Each action opens the view where it lands, so you can watch the world being put together. A line that cannot run stops the stepper and says why. The Script tab lists every word a script can use.</p>
+<p>A line can also check something, so a script is a test as well:</p>
+<pre>expect goal milk reached
+expect fact "Bobby has milk"
+expect no goal "walk the dog"</pre>
+<p>A check changes nothing and does not stop the run. The stepper marks each one as held or not, and counts how many held.</p>
 <h3>The AI</h3>
 <p>Two things call the AI: <b>Ideaify</b> and <b>Help analysis</b> (and the script lines <code>text</code> and <code>help</code>, which press those buttons).</p>
 <ul><li>The AI is for registered users. A guest who presses an AI button is told so, and offered an account.</li><li>Before every call, what you are sending and what is already in the stream is checked. Text that is not really text (empty, enormous, a file that is not plain text, one thing repeated) is refused. So is text that reads as orders aimed at the AI instead of something to be read. The message says what was found, and the AI is not called.</li><li>A line already in your stream that reads as an order to an AI is left out of what the AI is shown. You are told which line. Nothing is removed from your stream.</li><li><b>Stop</b> stops the call. Nothing is added.</li><li>Each user has a daily number of calls, and there is a daily total for everyone.</li><li>Whatever the AI returns is checked again before it reaches your map.</li></ul>
@@ -647,6 +692,7 @@ reach milk: Bobby has milk.</pre>
 <ul><li>A user's streams are saved on the server, in that user's own area. If a change cannot be saved, a note at the top right says so and stays there; nothing new is taken until it is saved. Click the note to try again.</li><li>A guest's work is not saved anywhere.</li><li>Nobody sees another person's streams. The one exception is a stream an admin has chosen to share with everyone, which others can read and copy but not change.</li><li>Your password is stored only as a scrambled value that cannot be turned back into the password.</li></ul>
 <h3>For admins: the Admin tab</h3>
 <p>The <b>Admin</b> tab is at the right-hand end of the tabs. Only an admin sees it. It lists everyone with an account: their level, whether they signed up or were added, how many streams they have, and how many AI calls they made in the last day. From there you can add someone, change a level, set a new password, and disable or enable an account. Disabling stops someone signing in at once; their streams are kept.</p>
+<p>Under <b>Who may sign up</b> you choose who can create an account: anyone who can reach the page, anyone who has the invite code you choose, or nobody. With an invite code, give the code to the people you want in; the app does not send it for you. What you set here takes the place of the setting in the server's own files, and <b>Use the server's setting</b> puts that back.</p>
 <p>To share a stream with everyone, open it, go to <b>Add text</b>, and press <b>Share with everyone</b> under <i>This stream</i>.</p>
 <h3>Where this is going</h3>
 <p>The app today models one small world at a time, for one person at a time. That is the first step toward something larger. In Phil's words:</p>
@@ -677,6 +723,24 @@ reach milk: Bobby has milk.</pre>
           </div>
           <p class="small" style="margin:0" id="signupnote"></p>
           <div class="status" id="adminstatus" role="status"></div>
+        </form>
+        <form class="card" id="signupform">
+          <h3>Who may sign up</h3>
+          <div class="row">
+            <select id="signupmode" aria-label="Who may sign up">
+              <option value="open">Anyone who can reach this page</option>
+              <option value="code">Anyone who has the invite code</option>
+              <option value="closed">Nobody: only people an admin adds</option>
+            </select>
+            <span class="field grow" id="signupcodewrap" hidden style="flex-direction:row;align-items:center;gap:8px">
+              <label class="small" for="signupcode">Invite code</label>
+              <input class="input grow" type="text" id="signupcode" placeholder="A phrase to give your friends (4 or more characters)" autocomplete="off">
+            </span>
+            <button class="btn primary" type="submit">Save</button>
+            <button class="btn" type="button" id="signupserver" hidden title="Remove the setting made here, so the server's own setting stands again">Use the server's setting</button>
+          </div>
+          <p class="small" style="margin:0" id="signupfrom"></p>
+          <div class="status" id="signupstatus" role="status"></div>
         </form>
         <ul class="le-list" id="userlist"></ul>
       </div>
@@ -734,6 +798,20 @@ reach milk: Bobby has milk.</pre>
     <p class="small" style="margin:0">New here? Look around as a guest, then open the Help tab.</p>
   </form>
 </div>
+<div class="scrim" id="pwscrim" hidden>
+  <form class="modal login" id="pwform" aria-labelledby="pwtitle">
+    <h2 id="pwtitle">Change your password</h2>
+    <p class="small" style="margin:0" id="pwlead"></p>
+    <label class="small" for="pwcurrent">Your current password</label>
+    <input class="input" type="password" id="pwcurrent" autocomplete="current-password" required>
+    <label class="small" for="pwnew">A new password</label>
+    <input class="input" type="password" id="pwnew" autocomplete="new-password" placeholder="8 or more characters" required>
+    <label class="small" for="pwagain">The new password again</label>
+    <input class="input" type="password" id="pwagain" autocomplete="new-password" required>
+    <div class="status" id="pwstatus" role="status"></div>
+    <div class="actions"><button class="btn primary" type="submit" id="pwsave">Change it</button><button class="btn" type="button" id="pwclose">Cancel</button></div>
+  </form>
+</div>
 <div class="scrim" id="infoscrim" hidden>
   <div class="modal login" role="dialog" aria-modal="true" aria-labelledby="infotitle">
     <h2 id="infotitle"></h2>
@@ -746,10 +824,145 @@ reach milk: Bobby has milk.</pre>
 <script>
 (function(){
 "use strict";
+/* ==== module shared/evidence.js ==== */
+/* ─────────────────────────────────────────────
+   File: src/shared/evidence.js
+   File Version: 0.1.0
+   ─────────────────────────────────────────────
+   Evidence (VISION.md §9, E17): what became of the machine's claims,
+   counted from the steps of one stream. Every time the person keeps or
+   discards a reading, confirms or refuses a goal read in their text, settles
+   a loose end, or gives their word on a suggestion, that verdict is already
+   a step. This file only counts them. It makes no model call, needs no
+   database, and judges nobody: it counts what was proposed and what the
+   person did with it.
+
+   Pure, and given a prefix of the steps it gives the counts as they stood
+   then, so the Evidence view rewinds with everything else. No imports: the
+   client build inlines this file and strips the export keywords. */
+
+const EVIDENCE_MARKS = ["new", "knew", "wrong"];
+
+/* steps: the stream's steps, in order. Returns the counts. */
+function evidence(steps) {
+  const readings = new Map(), goals = new Map(), flags = new Map(), items = new Map(), sugs = new Map(), models = new Map();
+  const out = {
+    steps: 0, passes: 0, dropped: 0,
+    words: { ideas: 0, again: 0, replaced: 0 },
+    readings: { made: 0, kept: 0, discarded: 0, open: 0 },
+    goals: { read: 0, accepted: 0, rejected: 0, open: 0, moves: 0 },
+    loose: { raised: 0, settled: 0, later: 0, open: 0, byType: {}, byChoice: {} },
+    suppositions: { made: 0, confirmed: 0, ruledOut: 0, open: 0, given: 0 },
+    help: { analyses: 0, suggestions: 0, new: 0, knew: 0, wrong: 0, unmarked: 0 },
+    byModel: []
+  };
+  const modelRow = name => {
+    const k = String(name || "not recorded");
+    if (!models.has(k)) models.set(k, { model: k, passes: 0, ideas: 0, dropped: 0, readings: 0, kept: 0, discarded: 0, goals: 0, accepted: 0, rejected: 0, suggestions: 0, new: 0, knew: 0, wrong: 0 });
+    return models.get(k);
+  };
+  const list = x => (Array.isArray(x) ? x : []);
+
+  for (const step of list(steps)) {
+    if (!step) continue;
+    out.steps++;
+    if (step.kind === "ingest") {
+      const r = step.result && typeof step.result === "object" ? step.result : {};
+      const m = modelRow(step.model);
+      out.passes++; m.passes++;
+      for (const [id, n] of Object.entries(r.add && typeof r.add === "object" ? r.add : {})) {
+        if (!n || typeof n !== "object") continue;
+        if (n.stuck === false) { if (!readings.has(id)) readings.set(id, { model: m.model, fate: "open" }); }
+        else { out.words.ideas++; m.ideas++; if (n.replaced) out.words.replaced++; }
+      }
+      out.words.again += list(r.touch).length;
+      out.words.replaced += list(r.replace).length;
+      for (const f of list(r.flags)) if (f && f.id && !flags.has(f.id)) flags.set(f.id, { type: String(f.type || "other"), choice: null, later: false });
+      for (const g of list(r.goals)) {
+        if (!g || !g.id) continue;
+        out.goals.moves += list(g.moves).length;
+        if (!g.existing && !goals.has(g.id)) goals.set(g.id, { model: m.model, fate: "open" });
+      }
+      const d = step.usage && Number.isInteger(step.usage.dropped) ? step.usage.dropped : 0;
+      out.dropped += d; m.dropped += d;
+      continue;
+    }
+    if (step.kind !== "action" || !step.action || typeof step.action !== "object") continue;
+    const a = step.action;
+    switch (a.type) {
+      case "keep": { const x = readings.get(a.id); if (x && x.fate === "open") x.fate = "kept"; break; }
+      case "discard": { const x = readings.get(a.id); if (x && x.fate === "open") x.fate = "discarded"; break; }
+      case "acceptgoal": { const x = goals.get(a.goalId); if (x && x.fate === "open") x.fate = "accepted"; break; }
+      case "rejectgoal": { const x = goals.get(a.goalId); if (x && x.fate === "open") x.fate = "rejected"; break; }
+      case "flag": {
+        const x = flags.get(a.flagId); if (!x) break;
+        if (a.choice === "later") x.later = true; else { x.choice = String(a.choice || "ok"); x.later = false; }
+        break;
+      }
+      case "item": {
+        if (!a.id || items.has(a.id) || a.map === "said" || !a.map) break;
+        items.set(a.id, { supposed: a.supposed !== false, fate: "open" });
+        break;
+      }
+      case "confirm": { const x = items.get(a.id); if (x && x.supposed && x.fate === "open") x.fate = "confirmed"; break; }
+      case "ruleout": { const x = items.get(a.id); if (x && x.fate !== "ruledOut") x.fate = "ruledOut"; break; }
+      case "analysis": {
+        const m = modelRow(a.model);
+        out.help.analyses++;
+        for (const s of list(a.suggestions)) {
+          if (!s || !s.id || !String(s.text || "").trim()) continue;
+          sugs.set(a.id + " " + s.id, { model: m.model, mark: null });
+        }
+        break;
+      }
+      case "verdict": {
+        const x = sugs.get(a.analysisId + " " + a.suggestionId);
+        if (x && EVIDENCE_MARKS.includes(a.mark)) x.mark = a.mark;
+        break;
+      }
+      default: break;
+    }
+  }
+
+  for (const x of readings.values()) {
+    const m = modelRow(x.model);
+    out.readings.made++; m.readings++;
+    if (x.fate === "kept") { out.readings.kept++; m.kept++; } else if (x.fate === "discarded") { out.readings.discarded++; m.discarded++; } else out.readings.open++;
+  }
+  for (const x of goals.values()) {
+    const m = modelRow(x.model);
+    out.goals.read++; m.goals++;
+    if (x.fate === "accepted") { out.goals.accepted++; m.accepted++; } else if (x.fate === "rejected") { out.goals.rejected++; m.rejected++; } else out.goals.open++;
+  }
+  for (const x of flags.values()) {
+    out.loose.raised++;
+    out.loose.byType[x.type] = (out.loose.byType[x.type] || 0) + 1;
+    if (x.choice) { out.loose.settled++; out.loose.byChoice[x.choice] = (out.loose.byChoice[x.choice] || 0) + 1; }
+    else { out.loose.open++; if (x.later) out.loose.later++; }
+  }
+  for (const x of items.values()) {
+    if (!x.supposed) { out.suppositions.given++; continue; }
+    out.suppositions.made++;
+    if (x.fate === "confirmed") out.suppositions.confirmed++; else if (x.fate === "ruledOut") out.suppositions.ruledOut++; else out.suppositions.open++;
+  }
+  for (const x of sugs.values()) {
+    const m = modelRow(x.model);
+    out.help.suggestions++; m.suggestions++;
+    if (x.mark) { out.help[x.mark]++; m[x.mark]++; } else out.help.unmarked++;
+  }
+  out.byModel = [...models.values()].filter(m => m.passes || m.readings || m.goals || m.suggestions);
+  return out;
+}
+
+/* True when there is nothing yet for the Evidence view to say. */
+function evidenceEmpty(e) {
+  return !e.passes && !e.readings.made && !e.goals.read && !e.loose.raised && !e.help.analyses && !e.suppositions.made && !e.suppositions.given;
+}
+
 /* ==== module shared/replay.js ==== */
 /* ─────────────────────────────────────────────
    File: src/shared/replay.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The map is a projection of the stream. State = replay(steps[0..cursor)).
    This reducer runs on the server (to give the model the current map) and
@@ -776,7 +989,10 @@ reach milk: Bobby has milk.</pre>
    made by the server (src/server/analyze.js) and stored as an action step
    of type "analysis". Only the latest is in view:
      st.analysis  {id, date, model, standing, suggestions:[{id, kind, text, why, about:[{on, id}]}], since, leftOut:[phrases]}
-   since counts the steps applied after it, so the page can say it is stale. */
+   since counts the steps applied after it, so the page can say it is stale.
+   The person can give their word on each suggestion (action "verdict":
+   new to me, already knew, or wrong). That marks the suggestion and changes
+   nothing else; it is what src/shared/evidence.js counts. */
 
 const LINK_LABELS = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to", "connects to", "my reading"];
 /* Links a traceback may walk. A path through a contradiction or a
@@ -823,8 +1039,10 @@ const UNSAID = "unsaid";
    such as "__proto__" could only ever be an ordinary key; ids are checked
    as well so that nothing odd is stored. The server uses actionOk() to
    refuse a bad action before it is saved. */
-const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis"];
-const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b"];
+const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis", "verdict"];
+const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b", "analysisId", "suggestionId"];
+/* The person's word on one Help analysis suggestion. */
+const VERDICTS = ["new", "knew", "wrong"];
 function safeId(v) { return typeof v === "string" && /^[A-Za-z0-9_.:-]{1,80}$/.test(v) && v !== "__proto__" && v !== "constructor" && v !== "prototype"; }
 function actionOk(a) {
   if (!a || typeof a !== "object" || Array.isArray(a) || !ACTION_TYPES.includes(a.type)) return false;
@@ -847,7 +1065,9 @@ function replay(steps) {
 
 function applyStep(st, step) {
   if (!step) return;
-  if (st.analysis) st.analysis.since++;
+  /* A verdict is about the analysis itself, not a change in the state of play, so it does not make the analysis stale. */
+  const verdict = step.kind === "action" && step.action && step.action.type === "verdict";
+  if (st.analysis && !verdict) st.analysis.since++;
   if (step.kind === "ingest") applyResult(st, step.result || {}, step);
   else if (step.kind === "action") applyAction(st, step);
 }
@@ -946,6 +1166,12 @@ function applyStateAction(st, a, step) {
         .map(s => ({ id: s.id || "", kind: s.kind || "question", text: stateText(s.text), why: stateText(s.why), about: (Array.isArray(s.about) ? s.about : []).filter(r => r && r.on && r.id).map(r => ({ on: r.on, id: r.id })) }));
       st.analysis = { id: a.id || "", date: step.date, model: a.model || "", standing: stateText(a.standing), suggestions: sug, since: 0,
         leftOut: (Array.isArray(a.leftOut) ? a.leftOut : []).map(stateText).filter(Boolean).slice(0, 5) };
+      return true;
+    }
+    case "verdict": {
+      /* The person's word on one suggestion of the analysis in view. The latest word stands. */
+      const s = st.analysis && a.analysisId && st.analysis.id === a.analysisId ? st.analysis.suggestions.find(x => x.id && x.id === a.suggestionId) : null;
+      if (s && VERDICTS.includes(a.mark)) { s.verdict = a.mark; s.verdictOn = step.date; }
       return true;
     }
     default: return false;
@@ -1174,7 +1400,7 @@ function mapListing(st, cap = 160) {
 /* ==== module shared/script.js ==== */
 /* ─────────────────────────────────────────────
    File: src/shared/script.js
-   File Version: 0.2.0
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    The scripting language (Phil, 2026-09-30): "a scripting language that
    interacts with the app to make it go," run by a stepper "so we can watch
@@ -1188,10 +1414,26 @@ function mapListing(st, cap = 160) {
    server. parseScript() reads the text; planStep() turns one line into what
    the app should do, given the state at that moment. The client runner
    (src/client/85-script.js) carries the plan out. No imports: the client
-   build inlines this file and strips the export keywords. */
+   build inlines this file and strips the export keywords.
+
+   A line can also check something ("expect goal milk reached"), so a script
+   is a test as well (Phil agreed, 2026-09-30; VISION.md §9, E13 and E17). A
+   check changes nothing and never stops a run: it holds or it does not,
+   and the stepper counts how many held. */
 
 const SCRIPT_EFFECTS = ["closer", "same", "farther"];
-const SCRIPT_VIEWS = ["map", "state", "add", "loose", "timeline", "talk", "script", "said", "environment", "mental", "assumptions"];
+const SCRIPT_VIEWS = ["map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "said", "environment", "mental", "assumptions"];
+const SCRIPT_VERDICTS = ["new", "knew", "wrong"];
+/* What "expect" can look for, and the one extra word each kind may take. */
+const EXPECT_KINDS = {
+  fact: { noun: "fact in Now" }, past: { noun: "past fact" },
+  goal: { noun: "goal", words: ["proposed", "open", "reached", "stuck", "dropped"] },
+  idea: { noun: "idea in the person's words" }, reading: { noun: "reading" },
+  item: { noun: "item on a world map", words: ["supposed", "given", "confirmed", "ruledout"] },
+  loose: { noun: "loose end", words: ["open", "settled"] },
+  link: { noun: "link", two: true },
+  suggestion: { noun: "Help analysis suggestion", words: ["new", "knew", "wrong"] }
+};
 const SCRIPT_HOW = ["supposed", "given"];
 /* The verb that puts an item on a world map, and the "show" word that opens it. */
 const ITEM_MAP = { said: "said", environment: "env", mental: "mind", assumption: "moral" };
@@ -1208,6 +1450,7 @@ const SCRIPT_VERBS = {
   reach: { ref: "goal", text: 0 }, stuck: { ref: "goal", text: 0 }, drop: { ref: "goal", text: 0 },
   reopen: { ref: "goal" }, accept: { ref: "goal" }, reject: { ref: "goal" },
   text: { source: true, text: 1, block: true }, help: {},
+  mark: { ref: "suggestion", word: SCRIPT_VERDICTS }, expect: { expect: true },
   show: { word: SCRIPT_VIEWS }, focus: { ref: "idea" },
   keep: { ref: "idea" }, discard: { ref: "idea" }, anchor: { ref: "idea" },
   resolve: { ref: "flag", word: SCRIPT_CHOICES },
@@ -1234,6 +1477,9 @@ const SCRIPT_HELP = [
   ["text \"Source\": The words.", "Add text and ideaify it. Calls the model. For several lines, put \"\"\" after the colon and \"\"\" on its own line to close."],
   ["accept \"milk\"   reject \"milk\"", "Confirm, or refuse, a goal the model read in the text."],
   ["help", "Press Help analysis. Calls the model."],
+  ["mark \"…\" new", "Give your word on a Help analysis suggestion: new (new to me), knew (already knew), or wrong."],
+  ["expect goal milk reached", "Check something. A check changes nothing and does not stop the run; the stepper says whether it held and counts how many did. It can look for a fact, past, goal, idea, reading, item, loose, link or suggestion."],
+  ["expect no idea \"…\"   expect link need want", "“no” checks that nothing matches. A link takes two things. A goal can be checked for proposed, open, reached, stuck or dropped; an item for supposed, given, confirmed or ruledout; a loose end for open or settled; a suggestion for new, knew or wrong."],
   ["keep \"…\"   discard \"…\"   anchor \"…\"", "Keep or discard a reading; pin or unpin an idea as an anchor."],
   ["resolve \"…\" drop", "Settle a loose end: accept, keep, link, unrelated, talk, later, both, drop, or ok."],
   ["said need: He needs milk.", "Put something that was said on the map by hand, with an optional name. No model call."],
@@ -1243,7 +1489,7 @@ const SCRIPT_HELP = [
   ["link nomilk want: gives rise to", "Link two items or ideas, on one map or across maps. The words after the colon say how the first bears on the second."],
   ["ask store: Which store?", "Hang an open question on an item or idea."],
   ["confirm store: He said so.   ruleout store", "A supposition is confirmed, or ruled out. A ruled-out item is kept, struck through."],
-  ["focus \"…\"   show state", "Look at an idea on the map, or switch view: map, state, add, loose, timeline, talk, script. “show environment”, “show mental”, “show assumptions” and “show said” open that map."],
+  ["focus \"…\"   show state", "Look at an idea on the map, or switch view: map, state, add, loose, timeline, evidence, talk, script. “show environment”, “show mental”, “show assumptions” and “show said” open that map."],
   ["rewind 7   latest   branch", "View an earlier step, come back to the latest, or branch from the step in view."],
   ["note: Anything.", "Say something in the stepper. Changes nothing."],
   ["milk  or  \"a few words\"", "Point at a thing by the name a script line gave it, or by a few of its words in quotes. The words must match exactly one thing the line could act on."]
@@ -1286,6 +1532,7 @@ function parseScript(src) {
     const verb = first && !first.q ? first.v.toLowerCase() : "";
     const spec = Object.hasOwn(SCRIPT_VERBS, verb) ? SCRIPT_VERBS[verb] : null;
     if (!spec) { bad(`“${first ? first.v : t}” is not a word a script can use.`); continue; }
+    if (spec.expect) { const e = parseExpect(toks, sp, line, t); if (e.error) bad(e.error); else steps.push(e.step); continue; }
     const step = { line, raw: t, verb, text: sp.text };
     const opensBelow = spec.block && sp.colon && !sp.text && i + 1 < lines.length && lines[i + 1].trim() === '"""';
     if (opensBelow) i++;
@@ -1332,7 +1579,33 @@ function parseScript(src) {
   return { steps, errors };
 }
 
-const REF_NOUN = { state: "fact", goal: "goal", idea: "idea", flag: "loose end" };
+/* "expect [no] kind thing [thing] [word]" to a step, or { error } in plain words. */
+function parseExpect(toks, sp, line, raw) {
+  const kinds = Object.keys(EXPECT_KINDS).join(", ");
+  if (sp.colon) return { error: "“expect” takes nothing after a colon. Point at the thing by its name, or by a few of its words in quotes." };
+  const no = !!(toks.length && !toks[0].q && toks[0].v.toLowerCase() === "no"); if (no) toks.shift();
+  const k = toks.shift();
+  const kind = k && !k.q ? k.v.toLowerCase() : "";
+  if (!Object.hasOwn(EXPECT_KINDS, kind)) return { error: `“expect” needs to say what to look for${k ? `, and “${k.v}” is not one of them` : ""}. Use one of: ${kinds}.` };
+  const spec = EXPECT_KINDS[kind];
+  const ref = toks.shift();
+  if (!ref || !ref.v) return { error: `“expect ${kind}” needs to say which: a name, or a few of its words in quotes.` };
+  const step = { line, raw, verb: "expect", text: "", no, kind, ref };
+  if (spec.two) {
+    const ref2 = toks.shift();
+    if (!ref2 || !ref2.v) return { error: "“expect link” needs two things: each a name, or a few words in quotes." };
+    step.ref2 = ref2;
+  }
+  if (toks.length && spec.words) {
+    const w = toks.shift();
+    if (w.q || !spec.words.includes(w.v.toLowerCase())) return { error: `“expect ${kind}” doesn't know “${w.v}”. Use one of: ${spec.words.join(", ")}.` };
+    step.word = w.v.toLowerCase();
+  }
+  if (toks.length) return { error: `Didn't expect “${toks[0].v}” here. To point at something by its words, put them in quotes.` };
+  return { step };
+}
+
+const REF_NOUN = { state: "fact", goal: "goal", idea: "idea", flag: "loose end", suggestion: "suggestion" };
 const hasOwn = (o, k) => Object.hasOwn(o || {}, k);
 
 /* Which things a verb may act on, mirroring what the page offers. */
@@ -1357,6 +1630,7 @@ function findRef(st, names, on, ref, verb) {
   const pool = on === "state" ? Object.entries(st.state).map(([id, s]) => ({ id, x: s, main: s.text, all: s.text }))
     : on === "goal" ? Object.entries(st.goals).map(([id, g]) => ({ id, x: g, main: g.text, all: g.text + " " + (g.words || "") }))
     : on === "idea" ? Object.entries(st.nodes).map(([id, n]) => ({ id, x: n, main: n.t, all: n.t + " " + (n.words || n.reading || "") }))
+    : on === "suggestion" ? (st.analysis ? st.analysis.suggestions : []).filter(s => s.id).map(s => ({ id: s.id, x: s, main: s.text, all: s.text + " " + (s.why || "") }))
     : st.flags.filter(f => !hasOwn(st.outcomes, f.id)).map(f => ({ id: f.id, x: f, main: f.text, all: f.text }));
   const fits = REF_FITS[verb] || (() => true);
   if (!ref.q && hasOwn(names, ref.v)) {
@@ -1378,6 +1652,55 @@ function findRef(st, names, on, ref, verb) {
   return { error: `“${ref.v}” matches ${some.length} ${noun}s. Use more of its words.` };
 }
 
+/* Everything of one kind that "expect" may look among: { id, on, x, all }. */
+function expectPool(st, kind) {
+  const nodes = pick => Object.entries(st.nodes).filter(([, n]) => pick(n)).map(([id, n]) => ({ id, on: "idea", x: n, all: n.t + " " + (n.words || n.reading || "") }));
+  switch (kind) {
+    case "fact": return Object.entries(st.state).filter(([, s]) => !s.ended).map(([id, s]) => ({ id, on: "state", x: s, all: s.text }));
+    case "past": return Object.entries(st.state).filter(([, s]) => s.ended).map(([id, s]) => ({ id, on: "state", x: s, all: s.text }));
+    case "goal": return Object.entries(st.goals).map(([id, g]) => ({ id, on: "goal", x: g, all: g.text + " " + (g.words || "") }));
+    case "idea": return nodes(n => !n.map && n.stuck !== false && !n.kept);
+    case "reading": return nodes(n => !n.map && (n.stuck === false || n.kept));
+    case "item": return nodes(n => !!n.map);
+    case "thing": return nodes(() => true);
+    case "loose": return st.flags.map(f => ({ id: f.id, on: "flag", x: f, all: [f.text, f.detail, f.phrase, f.suggestion, f.question].filter(Boolean).join(" ") }));
+    case "suggestion": return (st.analysis ? st.analysis.suggestions : []).map(s => ({ id: s.id, on: "suggestion", x: s, all: s.text + " " + (s.why || "") }));
+    default: return [];
+  }
+}
+function expectMatches(st, names, kind, ref) {
+  const pool = expectPool(st, kind);
+  if (!ref.q && hasOwn(names, ref.v)) { const n = names[ref.v]; return pool.filter(p => p.id === n.id && p.on === n.on); }
+  const want = ref.v.toLowerCase();
+  return pool.filter(p => p.all.toLowerCase().includes(want));
+}
+const EXPECT_WORD = {
+  goal: (p, w) => p.x.status === w,
+  item: (p, w) => (w === "ruledout" ? !!p.x.ruledOut : p.x.ruledOut ? false : w === "supposed" ? !!p.x.supposed : w === "confirmed" ? !!p.x.confirmedOn : !p.x.supposed && !p.x.confirmedOn),
+  loose: (p, w, st) => hasOwn(st.outcomes, p.id) === (w === "settled"),
+  suggestion: (p, w) => p.x.verdict === w
+};
+/* Does one "expect" line hold against this state? Returns { ok, text }, the
+   text saying in plain words what was looked for and what was found. */
+function checkExpect(s, st, names) {
+  const spec = EXPECT_KINDS[s.kind];
+  const say = r => (r.q ? `“${r.v}”` : r.v);
+  let found, what;
+  if (spec.two) {
+    const A = expectMatches(st, names, "thing", s.ref), B = expectMatches(st, names, "thing", s.ref2);
+    found = st.links.filter(l => (A.some(p => p.id === l.a) && B.some(p => p.id === l.b)) || (A.some(p => p.id === l.b) && B.some(p => p.id === l.a))).length;
+    what = `a link between ${say(s.ref)} and ${say(s.ref2)}`;
+  } else {
+    let hits = expectMatches(st, names, s.kind, s.ref);
+    if (s.word) hits = hits.filter(p => EXPECT_WORD[s.kind](p, s.word, st));
+    found = hits.length;
+    what = `a ${spec.noun} matching ${say(s.ref)}` + (s.word ? ` that is ${s.word === "ruledout" ? "ruled out" : s.word === "new" ? "marked new to me" : s.word === "knew" ? "marked already knew" : s.word === "wrong" ? "marked wrong" : s.word}` : "");
+  }
+  const ok = s.no ? found === 0 : found > 0;
+  const saw = found === 0 ? "none" : found === 1 ? "one" : String(found);
+  return { ok, text: (ok ? "Held: " : "Did not hold: ") + (s.no ? "expected no such thing as " : "expected ") + what + `. Found ${saw}.` };
+}
+
 /* One parsed line to what the app should do, given the state now.
    names: { name: { on, id } } bound by earlier lines. newId(prefix) makes
    an id for a new fact or goal. Returns one of:
@@ -1385,8 +1708,10 @@ function findRef(st, names, on, ref, verb) {
      { do:"ingest", text, source }  { do:"analyze" }   model calls
      { do:"stream", name }  { do:"date", date }  { do:"note", text }
      { do:"show", view, map? }  { do:"focus", id }  { do:"rewind", to }  { do:"latest" }  { do:"branch" }
+     { do:"check", ok, text }   an "expect" line: whether it held, and what was found
      { error }   the line can't run against this state. */
 function planStep(s, st, names, newId) {
+  if (s.verb === "expect") return { do: "check", ...checkExpect(s, st, names) };
   const spec = SCRIPT_VERBS[s.verb];
   let id = null;
   if (spec && spec.ref) { const r = findRef(st, names, spec.ref, s.ref, s.verb); if (r.error) return r; id = r.id; }
@@ -1407,6 +1732,7 @@ function planStep(s, st, names, newId) {
     case "reject": return act({ type: "rejectgoal", goalId: id }, "goal");
     case "text": return { do: "ingest", text: s.text, source: (s.source || "Script").slice(0, 200) };
     case "help": return { do: "analyze" };
+    case "mark": return { do: "action", action: { type: "verdict", analysisId: st.analysis.id, suggestionId: id, mark: s.word }, at: { on: "suggestion", id }, bind: null };
     case "show": return hasOwn(SHOW_MAP, s.word) ? { do: "show", view: "map", map: SHOW_MAP[s.word] } : { do: "show", view: s.word };
     case "said": case "environment": case "mental": case "assumption": {
       const nid = newId("w"), map = ITEM_MAP[s.verb];
@@ -1433,18 +1759,20 @@ function planStep(s, st, names, newId) {
 /* Run a script's action lines with no page and no server: each plan
    becomes a step, and the next line sees the replayed state. Lines that
    only change the view are skipped; a line that can't run stops it. Used
-   for the built-in world sample and by the tests. replayFn is replay(). */
+   for the built-in world sample and by the tests. replayFn is replay().
+   checks: one { line, ok, text } for each "expect" line, in order. */
 function scriptToSteps(text, replayFn) {
-  const p = parseScript(text); const steps = [], names = {}; let date = "", n = 0, error = p.errors[0] || null;
+  const p = parseScript(text); const steps = [], names = {}, checks = []; let date = "", n = 0, error = p.errors[0] || null;
   for (const s of error ? [] : p.steps) {
     const plan = planStep(s, replayFn(steps), names, pre => pre + (++n));
     if (plan.error) { error = { line: s.line, message: plan.error }; break; }
+    if (plan.do === "check") { checks.push({ line: s.line, ok: plan.ok, text: plan.text }); continue; }
     if (plan.do === "date") date = plan.date;
     if (plan.do !== "action") continue;
     steps.push({ kind: "action", seq: steps.length, at: null, date, source: "script", action: plan.action });
     if (plan.bind) names[plan.bind.name] = { on: plan.bind.on, id: plan.bind.id };
   }
-  return { steps, names, error };
+  return { steps, names, error, checks };
 }
 
 /* Built-in scripts. The first calls no model: every line is an action. */
@@ -1632,13 +1960,23 @@ function spanLabel(sp) {
 /* ==== module client/00-build.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.8.0
+   File Version: 0.9.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.8.0",
+  version: "0.9.0",
   corrections: [
+    ["Nothing counted what became of the AI's claims",
+     "An Evidence tab. It counts, from the steps of the stream, what the AI proposed and what you did with it: readings kept or discarded, goals confirmed or refused, loose ends settled, items dropped for pointing at nothing, split by model. It rewinds with the Step slider. It counts the machine, not you."],
+    ["A Help analysis suggestion could only be read",
+     "Each suggestion now takes your word: new to me, already knew, or wrong. It is a step like any other, and Evidence counts it. The Darlene sample ends with a made-up analysis, so anyone can try it."],
+    ["A script could act but could not check",
+     "A script line can now check something, such as “expect goal milk reached”. A check changes nothing and does not stop the run; the stepper marks whether it held and counts how many did. So a script is also a test."],
+    ["Only an admin could give you a new password",
+     "Change password, beside Sign out. You give your current password and the new one."],
+    ["An invite code for signing up could only be set in a file on the server",
+     "The Admin tab now sets who may sign up: anyone, anyone with the invite code you choose, or nobody."],
     ["A change that failed to save could quietly go missing, and the warning cleared itself",
      "A failed save now stays on screen and nothing new is taken until it is saved; it is tried again in order when you act or click the note. A change the server refuses is undone, so the page and the server always show the same stream."],
     ["Stop left the AI call running, and its result was stored anyway",
@@ -1713,7 +2051,7 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* privat
 /* ==== module client/20-sample.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/20-sample.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The built-in sample streams everyone gets: ordinary steps that never
    went to a server. Darlene and the appointment is the state-layer scenario
@@ -1809,7 +2147,20 @@ const DARLENE_STEPS = (function () {
     act("Oct 1", "move", { type: "move", goalId: "g-appt", text: "Talked it through. She'll go if we have lunch after.", effect: "closer" }),
     act("Oct 2", "reach", { type: "reach", goalId: "g-appt", text: "Mom saw the eye doctor." }),
     act("Oct 2", "state", { type: "release", stateId: "s-appt", note: "It's done." }),
-    act("Oct 2", "state", { type: "state", stateId: "s-glasses", text: "Mom needs new glasses." })
+    act("Oct 2", "state", { type: "state", stateId: "s-glasses", text: "Mom needs new glasses." }),
+    /* A Help analysis, made up like the rest and not made by any model, so that
+       a guest (who cannot call the AI) can see suggestions and give a word on
+       each, and so the Evidence view has something to count. */
+    act("Oct 2", "help analysis", { type: "analysis", id: "h-darlene", model: "made up for the sample",
+      standing: "The appointment goal is reached, and Mom needs new glasses. The goal to share the driving has not moved since Sep 28.",
+      suggestions: [
+        { id: "h-darlene-1", kind: "loose", text: "Is “Did Mom get to the appointment?” answered now? The goal is reached, and Now says Mom saw the eye doctor.",
+          why: "The loose end is still open, and the state of play answers it.", about: [{ on: "flag", id: "d-open" }, { on: "goal", id: "g-appt" }, { on: "state", id: "s-g-appt" }] },
+        { id: "h-darlene-2", kind: "move", text: "Mom needs new glasses, and picking them up is a second drive. Ask your brother for that one trip, by name and by day.",
+          why: "The goal to share the driving is stuck on a message with no answer. A request for one dated trip is a different move.", about: [{ on: "goal", id: "g-brother" }, { on: "state", id: "s-glasses" }, { on: "idea", id: "e-brother" }] },
+        { id: "h-darlene-3", kind: "question", text: "Lunch after is what moved Mom from no to yes. Was the lunch the point for her, more than the eye doctor?",
+          why: "The move that brought the goal closer was an offer of time together, and “You don't make someone go against their will” limited how.", about: [{ on: "goal", id: "g-appt" }, { on: "idea", id: "a-will" }] }
+      ] })
   ];
   steps.forEach((x, i) => { x.seq = i; });
   return steps;
@@ -1870,7 +2221,7 @@ function isRewound() { return cursor < stream.steps.length; }
 /* ==== module client/35-api.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/35-api.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The only place the browser talks to the server. Relative URLs, so the
    app works under an IIS sub-path. Every failure is thrown as
@@ -1899,6 +2250,9 @@ const api = (function () {
     users: () => call("GET", "/admin/users"),
     addUser: (email, password, level) => call("POST", "/admin/users", { email, password, level }),
     changeUser: (id, body) => call("PATCH", "/admin/users/" + id, body),
+    changePassword: (current, password) => call("POST", "/me/password", { current, password }),
+    settings: () => call("GET", "/admin/settings"),
+    setSettings: body => call("PATCH", "/admin/settings", body),
     shareStream: (id, shared) => call("PATCH", "/streams/" + id, { shared }),
     logout: () => call("POST", "/logout"),
     listStreams: () => call("GET", "/streams"),
@@ -2084,7 +2438,7 @@ async function recordAction(action, label, date) {
 /* ==== module client/50-streambar.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/50-streambar.js
-   File Version: 0.6.0
+   File Version: 0.6.1
    ─────────────────────────────────────────────
    The bar under the header: which stream, which step, save state. */
 function stepLabel(step) {
@@ -2110,6 +2464,7 @@ function stepLabel(step) {
       case "confirm": return `Confirmed: ${clip(S.nodes[a.id] ? S.nodes[a.id].t : "an item", 50)}`;
       case "ruleout": return `Ruled out: ${clip(S.nodes[a.id] ? S.nodes[a.id].t : "an item", 50)}`;
       case "analysis": { const k = (a.suggestions || []).length; return `Help analysis · ${k} suggestion${k === 1 ? "" : "s"}`; }
+      case "verdict": return `Your word on a suggestion: ${{ new: "new to me", knew: "already knew", wrong: "wrong" }[a.mark] || "noted"}`;
       default: return "You made a change";
     }
   }
@@ -2158,7 +2513,7 @@ $("#branch").addEventListener("click", branchHere);
 /* ==== module client/60-map.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/60-map.js
-   File Version: 0.3.0
+   File Version: 0.3.1
    ─────────────────────────────────────────────
    The map: a neighborhood around one idea, the side panel (your words,
    history, open questions, connections, traceback), search, and Draft.
@@ -2427,7 +2782,7 @@ function openDraft() {
 }
 $("#closedraft").addEventListener("click", () => { $("#scrim").hidden = true; });
 $("#scrim").addEventListener("click", e => { if (e.target.id === "scrim") $("#scrim").hidden = true; });
-document.addEventListener("keydown", e => { if (e.key === "Escape") $("#scrim").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { $("#scrim").hidden = true; $("#pwscrim").hidden = true; } });
 $("#copymd").addEventListener("click", () => {
   const ta = $("#draftmd"); const fallback = () => { ta.focus(); ta.select(); toast("Selected. Press Ctrl+C to copy."); };
   try { navigator.clipboard.writeText(ta.value).then(() => toast("Copied."), fallback); } catch (err) { fallback(); }
@@ -2436,7 +2791,7 @@ $("#copymd").addEventListener("click", () => {
 /* ==== module client/65-statelayer.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/65-statelayer.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The State view: Now (the person's standing facts), Goals (put forth,
    moved toward, reached, stuck, dropped) and the movement toward each goal.
@@ -2491,6 +2846,8 @@ function goalCard(id, g) {
    The suggestions are a step (made by the server), so they rewind with
    everything else. Each one links to what it rests on. */
 const helpKind = { move: "next move", reached: "reached?", fact: "now", stuck: "stuck?", loose: "loose end", question: "question" };
+/* Your word on a suggestion (E17). It is a step like any other, and what the Evidence view counts. */
+const verdictWord = [["new", "New to me"], ["knew", "Already knew"], ["wrong", "Wrong"]];
 let helpBusy = false, helpProblem = "";
 
 function aboutLink(r) {
@@ -2511,7 +2868,8 @@ function renderHelp() {
   if (a.standing) h += `<p class="reading-text">${esc(a.standing)}</p>`;
   h += a.suggestions.length ? `<ul class="helplist">${a.suggestions.map(s => {
     const links = s.about.map(aboutLink).filter(Boolean).join(" · ");
-    return `<li class="help k-${esc(s.kind)}"><div class="type">${esc(helpKind[s.kind] || s.kind)}</div><div class="body"><p class="htext">${esc(s.text)}</p>${s.why ? `<p class="hwhy">${esc(s.why)}</p>` : ""}${links ? `<p class="hwhy">About: ${links}</p>` : ""}</div></li>`;
+    const word = s.id ? `<div class="verdict" data-sug="${esc(s.id)}"><span class="small">${s.verdict ? "Your word on this:" : "Was this:"}</span>${verdictWord.map(([k, w]) => `<button class="btn mini${s.verdict === k ? " on" : ""}" type="button" data-mark="${k}" aria-pressed="${s.verdict === k}"${isRewound() ? " disabled" : ""}>${w}</button>`).join("")}</div>` : "";
+    return `<li class="help k-${esc(s.kind)}"><div class="type">${esc(helpKind[s.kind] || s.kind)}</div><div class="body"><p class="htext">${esc(s.text)}</p>${s.why ? `<p class="hwhy">${esc(s.why)}</p>` : ""}${links ? `<p class="hwhy">About: ${links}</p>` : ""}${word}</div></li>`;
   }).join("")}</ul>` : `<p class="small">No suggestions. Nothing here needs doing right now.</p>`;
   if (a.leftOut && a.leftOut.length) h += `<p class="small">${a.leftOut.length} line${a.leftOut.length === 1 ? " in this stream was" : "s in this stream were"} not shown to the AI, because ${a.leftOut.length === 1 ? "it reads" : "they read"} as an order to an AI: ${a.leftOut.map(p => "“" + esc(p) + "”").join(", ")}. Nothing was removed from the stream.</p>`;
   if (a.since) h += `<p class="small">${a.since} step${a.since === 1 ? "" : "s"} since this was made. Press Help analysis again for a fresh one.</p>`;
@@ -2577,6 +2935,13 @@ $("#view-state").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.go) { setFocus(b.dataset.go); showView("map"); return; }
   if (b.id === "helpbtn") { runHelp(); return; }
+  if (b.dataset.mark) {
+    const sug = b.closest("[data-sug]"); if (!sug || !S.analysis) return;
+    if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch first."); return; }
+    const mark = b.dataset.mark;
+    await stateAction({ type: "verdict", analysisId: S.analysis.id, suggestionId: sug.dataset.sug, mark }, "verdict", () => toast("Noted. It is counted in Evidence."));
+    return;
+  }
   if (b.dataset.goalgo) { reveal(document.querySelector(`[data-goal="${CSS.escape(b.dataset.goalgo)}"]`)); return; }
   if (b.dataset.factgo) { reveal(document.querySelector(`[data-state="${CSS.escape(b.dataset.factgo)}"]`)); return; }
   if (b.dataset.lego) { showView("loose"); return; }
@@ -2687,6 +3052,79 @@ function renderTimeline() {
 }
 $("#timeline").addEventListener("click", e => { const l = e.target.closest("[data-go]"); if (l) { setFocus(l.dataset.go); showView("map"); } });
 $("#timeline").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { const l = e.target.closest("[data-go]"); if (l) { e.preventDefault(); setFocus(l.dataset.go); showView("map"); } } });
+
+/* ==== module client/77-evidence.js ==== */
+/* ─────────────────────────────────────────────
+   File: src/client/77-evidence.js
+   File Version: 0.1.0
+   ─────────────────────────────────────────────
+   The Evidence view (VISION.md §9, E17): what became of the machine's
+   claims in this stream, counted from its steps up to the one in view. The
+   counting is src/shared/evidence.js (inlined above); this module only
+   draws it. It rewinds with the stream, calls nothing, and judges nobody. */
+const evChoice = { accept: "suggestion used", keep: "kept as written", link: "linked", unrelated: "not related", talk: "picked up as a question", both: "both held", drop: "dropped", ok: "noted" };
+const evMark = { new: "new to me", knew: "already knew", wrong: "wrong" };
+
+function evTable(title, note, rows) {
+  return `<div class="card ev"><h3>${esc(title)}</h3>${note ? `<p class="small" style="margin:0">${esc(note)}</p>` : ""}
+    <table class="evt"><tbody>${rows.filter(Boolean).map(r => `<tr${r[2] ? ` class="${r[2]}"` : ""}><th scope="row">${esc(r[0])}</th><td>${esc(String(r[1]))}</td></tr>`).join("")}</tbody></table></div>`;
+}
+/* "3 of 5": how many of the claims that were decided went one way. */
+function evOf(n, total) { return total ? `${n} of ${total}` : "0"; }
+
+function renderEvidence() {
+  const el = $("#evidencebody"); if (!el) return;
+  const E = evidence(stream.steps.slice(0, cursor));
+  $("#evidencewhen").textContent = isRewound() ? `As it stood at step ${cursor} of ${stream.steps.length}.` : `Counted from all ${stream.steps.length} step${stream.steps.length === 1 ? "" : "s"}.`;
+  if (evidenceEmpty(E)) { el.innerHTML = `<p class="empty">Nothing to count yet. Evidence appears once the AI has read some text or made suggestions, or once suppositions have been put forth.</p>`; return; }
+  const L = E.loose, types = Object.entries(L.byType).map(([k, v]) => `${v} ${leName[k] ? leName[k].toLowerCase() : k}`).join(", ");
+  const choices = Object.entries(L.byChoice).map(([k, v]) => `${v} ${evChoice[k] || k}`).join(", ");
+  let h = "";
+  if (E.passes) h += evTable("From your text", "What the AI was given and what it put on the map in your own words.", [
+    ["Passes of text read", E.passes],
+    ["Ideas in your words", E.words.ideas],
+    ["Ideas you said again", E.words.again],
+    ["Ideas you replaced with a later version", E.words.replaced],
+    ["Items the AI proposed that pointed at nothing in your text, and were dropped", E.dropped, E.dropped ? "warn" : ""]
+  ]);
+  if (E.readings.made) h += evTable("The AI's readings", "Interpretations the AI added. You keep one or discard it.", [
+    ["Readings made", E.readings.made],
+    ["You kept", evOf(E.readings.kept, E.readings.made), "good"],
+    ["You discarded", evOf(E.readings.discarded, E.readings.made), E.readings.discarded ? "warn" : ""],
+    ["Not decided yet", E.readings.open]
+  ]);
+  if (E.goals.read || E.goals.moves) h += evTable("Goals the AI read in your text", "A goal read in text is only a proposal until you say so.", [
+    ["Goals read", E.goals.read],
+    ["You confirmed", evOf(E.goals.accepted, E.goals.read), "good"],
+    ["You said not a goal", evOf(E.goals.rejected, E.goals.read), E.goals.rejected ? "warn" : ""],
+    ["Not decided yet", E.goals.open],
+    ["Moves read in text", E.goals.moves]
+  ]);
+  if (L.raised) h += evTable("Loose ends", "Things the AI noticed and left for you to decide.", [
+    ["Raised", L.raised + (types ? ` (${types})` : "")],
+    ["Settled", L.settled + (choices ? ` (${choices})` : "")],
+    ["Still open", L.open + (L.later ? ` (${L.later} put off)` : "")]
+  ]);
+  if (E.help.analyses) h += evTable("Help analysis", "Your word on each suggestion: new to me, already knew, or wrong.", [
+    ["Times pressed", E.help.analyses],
+    ["Suggestions made", E.help.suggestions],
+    ["New to me", evOf(E.help.new, E.help.suggestions), "good"],
+    ["Already knew", evOf(E.help.knew, E.help.suggestions)],
+    ["Wrong", evOf(E.help.wrong, E.help.suggestions), E.help.wrong ? "warn" : ""],
+    ["Not marked yet", E.help.unmarked]
+  ]);
+  if (E.suppositions.made || E.suppositions.given) h += evTable("Suppositions on the world maps", "These were put forth by you or by a script, not by the AI. They are counted the same way.", [
+    ["Put forth as given", E.suppositions.given],
+    ["Put forth as supposed", E.suppositions.made],
+    ["Confirmed", evOf(E.suppositions.confirmed, E.suppositions.made), "good"],
+    ["Ruled out", evOf(E.suppositions.ruledOut, E.suppositions.made), E.suppositions.ruledOut ? "warn" : ""],
+    ["Still supposed", E.suppositions.open]
+  ]);
+  if (E.byModel.length) h += `<div class="card ev wide"><h3>By model</h3><p class="small" style="margin:0">The same counts, split by which model made the claim. This is what a change of Depth, or of a prompt, should be judged by.</p>
+    <div class="evscroll"><table class="evt cols"><thead><tr><th scope="col">Model</th><th scope="col">Passes</th><th scope="col">Ideas</th><th scope="col">Dropped</th><th scope="col">Readings kept</th><th scope="col">Readings discarded</th><th scope="col">Goals confirmed</th><th scope="col">Goals refused</th><th scope="col">Suggestions: new, knew, wrong</th></tr></thead><tbody>${E.byModel.map(m =>
+      `<tr><th scope="row">${esc(m.model)}</th><td>${m.passes}</td><td>${m.ideas}</td><td>${m.dropped}</td><td>${evOf(m.kept, m.readings)}</td><td>${evOf(m.discarded, m.readings)}</td><td>${evOf(m.accepted, m.goals)}</td><td>${evOf(m.rejected, m.goals)}</td><td>${m.suggestions ? `${m.new}, ${m.knew}, ${m.wrong} of ${m.suggestions}` : "0"}</td></tr>`).join("")}</tbody></table></div></div>`;
+  el.innerHTML = h;
+}
 
 /* ==== module client/80-add.js ==== */
 /* ─────────────────────────────────────────────
@@ -2845,23 +3283,26 @@ drop.addEventListener("drop", async e => {
 /* ==== module client/85-script.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/85-script.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The Script view and the stepper. The language itself is in
    src/shared/script.js (inlined above): parseScript() reads the text and
    planStep() says what one line should do. This module carries each plan
    out through the same functions the buttons call, one line at a time, and
    shows the view where it happened. The stepper is a dock under the page
-   that stays in view on every tab while a script is open. */
-let srun = null; /* { steps, i, names, date, busy, playing, msg, error, marks:[] } while a script is open */
-const viewWord = { map: "the map", state: "State", add: "Add text", loose: "Loose Ends", timeline: "the timeline", talk: "Talk", script: "Script" };
+   that stays in view on every tab while a script is open. An "expect" line
+   is a check: it changes nothing and never stops the run; the stepper marks
+   it held or not and counts them. */
+let srun = null; /* { steps, i, names, date, busy, playing, msg, error, checks:{index: held}, missed } while a script is open */
+const viewWord = { map: "the map", state: "State", add: "Add text", loose: "Loose Ends", timeline: "the timeline", evidence: "Evidence", talk: "Talk", script: "Script" };
 
 function scriptCheck() {
   const p = parseScript($("#scripttext").value);
   const st = $("#scriptstatus"), el = $("#scripterrors");
   const calls = p.steps.filter(s => s.verb === "text" || s.verb === "help").length;
+  const checks = p.steps.filter(s => s.verb === "expect").length;
   if (p.errors.length) { st.textContent = `${p.errors.length} line${p.errors.length === 1 ? "" : "s"} can't be read. Nothing runs until they are fixed.`; st.classList.add("bad"); }
-  else { st.textContent = p.steps.length ? `${p.steps.length} line${p.steps.length === 1 ? "" : "s"} to run` + (calls ? `, ${calls} of them call${calls === 1 ? "s" : ""} the model.` : ". No model calls.") : "Nothing to run yet."; st.classList.remove("bad"); }
+  else { st.textContent = p.steps.length ? `${p.steps.length} line${p.steps.length === 1 ? "" : "s"} to run` + (calls ? `, ${calls} of them call${calls === 1 ? "s" : ""} the model.` : ". No model calls.") + (checks ? ` ${checks} check${checks === 1 ? "" : "s"}.` : "") : "Nothing to run yet."; st.classList.remove("bad"); }
   el.hidden = !p.errors.length;
   el.innerHTML = p.errors.map(e => `<li><span class="n">line ${e.line}</span>${esc(e.message)}</li>`).join("");
   $("#scriptopen").disabled = !!p.errors.length || !p.steps.length;
@@ -2870,7 +3311,7 @@ function scriptCheck() {
 function scriptOpen() {
   const p = scriptCheck();
   if (p.errors.length || !p.steps.length) return;
-  srun = { steps: p.steps, i: 0, names: {}, date: null, busy: false, playing: false, msg: "Press Step to run the first line, or Play to run them all.", error: "", marks: [] };
+  srun = { steps: p.steps, i: 0, names: {}, date: null, busy: false, playing: false, msg: "Press Step to run the first line, or Play to run them all.", error: "", checks: {}, missed: false };
   lsSet("nm.script", $("#scripttext").value);
   renderDock();
 }
@@ -2878,14 +3319,17 @@ function renderDock() {
   $("#dock").hidden = !srun;
   if (!srun) return;
   const n = srun.steps.length, done = srun.i >= n;
-  $("#dockpos").textContent = done ? `Done · ${n} of ${n} run` : `${srun.i} of ${n} run · next is line ${srun.steps[srun.i].line}`;
+  const held = Object.values(srun.checks).filter(Boolean).length, checked = Object.keys(srun.checks).length;
+  const tally = checked ? ` · ${held} of ${checked} check${checked === 1 ? "" : "s"} held` : "";
+  $("#dockpos").textContent = (done ? `Done · ${n} of ${n} run` : `${srun.i} of ${n} run · next is line ${srun.steps[srun.i].line}`) + tally;
   $("#docklines").innerHTML = srun.steps.map((s, k) => {
-    const cls = k < srun.i ? "done" : k === srun.i ? (srun.error ? "cur err" : "cur") : "";
-    return `<li class="${cls}"><span class="mk">${k < srun.i ? "✓" : k === srun.i ? (srun.error ? "!" : srun.busy ? "…" : "▶") : ""}</span><span class="n">${s.line}</span><code>${esc(s.raw)}</code></li>`;
+    const missed = srun.checks[k] === false;
+    const cls = k < srun.i ? (missed ? "done missed" : "done") : k === srun.i ? (srun.error ? "cur err" : "cur") : "";
+    return `<li class="${cls}"><span class="mk">${k < srun.i ? (missed ? "✗" : "✓") : k === srun.i ? (srun.error ? "!" : srun.busy ? "…" : "▶") : ""}</span><span class="n">${s.line}</span><code>${esc(s.raw)}</code></li>`;
   }).join("");
   const cur = $("#docklines li.cur") || $("#docklines li:last-child");
   if (cur) { const ol = $("#docklines"); ol.scrollTop = Math.max(0, cur.offsetTop - ol.clientHeight / 2 + cur.offsetHeight / 2); }
-  const m = $("#dockmsg"); m.textContent = srun.error || srun.msg || ""; m.classList.toggle("bad", !!srun.error);
+  const m = $("#dockmsg"); m.textContent = srun.error || srun.msg || ""; m.classList.toggle("bad", !!srun.error || srun.missed);
   $("#dockstep").disabled = srun.busy || srun.playing || done;
   $("#dockplay").disabled = done || (srun.busy && !srun.playing);
   $("#dockplay").textContent = srun.playing ? "Pause" : "Play";
@@ -2911,6 +3355,7 @@ function srShow(at, type) {
     return;
   }
   if (at.on === "flag") { showView("loose"); return; }
+  if (at.on === "suggestion") { showView("state"); const el = document.querySelector(`[data-sug="${CSS.escape(at.id)}"]`); if (el) { el.scrollIntoView({ block: "center" }); el.closest("li").classList.add("flash"); } return; }
   showView("state");
   const el = document.querySelector(`[data-${at.on === "state" ? "state" : "goal"}="${CSS.escape(at.id)}"]`);
   if (!el) return;
@@ -2926,6 +3371,7 @@ async function srExec(s) {
   const needRegistered = what => { if (isGuest()) { needUserInfo(what); throw "This line uses the AI, which is for registered users. A guest can run every other line."; } };
   switch (plan.do) {
     case "note": return plan.text;
+    case "check": srun.checks[srun.i] = plan.ok; srun.missed = !plan.ok; return plan.text;
     case "date": srun.date = plan.date; return `Steps from here are dated ${plan.date}.`;
     case "show": showView(plan.view); if (plan.map) { setMap(plan.map); return `Showing the map of ${mapWord[plan.map]}.`; } return `Showing ${viewWord[plan.view] || plan.view}.`;
     case "focus": showView("map"); setFocus(plan.id); return `On the map: “${S.nodes[plan.id].t}”.`;
@@ -2991,7 +3437,7 @@ async function srExec(s) {
 async function srStep() {
   const r = srun;
   if (!r || r.busy || r.i >= r.steps.length) return false;
-  r.busy = true; r.error = ""; renderDock();
+  r.busy = true; r.error = ""; r.missed = false; renderDock();
   let ok = true;
   try { r.msg = await srExec(r.steps[r.i]); r.i++; }
   catch (e) { ok = false; r.playing = false; r.error = `Line ${r.steps[r.i].line}: ` + (typeof e === "string" ? e : e && e.message ? e.message : "Something went wrong."); }
@@ -3071,17 +3517,29 @@ $("#qlater").addEventListener("click", () => { $("#qcard").hidden = true; toast(
 /* ==== module client/95-admin.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/95-admin.js
-   File Version: 0.2.1
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    The Admin tab: the admin panel (Phil, 2026-09-30). Who has an account, how they
    came by it, and what an admin can do: add someone, set their level
    (guest, user, admin), give them a new password, disable or enable them. Nothing here deletes a person or their
-   streams. The server refuses all of it to anyone who is not an admin. */
+   streams. The admin also sets who may sign up: anyone, anyone with the
+   invite code, or nobody. The server refuses all of it to anyone who is not an admin. */
 let people = [], signupHow = "open", pwFor = null; /* pwFor: the id whose "new password" box is open */
-const signupWord = { open: "Signing up is open: anyone who can reach this page can create an account.", code: "Signing up asks for the invite code set as SIGNUP_CODE in .env.", closed: "Signing up is closed (SIGNUP=closed in .env). Only people you add here can sign in." };
+let signupSet = null; /* { signup, code, from } as the server holds it, once an admin has opened the tab */
+const signupWord = { open: "Signing up is open: anyone who can reach this page can create an account.", code: "Signing up asks for an invite code.", closed: "Signing up is closed. Only people you add here can sign in." };
 
+/* Who may sign up: the choice, the code box when a code is asked for, and where the setting comes from. */
+function renderSignup() {
+  const s = signupSet; if (!s) return;
+  if (document.activeElement !== $("#signupmode")) $("#signupmode").value = s.signup;
+  if (document.activeElement !== $("#signupcode")) $("#signupcode").value = s.code || "";
+  $("#signupcodewrap").hidden = $("#signupmode").value !== "code";
+  $("#signupfrom").textContent = s.from === "admin" ? "Set here, by an admin. It wins over the server's own setting." : "This is the server's own setting. Saving a choice here takes its place.";
+  $("#signupserver").hidden = s.from !== "admin";
+}
 function renderAdmin() {
   $("#signupnote").textContent = signupWord[signupHow] || "";
+  renderSignup();
   $("#userlist").innerHTML = people.length ? people.map(u => {
     const you = me && u.id === me.id;
     const chips = (u.owner ? `<span class="chip mine">owner</span>` : "") + `<span class="chip${u.level === "admin" ? " mine" : u.level === "guest" ? " supposed" : ""}">${esc(u.level)}</span>` + (u.disabled ? `<span class="chip replaced">disabled</span>` : "") + (you ? `<span class="chip">you</span>` : "");
@@ -3099,8 +3557,20 @@ function renderAdmin() {
 async function loadPeople() {
   if (!me || !me.admin) return;
   try { people = await api.users(); } catch (e) { if (e.code !== "signed_out") $("#adminstatus").textContent = e.message || "Couldn't load the list."; }
+  try { signupSet = await api.settings(); signupHow = signupSet.signup; } catch (e) { /* the list above is still of use */ }
   renderAdmin();
 }
+function signupSay(msg, bad) { const s = $("#signupstatus"); s.textContent = msg || ""; s.classList.toggle("bad", !!bad); }
+async function saveSignup(body) {
+  try {
+    signupSet = await api.setSettings(body); signupHow = signupSet.signup;
+    signupSay(signupSet.from === "server" ? "Back to the server's own setting. " + signupWord[signupHow] : "Saved. " + signupWord[signupHow] + (signupHow === "code" ? " Give the code to the people you want in; the app doesn't send mail." : ""));
+    renderAdmin(); renderLogin();
+  } catch (err) { if (err.code !== "signed_out") signupSay(err.message || "Couldn't save that.", true); }
+}
+$("#signupmode").addEventListener("change", () => { $("#signupcodewrap").hidden = $("#signupmode").value !== "code"; if ($("#signupmode").value === "code") $("#signupcode").focus(); });
+$("#signupform").addEventListener("submit", e => { e.preventDefault(); saveSignup({ signup: $("#signupmode").value, code: $("#signupcode").value }); });
+$("#signupserver").addEventListener("click", () => saveSignup({ signup: "server" }));
 function adminSay(msg, bad) { const s = $("#adminstatus"); s.textContent = msg || ""; s.classList.toggle("bad", !!bad); }
 
 $("#adduser").addEventListener("submit", async e => {
@@ -3142,16 +3612,17 @@ $("#userlist").addEventListener("submit", async e => {
 /* ==== module client/97-app.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/97-app.js
-   File Version: 0.6.0
+   File Version: 0.7.0
    ─────────────────────────────────────────────
-   Views, sign-in, sign-up and looking around as a guest, and boot. Last
-   module: everything above is defined. */
-function renderAll() { renderStreamBar(); renderMap(); renderStateView(); renderLE(); renderTimeline(); renderAdd(); }
+   Views, sign-in, sign-up and looking around as a guest, changing your own
+   password, and boot. Last module: everything above is defined. */
+function renderAll() { renderStreamBar(); renderMap(); renderStateView(); renderLE(); renderTimeline(); renderEvidence(); renderAdd(); }
 function showView(v) {
   if (v === "admin" && !(me && me.admin)) v = "map";
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
   document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
   if (v === "timeline") renderTimeline();
+  if (v === "evidence") renderEvidence();
   if (v === "add") renderAdd();
   if (v === "state") renderStateView();
   if (v === "admin") loadPeople();
@@ -3176,7 +3647,7 @@ function renderLogin() {
 function showLogin(up) { me = null; if (up !== undefined) signingUp = !!up; $("#loginscrim").hidden = false; renderLogin(); renderWho(); renderSave(); setTimeout(() => ($("#email").value ? $("#password") : $("#email")).focus(), 0); }
 function hideLogin() { $("#loginscrim").hidden = true; }
 function renderWho() {
-  $("#who").innerHTML = me ? `<span>${esc(me.email)}${me.level === "guest" ? " · guest, nothing is saved" : ""}</span><button class="linkbtn" id="signout">Sign out</button>`
+  $("#who").innerHTML = me ? `<span>${esc(me.email)}${me.level === "guest" ? " · guest, nothing is saved" : ""}</span><button class="linkbtn" id="changepw">Change password</button><button class="linkbtn" id="signout">Sign out</button>`
     : visiting ? `<span>Guest · nothing is saved</span><button class="linkbtn" id="signin">Sign in or create an account</button>` : "";
   $("#tab-admin").hidden = !(me && me.admin);
   if (!(me && me.admin) && !$("#view-admin").hidden) showView("map");
@@ -3210,8 +3681,29 @@ $("#loginform").addEventListener("submit", async e => {
   } catch (err) { $("#loginstatus").textContent = err && err.message ? err.message : signingUp ? "Couldn't create the account." : "Couldn't sign in."; }
   btn.disabled = false;
 });
+/* Change your own password (Phil, 2026-09-30). You give the current one and the new one twice. */
+function showPassword() {
+  if (!me) return;
+  for (const id of ["#pwcurrent", "#pwnew", "#pwagain"]) $(id).value = "";
+  $("#pwstatus").textContent = ""; $("#pwstatus").classList.remove("bad");
+  $("#pwlead").textContent = `For ${me.email}. Signing in on your other devices stays as it is until they sign out.`;
+  $("#pwscrim").hidden = false; setTimeout(() => $("#pwcurrent").focus(), 0);
+}
+$("#pwclose").addEventListener("click", () => { $("#pwscrim").hidden = true; });
+$("#pwscrim").addEventListener("click", e => { if (e.target.id === "pwscrim") $("#pwscrim").hidden = true; });
+$("#pwform").addEventListener("submit", async e => {
+  e.preventDefault();
+  const st = $("#pwstatus"), say = (msg, bad) => { st.textContent = msg; st.classList.toggle("bad", !!bad); };
+  if ($("#pwnew").value !== $("#pwagain").value) { say("The two new passwords are not the same.", true); $("#pwagain").focus(); return; }
+  const btn = $("#pwsave"); btn.disabled = true; say("");
+  try { await api.changePassword($("#pwcurrent").value, $("#pwnew").value); $("#pwscrim").hidden = true; toast("Your password is changed."); }
+  catch (err) { if (err.code === "signed_out") $("#pwscrim").hidden = true; else say(err.message || "Couldn't change the password.", true); }
+  btn.disabled = false;
+});
+
 $("#who").addEventListener("click", async e => {
   if (e.target.id === "signin") { showLogin(false); return; }
+  if (e.target.id === "changepw") { showPassword(); return; }
   if (e.target.id !== "signout") return;
   try { await api.logout(); } catch (err) { /* cookie is gone either way */ }
   savedStreams = []; people = []; visiting = false; saveQueue = []; saveProblem = null; delete SAMPLES.sample; openSample(); showLogin(false);
@@ -3239,7 +3731,7 @@ async function afterSignIn() {
 $("#buildpill").textContent = "v" + BUILD.version;
 renderSteps(0);
 { const last = lsGet("nm.lastStream"); if (last && SAMPLES[last] && last !== DEFAULT_SAMPLE) openSample(last); else rebuild(); }
-const h0 = (location.hash || "").slice(1); if (["map", "state", "add", "loose", "timeline", "talk", "script", "help"].includes(h0)) showView(h0);
+const h0 = (location.hash || "").slice(1); if (["map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "help"].includes(h0)) showView(h0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderMap());
 (async () => {
   try { signupHow = (await api.auth()).signup; } catch (e) { /* the card just offers sign-in */ }

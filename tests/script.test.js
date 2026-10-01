@@ -1,13 +1,13 @@
 /* ─────────────────────────────────────────────
    File: tests/script.test.js
-   File Version: 0.3.0
+   File Version: 0.4.0
    ─────────────────────────────────────────────
    The scripting language: reading a script, pointing at things, and what
    each line asks the app to do. The built-in scripts are run here against
    the real reducer, with no server and no model. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseScript, planStep, findRef, scriptToSteps, SCRIPT_VERBS, SCRIPT_HELP, SCRIPT_EXAMPLES } from "../src/shared/script.js";
+import { parseScript, planStep, findRef, scriptToSteps, checkExpect, SCRIPT_VERBS, SCRIPT_HELP, SCRIPT_EXAMPLES, EXPECT_KINDS } from "../src/shared/script.js";
 import fs from "node:fs";
 import { replay, currentState, pastState, mapOf, pickFocusIn, WORLD_MAPS, WORLD_LINKS } from "../src/shared/replay.js";
 
@@ -195,4 +195,93 @@ test("map and loose-end lines become the same actions the buttons make", () => {
   assert.match(r.S.outcomes.f1, /Dropped/);
   assert.match(run(`keep "went to the store"`, seed).error, /No idea that “keep” could act on/, "only a reading can be kept");
   assert.match(run(`resolve "Did Bobby" drop\nresolve "Did Bobby" drop`, seed).error, /No loose end/, "a settled loose end can't be settled again");
+});
+
+/* ---- lines that check: a script is also a test (E13, E17) ---- */
+
+const CHECKED_WORLD = `date: Sep 30
+said need: He needs milk.
+fact home: Bobby is at home.
+fact nomilk: There is no milk in the house.
+goal milk: Get milk.
+goal car: Fix the car.
+environment store: A store that sells milk is within reach.
+environment hours given: The store closes at nine.
+mental want: He wants there to be milk at home.
+link need want: read as a want
+release home: He left for the store.
+move milk closer: Bobby is at the store.
+stuck car: Nothing moves until next month.
+confirm store: He has been there.
+ruleout want
+reach milk: Bobby has milk.
+`;
+
+test("expect lines check the state and change nothing: each holds or does not, and the run goes on", () => {
+  const r = scriptToSteps(CHECKED_WORLD + `expect goal milk reached
+expect goal "Fix the car" stuck
+expect goal car open
+expect fact "Bobby has milk"
+expect no fact home
+expect past home
+expect idea need
+expect no reading "anything"
+expect item store confirmed
+expect item hours given
+expect item want ruledout
+expect item want supposed
+expect link need want
+expect link need store
+expect no goal "walk the dog"
+expect goal "walk the dog"
+goal dog: Walk the dog.
+expect goal dog open
+`, replay);
+  assert.equal(r.error, null);
+  assert.deepEqual(r.checks.map(c => c.ok), [true, true, false, true, true, true, true, true, true, true, true, false, true, false, true, false, true]);
+  assert.equal(r.steps.filter(s => s.action.type === "goal").length, 3, "a line after a check that did not hold still ran");
+  assert.equal(r.steps.length, scriptToSteps(CHECKED_WORLD + "goal dog: Walk the dog.\n", replay).steps.length, "a check adds no step");
+  assert.equal(r.checks.find(c => !c.ok).text, "Did not hold: expected a goal matching car that is open. Found none.");
+  assert.equal(r.checks[0].text, "Held: expected a goal matching milk that is reached. Found one.");
+  assert.equal(r.checks[4].text, "Held: expected no such thing as a fact in Now matching home. Found none.");
+  assert.match(r.checks[12].text, /a link between need and want/);
+});
+
+test("expect reads loose ends, readings and suggestions too; mark gives the person's word; and what cannot be read is said plainly", () => {
+  const seed = [
+    { kind: "ingest", seq: 0, date: "Sep 30", source: "text", result: {
+      add: { i1: { t: "Faith is furniture", kind: "idea", stuck: true, src: "user_said", words: "It becomes part of the furniture.", slots: [], history: [] },
+        r1: { t: "Habit hides it", kind: "idea", stuck: false, src: "inferred", reading: "Habit turns faith into background.", basis: ["i1"], slots: [], history: [] } },
+      touch: [], replace: [], links: [{ a: "i1", b: "r1", f: "my reading", read: true }],
+      flags: [{ id: "f1", type: "garble", text: "A name looks mis-transcribed", detail: "", nodes: ["i1"], phrase: "Verbenade Capsaro", suggestion: "Bernardo Kastrup", question: "" }], goals: [], question: "" } },
+    { kind: "action", seq: 1, date: "Sep 30", source: "help analysis", action: { type: "analysis", id: "h1", model: "m", standing: "s", suggestions: [{ id: "h1-1", kind: "question", text: "Is thinking what breaks it?", why: "", about: [] }] } }
+  ];
+  const S = replay(seed);
+  const check = (line, st = S) => { const p = parseScript(line); assert.deepEqual(p.errors, [], line); return checkExpect(p.steps[0], st, {}).ok; };
+  assert.equal(check(`expect loose "Kastrup"`), true, "a loose end is found by its suggestion as well as its text");
+  assert.equal(check(`expect loose "Kastrup" open`), true);
+  assert.equal(check(`expect loose "Kastrup" settled`), false);
+  assert.equal(check(`expect reading "Habit"`), true);
+  assert.equal(check(`expect idea "Habit"`), false, "a reading is not an idea in the person's words");
+  assert.equal(check(`expect idea "furniture"`), true);
+  assert.equal(check(`expect link "furniture" "Habit"`), true);
+  assert.equal(check(`expect suggestion "thinking"`), true);
+  assert.equal(check(`expect suggestion "thinking" new`), false);
+  /* mark gives the person's word on a suggestion, as an ordinary step */
+  const r = run(`mark "thinking" new\n`, seed);
+  assert.deepEqual(r.steps[2].action, { type: "verdict", analysisId: "h1", suggestionId: "h1-1", mark: "new" });
+  assert.equal(r.S.analysis.suggestions[0].verdict, "new");
+  assert.equal(check(`expect suggestion "thinking" new`, r.S), true);
+  assert.match(run(`mark "nothing like this" wrong\n`, seed).error, /No suggestion that “mark” could act on/);
+  /* what cannot be read */
+  const errs = t => parseScript(t).errors.map(e => e.message);
+  assert.match(errs("expect")[0], /needs to say what to look for/);
+  assert.match(errs("expect mood happy")[0], /“mood” is not one of them/);
+  assert.match(errs("expect goal")[0], /needs to say which/);
+  assert.match(errs("expect goal milk finished")[0], /doesn't know “finished”/);
+  assert.match(errs("expect link need")[0], /needs two things/);
+  assert.match(errs("expect fact home extra")[0], /Didn't expect “extra”/);
+  assert.match(errs("expect goal milk: reached")[0], /takes nothing after a colon/);
+  assert.match(errs(`mark "thinking" splendid`)[0], /doesn't know “splendid”/);
+  for (const k of Object.keys(EXPECT_KINDS)) assert.ok(SCRIPT_HELP.some(([, what]) => what.includes(k)), k + " is in the reference beside the editor");
 });

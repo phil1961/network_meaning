@@ -1,12 +1,12 @@
 /* ─────────────────────────────────────────────
    File: tests/auth.test.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    Passwords, emails and the sign-up setting. No database: the parts of
    auth.js that need one are covered in db.test.js. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { hashPassword, verifyPassword, normEmail, validEmail, validPassword, signupMode, signupCodeMatches, login } from "../src/server/auth.js";
+import { hashPassword, verifyPassword, normEmail, validEmail, validPassword, signupMode, signupCodeMatches, codeMatches, signupSettings, login } from "../src/server/auth.js";
 
 test("a password is stored as a salted scrypt hash that only the same password opens", async () => {
   const a = await hashPassword("correct horse battery"), b = await hashPassword("correct horse battery");
@@ -41,6 +41,21 @@ test("who may sign up is set in the environment: open, by invite code, or closed
   assert.equal(signupCodeMatches("bobby-milX"), false);
   process.env.SIGNUP = "Closed";
   assert.equal(signupMode(), "closed", "closed wins over a code");
+  for (const k of Object.keys(keep)) { if (keep[k] === undefined) delete process.env[k]; else process.env[k] = keep[k]; }
+});
+
+test("with no database there is no admin's setting, so the server's own sign-up setting stands", async () => {
+  const keep = { DATABASE_URL: process.env.DATABASE_URL, SIGNUP: process.env.SIGNUP, SIGNUP_CODE: process.env.SIGNUP_CODE };
+  delete process.env.DATABASE_URL; delete process.env.SIGNUP; delete process.env.SIGNUP_CODE;
+  assert.deepEqual(await signupSettings(), { mode: "open", code: "", from: "server" });
+  process.env.SIGNUP_CODE = "bobby-milk";
+  assert.deepEqual(await signupSettings(), { mode: "code", code: "bobby-milk", from: "server" });
+  process.env.SIGNUP = "closed";
+  assert.equal((await signupSettings()).mode, "closed");
+  assert.equal(codeMatches(" supper together ", "supper together"), true);
+  assert.equal(codeMatches("supper", "supper together"), false);
+  assert.equal(codeMatches("", ""), false, "an empty code matches nothing");
+  assert.equal(codeMatches(undefined, undefined), false);
   for (const k of Object.keys(keep)) { if (keep[k] === undefined) delete process.env[k]; else process.env[k] = keep[k]; }
 });
 

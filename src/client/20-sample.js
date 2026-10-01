@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/20-sample.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The built-in sample streams everyone gets: ordinary steps that never
    went to a server. Darlene and the appointment is the state-layer scenario
@@ -96,7 +96,20 @@ const DARLENE_STEPS = (function () {
     act("Oct 1", "move", { type: "move", goalId: "g-appt", text: "Talked it through. She'll go if we have lunch after.", effect: "closer" }),
     act("Oct 2", "reach", { type: "reach", goalId: "g-appt", text: "Mom saw the eye doctor." }),
     act("Oct 2", "state", { type: "release", stateId: "s-appt", note: "It's done." }),
-    act("Oct 2", "state", { type: "state", stateId: "s-glasses", text: "Mom needs new glasses." })
+    act("Oct 2", "state", { type: "state", stateId: "s-glasses", text: "Mom needs new glasses." }),
+    /* A Help analysis, made up like the rest and not made by any model, so that
+       a guest (who cannot call the AI) can see suggestions and give a word on
+       each, and so the Evidence view has something to count. */
+    act("Oct 2", "help analysis", { type: "analysis", id: "h-darlene", model: "made up for the sample",
+      standing: "The appointment goal is reached, and Mom needs new glasses. The goal to share the driving has not moved since Sep 28.",
+      suggestions: [
+        { id: "h-darlene-1", kind: "loose", text: "Is “Did Mom get to the appointment?” answered now? The goal is reached, and Now says Mom saw the eye doctor.",
+          why: "The loose end is still open, and the state of play answers it.", about: [{ on: "flag", id: "d-open" }, { on: "goal", id: "g-appt" }, { on: "state", id: "s-g-appt" }] },
+        { id: "h-darlene-2", kind: "move", text: "Mom needs new glasses, and picking them up is a second drive. Ask your brother for that one trip, by name and by day.",
+          why: "The goal to share the driving is stuck on a message with no answer. A request for one dated trip is a different move.", about: [{ on: "goal", id: "g-brother" }, { on: "state", id: "s-glasses" }, { on: "idea", id: "e-brother" }] },
+        { id: "h-darlene-3", kind: "question", text: "Lunch after is what moved Mom from no to yes. Was the lunch the point for her, more than the eye doctor?",
+          why: "The move that brought the goal closer was an offer of time together, and “You don't make someone go against their will” limited how.", about: [{ on: "goal", id: "g-appt" }, { on: "idea", id: "a-will" }] }
+      ] })
   ];
   steps.forEach((x, i) => { x.seq = i; });
   return steps;

@@ -404,6 +404,24 @@ from this stream of thought is to be built, and the aim is a coherent
 picture first. That holds for E8 and E18, and Claude takes it to hold for
 the evidence pieces of E17 as well until Phil says to start.
 
+**2026-09-30, an invite code.** "Yes, add that feature too when you are on
+to make changes."
+
+"That feature" is signing up by invite code, which Claude had suggested
+for a site Phil means to show to "a friend or two" and not to publicize.
+The code path already existed as a setting in a file on the server. Built
+the same night (app 0.9.0) as a choice on the Admin tab: anyone, anyone
+with the invite code, or nobody. See the note under E15.
+
+**2026-09-30, change password; go.** "Okay, he's doing some admin stuff.
+Also, I need a Change Password Capability for Users while you are at it.
+And don't forget, the IIS App will have to be restarted if you make
+changes. Commit and Push when through."
+
+This is the word to start on the evidence pieces of E17, with one more
+thing asked for. Built the same night (app 0.9.0): **Change password**
+beside Sign out. See the notes under E15 and E17.
+
 **2026-09-30, two reviews.** "Great. Grok created a bug analysis, and
 brother claude created an archecture doc. Read those and take action
 accordingly."
@@ -1376,6 +1394,19 @@ wanted at all beside looking around with no account; that the app sends no
 email, so a forgotten password needs an admin; that changing a password
 does not sign out sessions already open.
 
+**E15, note 2026-09-30, late night (app 0.9.0).** Two additions, both at
+Phil's request. *Change password:* anyone signed in can change their own,
+by giving the current one. This answers part of what was left open above:
+a person no longer needs an admin to change a password they know. Still
+open: a forgotten password needs an admin, and a change does not end
+sessions already open. For the owner, the server's own password goes on
+working after a change, as the way back in. *Who may sign up:* an admin
+chooses on the Admin tab between anyone, anyone with an invite code, and
+nobody. The choice is kept in the database and wins over the setting in
+the server's files. *For:* Phil gives a code to a friend or two and
+strangers cannot make accounts. *Against:* the code is passed around, or
+it is forgotten that sign-up was left open.
+
 **E16. A check before every call to the AI.**
 *Status: built and testing, 2026-09-30 (app 0.6.0). Phil's request: "for
 every call out to the AI API, whatever the user provides in that context
@@ -1444,6 +1475,28 @@ claims and what became of them.
 get a chance." All three parts are agreed. *Status: agreed, not built.* The
 build waits until the work in progress in the same working tree is
 committed, since it touches `src/shared/replay.js` and the State view.
+
+**E17, second note 2026-09-30, built.** *Status: built and testing (app
+0.9.0).* All three parts are in.
+- *The Evidence report* is a new **Evidence** tab. `src/shared/evidence.js`
+  counts from the steps alone, and the view rewinds with the Step slider.
+  It also counts loose ends put off, moves read in text, and ideas said
+  again and replaced.
+- *A verdict on each suggestion:* three buttons under each one, New to me,
+  Already knew, Wrong. The word is an action step of type `verdict`. It
+  does not make the analysis count as stale. The latest word stands.
+- *Script lines that check:* `expect goal milk reached`, with `no` for
+  "nothing matches." Claude's choice, to be judged in use: a check that
+  does not hold never stops the run. The stepper marks it and counts how
+  many held, so a run gives a score and not only a first failure.
+- *One addition, Claude's:* the Darlene sample now ends with a made-up
+  Help analysis, so a guest can try the three buttons and Evidence has
+  something to show. It is labelled as made up, in its model chip.
+*Test so far:* unit tests for the counting, the verdict and the checks;
+in a headless browser, Evidence on the Darlene sample, a guest's word on a
+suggestion, and a script of three checks of which two held. *Still to do,
+and it is the real test:* run the report on a stream of Phil's own, and
+write the archive test of §7 as a script of `expect` lines.
 
 **E18. Spendable resources: what a person has, what a goal takes, and what
 a move costs.**

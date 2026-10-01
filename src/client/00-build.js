@@ -1,12 +1,22 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.8.0
+   File Version: 0.9.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.8.0",
+  version: "0.9.0",
   corrections: [
+    ["Nothing counted what became of the AI's claims",
+     "An Evidence tab. It counts, from the steps of the stream, what the AI proposed and what you did with it: readings kept or discarded, goals confirmed or refused, loose ends settled, items dropped for pointing at nothing, split by model. It rewinds with the Step slider. It counts the machine, not you."],
+    ["A Help analysis suggestion could only be read",
+     "Each suggestion now takes your word: new to me, already knew, or wrong. It is a step like any other, and Evidence counts it. The Darlene sample ends with a made-up analysis, so anyone can try it."],
+    ["A script could act but could not check",
+     "A script line can now check something, such as “expect goal milk reached”. A check changes nothing and does not stop the run; the stepper marks whether it held and counts how many did. So a script is also a test."],
+    ["Only an admin could give you a new password",
+     "Change password, beside Sign out. You give your current password and the new one."],
+    ["An invite code for signing up could only be set in a file on the server",
+     "The Admin tab now sets who may sign up: anyone, anyone with the invite code you choose, or nobody."],
     ["A change that failed to save could quietly go missing, and the warning cleared itself",
      "A failed save now stays on screen and nothing new is taken until it is saved; it is tried again in order when you act or click the note. A change the server refuses is undone, so the page and the server always show the same stream."],
     ["Stop left the AI call running, and its result was stored anyway",

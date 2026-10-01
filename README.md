@@ -63,6 +63,17 @@ stream an admin shares is listed for everyone, read-only; acting on it
 starts a copy of your own. The app sends no email: a forgotten password is
 set again by an admin.
 
+Anyone signed in can change their own password (**Change password**, beside
+Sign out) by giving the current one. For the owner the current one is
+`APP_PASSWORD` or a password set this way before; `APP_PASSWORD` goes on
+working afterwards, as the way back in. Sessions already open are not
+ended by a change of password.
+
+Who may sign up (anyone, anyone with an invite code, nobody) is set by an
+admin on the **Admin** tab and kept in the `settings` table. That setting
+wins over `SIGNUP` and `SIGNUP_CODE` below; with none made there, the
+server's own setting stands.
+
 Optional settings in `.env`:
 
 ```
@@ -156,7 +167,16 @@ assumption pay: You pay for what you take.
 link need want: read as a want                    join two items, on one map or across maps
 ask store: Which store?                           hang an open question on an item
 confirm store: He said so.      ruleout store     show environment
+mark "a few words" new                            your word on a Help analysis suggestion: new, knew, wrong
+expect goal milk reached                          a check: it changes nothing and never stops the run
+expect no idea "walk the dog"     expect link need want     expect loose "Kastrup" open
 ```
+
+An `expect` line makes a script a test as well. It can look for a `fact`,
+`past`, `goal`, `idea`, `reading`, `item`, `loose`, `link` or `suggestion`,
+by name or by a few words, with `no` for "nothing matches". The stepper
+marks each check as held or not and counts them; `scriptToSteps()` returns
+them as `checks`, so a script can be run headless as a test.
 
 **Open in the stepper** docks the script under the page, where it stays on
 every tab. **Step** runs one line; **Play** runs them in turn and can be
@@ -167,6 +187,18 @@ why. The full list of words is beside the editor, and in
 `src/shared/script.js`. Three built-in scripts: the Bobby story by hand
 with no model calls, the Bobby story read by the model, and Bobby's world
 assembled across the four maps.
+
+## Evidence
+
+The **Evidence** tab counts what became of the machine's claims in the open
+stream, from its steps alone (`src/shared/evidence.js`, pure, no model call,
+no database): readings kept and discarded, goals read in text confirmed and
+refused, loose ends settled, suppositions confirmed and ruled out, items
+dropped for citing nothing, and the person's word on each Help analysis
+suggestion (**New to me**, **Already knew**, **Wrong**, stored as an action
+step of type `verdict`). The counts are split by the model that made each
+claim, and they rewind with the Step slider. The design and its test are
+`VISION.md` §9, E17.
 
 ## On the server
 
@@ -220,9 +252,9 @@ both.
 | `HELP.md` | The help. `build.js` turns it into the Help tab |
 | `METHOD-Deriving-the-Maps.md` | How the four maps of a world are derived, with a change log |
 | `src/server/` | `db.js` (pool), `migrate.js` (numbered SQL), `auth.js` (sign-in, sign-up, levels, signed cookie), `screen.js` (the check before every AI call), `owner-sample.js` (the owner's own sample stream, never in the page), `ideaify.js` (prompt + Claude call), `normalize.js` (validate the answer), `analyze.js` (help analysis: prompt + validation), `streams.js` (append-only store) |
-| `src/shared/` | `replay.js` (steps → map), `spans.js` (text → spans), `script.js` (the scripting language: parse and plan); ESM for the server and tests, inlined for the page |
-| `src/client/` | `page.html`, `style.css`, numbered modules in load order (`65-statelayer.js` is the State view, `85-script.js` the Script view and the stepper, `95-admin.js` the Admin tab) |
-| `sql/` | `001-init.sql`, `002-users.sql` (levels, passwords, shared streams) and later migrations |
+| `src/shared/` | `replay.js` (steps → map), `spans.js` (text → spans), `script.js` (the scripting language: parse, plan and check), `evidence.js` (steps → counts of what became of the machine's claims); ESM for the server and tests, inlined for the page |
+| `src/client/` | `page.html`, `style.css`, numbered modules in load order (`65-statelayer.js` is the State view, `77-evidence.js` the Evidence view, `85-script.js` the Script view and the stepper, `95-admin.js` the Admin tab) |
+| `sql/` | `001-init.sql`, `002-users.sql` (levels, passwords, shared streams), `003-settings.sql` (what an admin sets from the Admin tab) and later migrations |
 | `tests/` | `node --test` suites and `smoke.browser.js` |
 | `build.js` | Assembler and `--check` gate |
 | `web.config` | IIS hosting via HttpPlatformHandler, and the public site's settings |
@@ -238,8 +270,11 @@ account is refused by every route that would store something.
 GET  /api/auth                      -> {signup: "open" | "code" | "closed"}
 POST /api/login {email, password}   POST /api/signup {email, password, code?}
 POST /api/logout                    GET /api/me   -> {id, email, level, admin}
+POST /api/me/password {current, password}                 change your own password
 GET  /api/admin/users               POST /api/admin/users {email, password, level?}     (admin)
 PATCH /api/admin/users/:id {level?, password?, disabled?}                              (admin)
+GET  /api/admin/settings            -> {signup, code, from: "admin" | "server"}        (admin)
+PATCH /api/admin/settings {signup: "open" | "code" | "closed" | "server", code?}       (admin)
 GET  /api/streams                   yours, and those shared with everyone
 POST /api/streams {name, steps?} | {name, fromStreamId, atSeq}
 GET  /api/streams/:id               PATCH /api/streams/:id {name?, shared?}      DELETE /api/streams/:id

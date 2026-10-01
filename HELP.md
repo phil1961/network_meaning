@@ -43,6 +43,9 @@ There are three levels of person:
 If you made something as a guest and then create an account or sign in as a
 user, the stream you were working on is saved for you.
 
+To change your password, press **Change password** beside **Sign out** at
+the top right. You give your current password and the new one.
+
 The app does not send email. If you forget your password, an admin sets a
 new one and tells you.
 
@@ -109,6 +112,10 @@ it out**, or **Add** a new item joined to the one in the middle.
   marked **ground is stuck**, or dropped.
 - **Help analysis** reads where things stand and makes a few suggestions.
   Each one points at what it rests on, and nothing changes until you act.
+  Under each suggestion you can give your word on it: **New to me**,
+  **Already knew**, or **Wrong**. That is how the app learns whether its
+  suggestions are worth having. The sample *Darlene and the appointment*
+  ends with a made-up analysis you can try this on.
 
 Where a box shows a suggestion such as "e.g. Get milk.", pressing its
 button with the box empty uses the suggestion as your entry.
@@ -123,7 +130,7 @@ wrote. Ideas that point at nothing are dropped and counted. After each pass
 the app asks at most one question; your answer is treated like any other
 text.
 
-## Loose Ends and Timeline
+## Loose Ends, Timeline and Evidence
 
 **Loose Ends** is the list of things the app noticed and will not decide
 for you: a word that looks mis-transcribed, a question never answered, two
@@ -132,6 +139,15 @@ ideas that echo each other, a contradiction. Each has one or two buttons.
 
 **Timeline** shows the ideas that came from text, pass by pass: arriving,
 settling, fading.
+
+**Evidence** counts what became of the AI's claims in the stream you have
+open. Every time you keep or discard a reading, confirm or refuse a goal
+the AI read in your text, settle a loose end, or give your word on a
+suggestion, that is a step, and Evidence adds them up: how many readings
+you kept, how many goals you confirmed, how many items the AI proposed
+that pointed at nothing and were dropped. It also splits the counts by
+which model made each claim. It counts the machine, not you. Move the
+**Step** slider and it shows the counts as they stood then.
 
 ## Script and the stepper
 
@@ -151,6 +167,17 @@ one line. **Play** runs them in turn at the pace you choose. Each action
 opens the view where it lands, so you can watch the world being put
 together. A line that cannot run stops the stepper and says why. The Script
 tab lists every word a script can use.
+
+A line can also check something, so a script is a test as well:
+
+```
+expect goal milk reached
+expect fact "Bobby has milk"
+expect no goal "walk the dog"
+```
+
+A check changes nothing and does not stop the run. The stepper marks each
+one as held or not, and counts how many held.
 
 ## The AI
 
@@ -192,6 +219,12 @@ they signed up or were added, how many streams they have, and how many AI
 calls they made in the last day. From there you can add someone, change a
 level, set a new password, and disable or enable an account. Disabling
 stops someone signing in at once; their streams are kept.
+
+Under **Who may sign up** you choose who can create an account: anyone who
+can reach the page, anyone who has the invite code you choose, or nobody.
+With an invite code, give the code to the people you want in; the app does
+not send it for you. What you set here takes the place of the setting in
+the server's own files, and **Use the server's setting** puts that back.
 
 To share a stream with everyone, open it, go to **Add text**, and press
 **Share with everyone** under *This stream*.

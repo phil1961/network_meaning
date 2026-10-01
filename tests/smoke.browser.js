@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.8.0
+   File Version: 0.9.0
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -118,7 +118,7 @@ try {
   /* the state layer, on the Darlene sample */
   await js("document.getElementById('streamsel').value = 'darlene'; document.getElementById('streamsel').dispatchEvent(new Event('change'))");
   await pause(200);
-  ok(await js("document.getElementById('scrubout').textContent.startsWith('53 of 53')"), "the Darlene sample has 53 steps");
+  ok(await js("document.getElementById('scrubout').textContent.startsWith('54 of 54')"), "the Darlene sample has 54 steps");
   await click("#tab-state");
   ok(await js("[...document.querySelectorAll('#factlist .fact .ftext')].map(e => e.textContent).join('|')") === "Mom no longer drives.|Mom saw the eye doctor.|Mom needs new glasses.", "Now holds the standing fact, the reached goal, and the latest fact");
   ok(await js("document.querySelectorAll('#pastlist .fact').length") === 2, "two facts have moved to the past");
@@ -138,10 +138,23 @@ try {
   ok(await js("document.getElementById('facttext').disabled === true"), "forms are disabled while rewound");
   ok(await js("document.getElementById('helpbtn').disabled === true"), "the Help analysis button is disabled while rewound");
   await click("#tolatest");
-  ok(await js("document.getElementById('helpbtn').disabled === false && document.getElementById('helpbody').hidden === true"), "at latest the Help analysis button is ready and no analysis is shown yet");
+  ok(await js("document.getElementById('helpbtn').disabled === false && document.querySelectorAll('#helpbody .help').length === 3 && document.querySelectorAll('#helpbody .verdict [data-mark]').length === 9 && document.querySelectorAll('#helpbody .btn.mini.on').length === 0"), "at latest the sample's made-up analysis shows three suggestions, each asking for your word, none given yet");
   await click("#helpbtn");
   ok(await js("document.getElementById('loginscrim').hidden === false"), "signed out, Help analysis asks you to sign in");
   await js("document.getElementById('loginscrim').hidden = true");
+
+  /* Evidence: what became of the machine's claims, counted from the steps, and it rewinds */
+  const evRow = label => js(`(() => { const th = [...document.querySelectorAll('#evidencebody .evt th')].find(x => x.textContent === ${JSON.stringify(label)}); return th ? th.nextElementSibling.textContent : null; })()`);
+  await click("#tab-evidence");
+  ok(await js("document.getElementById('view-evidence').hidden === false && document.getElementById('evidencewhen').textContent") === "Counted from all 54 steps.", "the Evidence tab opens and says what it counted");
+  ok((await evRow("Readings made")) === "1" && (await evRow("You confirmed")) === "1 of 1" && (await evRow("Still open")) === "1" && (await evRow("Moves read in text")) === "1", "it counts the one reading, the one goal read and confirmed, and the open loose end");
+  ok((await evRow("Put forth as supposed")) === "14" && (await evRow("Confirmed")) === "1 of 14" && (await evRow("Ruled out")) === "1 of 14" && (await evRow("Still supposed")) === "12", "and the suppositions: one confirmed, one ruled out, twelve still supposed");
+  ok((await evRow("Suggestions made")) === "3" && (await evRow("Not marked yet")) === "3", "and three suggestions with no word given yet");
+  ok(await js("[...document.querySelectorAll('#evidencebody .evt.cols tbody th')].map(t => t.textContent).join('|')") === "not recorded|made up for the sample", "split by the model that made each claim");
+  await js("document.getElementById('scrub').value = 8; document.getElementById('scrub').dispatchEvent(new Event('input'))");
+  await pause(200);
+  ok(await js("document.getElementById('evidencewhen').textContent") === "As it stood at step 8 of 54." && (await evRow("You confirmed")) === "1 of 1" && (await evRow("Suggestions made")) === null, "rewound, Evidence shows the counts as they stood then");
+  await click("#tolatest");
   await click("#tab-map");
   ok(await js("document.querySelector('#panel h2')?.textContent") === "Darlene took Thursday morning off to drive her mother", "the Darlene map focuses the sentence");
   ok(await js("document.getElementById('lecount').textContent") === "1", "one loose end: did Mom get to the appointment?");
@@ -158,7 +171,7 @@ try {
   await click("#mapsel [data-map='said']");
 
   /* the Stream menu says what each stream holds before it is chosen */
-  ok(await js("[...document.querySelectorAll('#streamsel option')].map(o => o.textContent).join(' || ')") === "Sample: Darlene and the appointment · 53 steps · Environment 5, Mental state 5, Assumptions 4 || Sample: Bobby's world · 63 steps · Environment 7, Mental state 7, Assumptions 5", "the Stream menu counts each stream's steps and its Environment, Mental state and Assumptions items");
+  ok(await js("[...document.querySelectorAll('#streamsel option')].map(o => o.textContent).join(' || ')") === "Sample: Darlene and the appointment · 54 steps · Environment 5, Mental state 5, Assumptions 4 || Sample: Bobby's world · 63 steps · Environment 7, Mental state 7, Assumptions 5", "the Stream menu counts each stream's steps and its Environment, Mental state and Assumptions items");
 
   /* the four maps of one world, on the Bobby's world sample */
   await js("document.getElementById('streamsel').value = 'world'; document.getElementById('streamsel').dispatchEvent(new Event('change'))");
@@ -238,6 +251,16 @@ try {
   await click("#goalform button[type=submit]");
   ok(await waitFor("[...document.querySelectorAll('#goallist .goal.st-open h3')].some(h => h.textContent === 'Get Mom to the eye doctor.')", 3000), "a guest puts a goal forth, and the empty box took its suggestion");
   ok(await js("document.getElementById('savestate').textContent === 'Guest · not saved' && document.getElementById('streamsel').value === 'local' && document.getElementById('streamsel').selectedOptions[0].textContent.endsWith('not saved')"), "the guest's stream is in this tab only and says it is not saved");
+  /* a guest gives their word on a suggestion: it is a step in their own copy, and Evidence counts it */
+  await click("#helpbody [data-sug='h-darlene-3'] [data-mark='new']");
+  ok(await waitFor("document.querySelector(\"#helpbody [data-sug='h-darlene-3'] .btn.mini.on\")?.dataset.mark === 'new'", 3000), "a guest marks a suggestion new to me, and the button shows it");
+  await click("#helpbody [data-sug='h-darlene-1'] [data-mark='knew']");
+  await click("#helpbody [data-sug='h-darlene-3'] [data-mark='wrong']");
+  ok(await waitFor("document.querySelector(\"#helpbody [data-sug='h-darlene-3'] .btn.mini.on\")?.dataset.mark === 'wrong' && document.querySelectorAll('#helpbody .btn.mini.on').length === 2", 3000), "the latest word on a suggestion stands");
+  ok(await js("document.getElementById('helpbody').textContent.includes('1 step since this was made')"), "a word on a suggestion does not make the analysis stale: only the goal put forth counts as a step since");
+  await click("#tab-evidence");
+  ok((await evRow("Already knew")) === "1 of 3" && (await evRow("Wrong")) === "1 of 3" && (await evRow("New to me")) === "0 of 3" && (await evRow("Not marked yet")) === "1", "Evidence counts the guest's words on the suggestions");
+  await click("#tab-state");
   await click("#helpbtn");
   ok(await js("document.getElementById('infoscrim').hidden === false && document.getElementById('infotext').textContent.includes('registered users') && document.getElementById('infogo').hidden === false"), "Help analysis tells a guest it is for registered users and offers an account");
   await click("#infoclose");
@@ -259,10 +282,21 @@ try {
   ok(await js("[...document.querySelectorAll('#factlist .fact .ftext')].map(e => e.textContent).join('|')") === "The car makes a grinding noise when it starts.|Bobby has milk.|Bobby is home again.", "and ends where the Bobby sample ends");
   ok(await js("document.getElementById('streamsel').selectedOptions[0].textContent") === "Bobby, scripted · 13 steps · no world maps · not saved", "in a stream of 13 steps that is not saved");
   await click("#dockclose");
+  /* lines that check: a script is also a test. A check that does not hold is marked and counted, and the run goes on. */
+  await click("#tab-script");
+  await setScript("expect goal \"Get milk\" reached\nexpect goal \"Fix the car\" open\nexpect fact \"Bobby has milk\"\nshow evidence");
+  ok(await js("document.getElementById('scriptstatus').textContent") === "4 lines to run. No model calls. 3 checks.", "the Script view counts the checks in a script");
+  await click("#scriptopen");
+  await click("#dockplay");
+  ok(await waitFor("document.getElementById('dockpos').textContent.startsWith('Done')", 15000), "a script of checks plays to the end though one check does not hold");
+  ok(await js("document.getElementById('dockpos').textContent") === "Done · 4 of 4 run · 2 of 3 checks held", "the stepper counts how many checks held");
+  ok(await js("document.querySelectorAll('#docklines li.missed').length === 1 && document.querySelector('#docklines li.missed code').textContent.includes('Fix the car')"), "and marks the one that did not");
+  ok(await js("document.getElementById('view-evidence').hidden === false && document.getElementById('evidencebody').textContent.includes('Nothing to count yet') && document.getElementById('streamsel').selectedOptions[0].textContent.includes('13 steps')"), "show evidence opens the Evidence view; a stream made by hand has no machine claims to count, and the checks added no step");
+  await click("#dockclose");
 
   /* Help is in the page for everyone, built from HELP.md */
   await click("#tab-help");
-  ok(await js("document.getElementById('view-help').hidden === false && [...document.querySelectorAll('#helpdoc h3')].map(h => h.textContent).join('|')") === "What this is|Getting in|Streams|The Map: four maps of one world|State: where things stand|Add text|Loose Ends and Timeline|Script and the stepper|The AI|What is saved, and who can see it|For admins: the Admin tab|Where this is going", "the Help tab shows HELP.md, section by section, ending on where this is going");
+  ok(await js("document.getElementById('view-help').hidden === false && [...document.querySelectorAll('#helpdoc h3')].map(h => h.textContent).join('|')") === "What this is|Getting in|Streams|The Map: four maps of one world|State: where things stand|Add text|Loose Ends, Timeline and Evidence|Script and the stepper|The AI|What is saved, and who can see it|For admins: the Admin tab|Where this is going", "the Help tab shows HELP.md, section by section, ending on where this is going");
   ok(await js("document.querySelectorAll('#helpdoc blockquote').length === 4 && document.getElementById('helpdoc').textContent.includes('coordinate their actions') && !document.getElementById('helpdoc').textContent.includes('**')"), "its last section carries the vision in Phil's words");
   ok(errors.length === 0, "no script errors during the walkthrough", errors.join(" | "));
 } catch (e) {

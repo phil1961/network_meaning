@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/60-map.js
-   File Version: 0.3.0
+   File Version: 0.3.1
    ─────────────────────────────────────────────
    The map: a neighborhood around one idea, the side panel (your words,
    history, open questions, connections, traceback), search, and Draft.
@@ -269,7 +269,7 @@ function openDraft() {
 }
 $("#closedraft").addEventListener("click", () => { $("#scrim").hidden = true; });
 $("#scrim").addEventListener("click", e => { if (e.target.id === "scrim") $("#scrim").hidden = true; });
-document.addEventListener("keydown", e => { if (e.key === "Escape") $("#scrim").hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { $("#scrim").hidden = true; $("#pwscrim").hidden = true; } });
 $("#copymd").addEventListener("click", () => {
   const ta = $("#draftmd"); const fallback = () => { ta.focus(); ta.select(); toast("Selected. Press Ctrl+C to copy."); };
   try { navigator.clipboard.writeText(ta.value).then(() => toast("Copied."), fallback); } catch (err) { fallback(); }

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/server/auth.js
-   File Version: 0.3.1
+   File Version: 0.4.0
    ─────────────────────────────────────────────
    Who is signed in. Email is the unique key. A person signs up themselves
    (when SIGNUP allows it) or is added by an admin; either way they get a
@@ -9,11 +9,15 @@
    admin is a user who can also add people and share streams. The owner, APP_USER_EMAIL,
    signs in with APP_PASSWORD from the environment and is the first admin.
    Sessions are an HMAC-signed cookie, no server-side session table; every
-   request looks the user up again, so a disabled account stops at once. */
+   request looks the user up again, so a disabled account stops at once.
+   Anyone signed in can change their own password by giving the current
+   one. Who may sign up (open, by invite code, closed) comes from the
+   server's settings unless an admin has set it from the Admin tab, in
+   which case the settings table wins. */
 
 import crypto from "node:crypto";
 import { promisify } from "node:util";
-import { query, hasDatabase } from "./db.js";
+import { query, withTx, hasDatabase } from "./db.js";
 
 const scrypt = promisify(crypto.scrypt);
 const COOKIE = "nm_session";
@@ -157,6 +161,22 @@ export async function setPassword(id, password) {
   const r = await query("UPDATE users SET password_hash = $2 WHERE id = $1 AND email <> $3", [id, await hashPassword(password), ownerEmail()]);
   return r.rowCount > 0;
 }
+/* A person changes their own password, and has to give the current one.
+   Returns false when the current password is not right. The owner can give
+   either the server's password (APP_PASSWORD) or one set here before; after
+   this the owner can sign in with the new one, and APP_PASSWORD still
+   works, which is the way back in if the new one is forgotten. */
+export async function changeOwnPassword(userId, current, next) {
+  if (!validPassword(next)) throw { code: "bad_password", message: `A password needs at least ${PASSWORD_MIN} characters.` };
+  const r = await query("SELECT id, email, password_hash FROM users WHERE id = $1 AND disabled_at IS NULL", [userId]);
+  const u = r.rows[0];
+  if (!u) return false;
+  let ok = u.email === ownerEmail() && passwordMatches(current);
+  if (!ok) { if (u.password_hash) ok = await verifyPassword(current, u.password_hash); else await decoyCheck(current); }
+  if (!ok) return false;
+  await query("UPDATE users SET password_hash = $2 WHERE id = $1", [userId, await hashPassword(next)]);
+  return true;
+}
 export async function setLevel(id, level) {
   if (!LEVELS.includes(level)) throw { code: "bad_level", message: "A level is guest, user, or admin." };
   const r = await query("UPDATE users SET level = $2 WHERE id = $1 AND email <> $3", [id, level, ownerEmail()]);
@@ -176,10 +196,45 @@ export function signupMode() {
   if (String(process.env.SIGNUP || "open").toLowerCase() === "closed") return "closed";
   return process.env.SIGNUP_CODE ? "code" : "open";
 }
-export function signupCodeMatches(given) {
-  const want = process.env.SIGNUP_CODE || "";
-  const a = Buffer.from(String(given ?? "").trim()), b = Buffer.from(want);
-  return !!want && a.length === b.length && crypto.timingSafeEqual(a, b);
+export function signupCodeMatches(given) { return codeMatches(given, process.env.SIGNUP_CODE || ""); }
+export function codeMatches(given, want) {
+  const a = Buffer.from(String(given ?? "").trim()), b = Buffer.from(String(want ?? ""));
+  return b.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/* Who may sign up, as it stands now: { mode, code, from }. from is "admin"
+   when an admin set it on the Admin tab (the settings table), "server" when
+   it is the server's own setting. With no database, or no row, or a table
+   that cannot be read, the server's setting stands. */
+export const SIGNUP_MODES = ["open", "code", "closed"];
+export const INVITE_MIN = 4, INVITE_MAX = 100;
+export async function signupSettings() {
+  const server = { mode: signupMode(), code: process.env.SIGNUP_CODE || "", from: "server" };
+  if (!hasDatabase()) return server;
+  let got;
+  try {
+    const r = await query("SELECT key, value FROM settings WHERE key IN ('signup', 'signup_code')");
+    got = Object.fromEntries(r.rows.map(x => [x.key, x.value]));
+  } catch (e) { console.error("[settings] not read, the server's setting stands:", e.message); return server; }
+  if (!SIGNUP_MODES.includes(got.signup)) return server;
+  /* "code" with no code kept would let nobody in by code and everybody in by nothing: treat it as closed */
+  if (got.signup === "code" && !got.signup_code) return { mode: "closed", code: "", from: "admin" };
+  return { mode: got.signup, code: got.signup === "code" ? got.signup_code : "", from: "admin" };
+}
+/* An admin sets who may sign up. mode "server" removes the admin's setting,
+   so the server's own stands again. Throws { code, message } for a bad one. */
+export async function setSignup({ mode, code }, byUserId) {
+  if (mode === "server") { await query("DELETE FROM settings WHERE key IN ('signup', 'signup_code')"); return signupSettings(); }
+  if (!SIGNUP_MODES.includes(mode)) throw { code: "bad_setting", message: "Signing up is open, by invite code, or closed." };
+  const phrase = String(code ?? "").trim();
+  if (mode === "code" && (phrase.length < INVITE_MIN || phrase.length > INVITE_MAX)) throw { code: "bad_code", message: `An invite code needs ${INVITE_MIN} to ${INVITE_MAX} characters.` };
+  const put = (client, key, value) => client.query("INSERT INTO settings (key, value, updated_by) VALUES ($1, $2, $3) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now(), updated_by = EXCLUDED.updated_by", [key, value, byUserId ?? null]);
+  await withTx(async client => {
+    await put(client, "signup", mode);
+    if (mode === "code") await put(client, "signup_code", phrase);
+    else await client.query("DELETE FROM settings WHERE key = 'signup_code'");
+  });
+  return signupSettings();
 }
 
 /* Model calls made in the last day by everyone who is not an admin, for the

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/db.test.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    Streams and steps against a real Postgres. Skips unless TEST_DATABASE_URL
    is set (never the production DATABASE_URL: this test creates and drops
@@ -384,6 +384,71 @@ test("total spend has a ceiling; sign-in and sign-up are throttled; every answer
   process.env.SIGNUPS_PER_HOUR = "0";
   assert.deepEqual([(await as(null, "POST", "/api/signup", { email: "jo@example.com", password: "jo-has-a-password" })).status], [429]);
   delete process.env.SIGNUPS_PER_HOUR;
+});
+
+test("anyone signed in can change their own password by giving the current one; the owner too", { skip }, async () => {
+  const ann = await as(null, "POST", "/api/login", { email: "ann@example.com", password: "ann-has-a-password" });
+  assert.equal(ann.status, 200);
+  assert.equal((await as(null, "POST", "/api/me/password", { current: "ann-has-a-password", password: "ann-has-a-new-one" })).status, 401, "signed out, there is nobody to change it for");
+  const wrong = await as(ann.cookie, "POST", "/api/me/password", { current: "not-her-password", password: "ann-has-a-new-one" });
+  assert.deepEqual([wrong.status, wrong.body.error.code], [403, "bad_password"], "a wrong current password is refused, and she stays signed in");
+  assert.equal((await as(ann.cookie, "GET", "/api/me")).status, 200);
+  const short = await as(ann.cookie, "POST", "/api/me/password", { current: "ann-has-a-password", password: "short" });
+  assert.deepEqual([short.status, short.body.error.code], [400, "bad_password"]);
+  assert.equal((await as(ann.cookie, "POST", "/api/me/password", { current: "ann-has-a-password", password: "ann-has-a-new-one" })).status, 200);
+  assert.equal((await as(null, "POST", "/api/login", { email: "ann@example.com", password: "ann-has-a-password" })).status, 401, "the old password no longer opens the account");
+  assert.equal((await as(null, "POST", "/api/login", { email: "ann@example.com", password: "ann-has-a-new-one" })).status, 200);
+  const stored = await db.query("SELECT password_hash FROM users WHERE email = 'ann@example.com'");
+  assert.match(stored.rows[0].password_hash, /^scrypt\$/);
+  assert.ok(!stored.rows[0].password_hash.includes("ann-has-a-new-one"));
+  /* the owner: the server's password is the current one; afterwards both open the account */
+  assert.equal((await j("POST", "/api/me/password", { current: "not it", password: "the-owner-set-this" })).status, 403);
+  assert.equal((await j("POST", "/api/me/password", { current: "correct horse", password: "the-owner-set-this" })).status, 200);
+  assert.equal((await as(null, "POST", "/api/login", { email: "test@example.com", password: "the-owner-set-this" })).status, 200);
+  assert.equal((await as(null, "POST", "/api/login", { password: "correct horse" })).status, 200, "the server's own password is still the way back in");
+  assert.equal((await j("POST", "/api/me/password", { current: "the-owner-set-this", password: "the-owner-set-another" })).status, 200, "and the one set here can be the current one next time");
+  assert.equal((await j("GET", "/api/me")).body.admin, true);
+});
+
+test("an admin sets who may sign up from the Admin tab, and that wins over the server's own setting", { skip }, async () => {
+  delete process.env.SIGNUP; delete process.env.SIGNUP_CODE; process.env.SIGNUPS_PER_HOUR = "50";
+  const ann = (await as(null, "POST", "/api/login", { email: "ann@example.com", password: "ann-has-a-new-one" })).cookie;
+  for (const [m, b] of [["GET"], ["PATCH", { signup: "closed" }]]) {
+    assert.equal((await as(ann, m, "/api/admin/settings", b)).status, 403, `${m} is refused to a person who is not an admin`);
+    assert.equal((await as(null, m, "/api/admin/settings", b)).status, 401);
+  }
+  assert.deepEqual((await j("GET", "/api/admin/settings")).body, { signup: "open", code: "", from: "server" });
+  assert.equal((await j("PATCH", "/api/admin/settings", { signup: "sometimes" })).body.error.code, "bad_setting");
+  assert.equal((await j("PATCH", "/api/admin/settings", { signup: "code", code: "abc" })).body.error.code, "bad_code");
+  assert.equal((await j("PATCH", "/api/admin/settings", { signup: "code" })).body.error.code, "bad_code");
+  assert.deepEqual((await j("GET", "/api/admin/settings")).body, { signup: "open", code: "", from: "server" }, "a refused setting changes nothing");
+  /* by invite code */
+  const set = await j("PATCH", "/api/admin/settings", { signup: "code", code: "  supper together " });
+  assert.deepEqual([set.status, set.body], [200, { signup: "code", code: "supper together", from: "admin" }]);
+  assert.deepEqual((await as(null, "GET", "/api/auth")).body, { signup: "code" }, "the sign-in card is told a code is asked for, and never the code");
+  assert.equal((await as(null, "POST", "/api/signup", { email: "eve@example.com", password: "eve-has-a-password" })).body.error.code, "bad_code");
+  assert.equal((await as(null, "POST", "/api/signup", { email: "eve@example.com", password: "eve-has-a-password", code: "guess" })).body.error.code, "bad_code");
+  assert.equal((await as(null, "POST", "/api/signup", { email: "eve@example.com", password: "eve-has-a-password", code: "supper together" })).status, 201);
+  const rows = await db.query("SELECT key, value, updated_by FROM settings ORDER BY key");
+  assert.deepEqual(rows.rows.map(r => [r.key, r.value]), [["signup", "code"], ["signup_code", "supper together"]]);
+  assert.ok(rows.rows.every(r => Number.isInteger(r.updated_by)), "each setting records which admin set it");
+  /* the admin's setting wins over the server's */
+  process.env.SIGNUP = "closed";
+  assert.deepEqual((await as(null, "GET", "/api/auth")).body, { signup: "code" });
+  delete process.env.SIGNUP;
+  /* closed */
+  assert.deepEqual((await j("PATCH", "/api/admin/settings", { signup: "closed" })).body, { signup: "closed", code: "", from: "admin" });
+  assert.equal((await as(null, "POST", "/api/signup", { email: "flo@example.com", password: "flo-has-a-password", code: "supper together" })).body.error.code, "signup_closed");
+  assert.equal((await db.query("SELECT count(*)::int AS n FROM settings")).rows[0].n, 1, "the code is not kept once it is no longer asked for");
+  assert.equal((await j("POST", "/api/admin/users", { email: "flo@example.com", password: "flo-was-given-this" })).status, 201, "an admin can still add people when signing up is closed");
+  /* open again, then back to the server's own setting */
+  assert.equal((await j("PATCH", "/api/admin/settings", { signup: "open" })).body.from, "admin");
+  assert.equal((await as(null, "POST", "/api/signup", { email: "gus@example.com", password: "gus-has-a-password" })).status, 201);
+  process.env.SIGNUP_CODE = "bobby-milk";
+  assert.deepEqual((await j("PATCH", "/api/admin/settings", { signup: "server" })).body, { signup: "code", code: "bobby-milk", from: "server" });
+  assert.equal((await db.query("SELECT count(*)::int AS n FROM settings")).rows[0].n, 0);
+  delete process.env.SIGNUP_CODE; delete process.env.SIGNUPS_PER_HOUR;
+  assert.deepEqual((await as(null, "GET", "/api/auth")).body, { signup: "open" });
 });
 
 test("appendStep assigns dense sequence numbers under concurrency", { skip }, async () => {

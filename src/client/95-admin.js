@@ -1,16 +1,28 @@
 /* ─────────────────────────────────────────────
    File: src/client/95-admin.js
-   File Version: 0.2.1
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    The Admin tab: the admin panel (Phil, 2026-09-30). Who has an account, how they
    came by it, and what an admin can do: add someone, set their level
    (guest, user, admin), give them a new password, disable or enable them. Nothing here deletes a person or their
-   streams. The server refuses all of it to anyone who is not an admin. */
+   streams. The admin also sets who may sign up: anyone, anyone with the
+   invite code, or nobody. The server refuses all of it to anyone who is not an admin. */
 let people = [], signupHow = "open", pwFor = null; /* pwFor: the id whose "new password" box is open */
-const signupWord = { open: "Signing up is open: anyone who can reach this page can create an account.", code: "Signing up asks for the invite code set as SIGNUP_CODE in .env.", closed: "Signing up is closed (SIGNUP=closed in .env). Only people you add here can sign in." };
+let signupSet = null; /* { signup, code, from } as the server holds it, once an admin has opened the tab */
+const signupWord = { open: "Signing up is open: anyone who can reach this page can create an account.", code: "Signing up asks for an invite code.", closed: "Signing up is closed. Only people you add here can sign in." };
 
+/* Who may sign up: the choice, the code box when a code is asked for, and where the setting comes from. */
+function renderSignup() {
+  const s = signupSet; if (!s) return;
+  if (document.activeElement !== $("#signupmode")) $("#signupmode").value = s.signup;
+  if (document.activeElement !== $("#signupcode")) $("#signupcode").value = s.code || "";
+  $("#signupcodewrap").hidden = $("#signupmode").value !== "code";
+  $("#signupfrom").textContent = s.from === "admin" ? "Set here, by an admin. It wins over the server's own setting." : "This is the server's own setting. Saving a choice here takes its place.";
+  $("#signupserver").hidden = s.from !== "admin";
+}
 function renderAdmin() {
   $("#signupnote").textContent = signupWord[signupHow] || "";
+  renderSignup();
   $("#userlist").innerHTML = people.length ? people.map(u => {
     const you = me && u.id === me.id;
     const chips = (u.owner ? `<span class="chip mine">owner</span>` : "") + `<span class="chip${u.level === "admin" ? " mine" : u.level === "guest" ? " supposed" : ""}">${esc(u.level)}</span>` + (u.disabled ? `<span class="chip replaced">disabled</span>` : "") + (you ? `<span class="chip">you</span>` : "");
@@ -28,8 +40,20 @@ function renderAdmin() {
 async function loadPeople() {
   if (!me || !me.admin) return;
   try { people = await api.users(); } catch (e) { if (e.code !== "signed_out") $("#adminstatus").textContent = e.message || "Couldn't load the list."; }
+  try { signupSet = await api.settings(); signupHow = signupSet.signup; } catch (e) { /* the list above is still of use */ }
   renderAdmin();
 }
+function signupSay(msg, bad) { const s = $("#signupstatus"); s.textContent = msg || ""; s.classList.toggle("bad", !!bad); }
+async function saveSignup(body) {
+  try {
+    signupSet = await api.setSettings(body); signupHow = signupSet.signup;
+    signupSay(signupSet.from === "server" ? "Back to the server's own setting. " + signupWord[signupHow] : "Saved. " + signupWord[signupHow] + (signupHow === "code" ? " Give the code to the people you want in; the app doesn't send mail." : ""));
+    renderAdmin(); renderLogin();
+  } catch (err) { if (err.code !== "signed_out") signupSay(err.message || "Couldn't save that.", true); }
+}
+$("#signupmode").addEventListener("change", () => { $("#signupcodewrap").hidden = $("#signupmode").value !== "code"; if ($("#signupmode").value === "code") $("#signupcode").focus(); });
+$("#signupform").addEventListener("submit", e => { e.preventDefault(); saveSignup({ signup: $("#signupmode").value, code: $("#signupcode").value }); });
+$("#signupserver").addEventListener("click", () => saveSignup({ signup: "server" }));
 function adminSay(msg, bad) { const s = $("#adminstatus"); s.textContent = msg || ""; s.classList.toggle("bad", !!bad); }
 
 $("#adduser").addEventListener("submit", async e => {

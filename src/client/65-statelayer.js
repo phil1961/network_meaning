@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/65-statelayer.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ─────────────────────────────────────────────
    The State view: Now (the person's standing facts), Goals (put forth,
    moved toward, reached, stuck, dropped) and the movement toward each goal.
@@ -55,6 +55,8 @@ function goalCard(id, g) {
    The suggestions are a step (made by the server), so they rewind with
    everything else. Each one links to what it rests on. */
 const helpKind = { move: "next move", reached: "reached?", fact: "now", stuck: "stuck?", loose: "loose end", question: "question" };
+/* Your word on a suggestion (E17). It is a step like any other, and what the Evidence view counts. */
+const verdictWord = [["new", "New to me"], ["knew", "Already knew"], ["wrong", "Wrong"]];
 let helpBusy = false, helpProblem = "";
 
 function aboutLink(r) {
@@ -75,7 +77,8 @@ function renderHelp() {
   if (a.standing) h += `<p class="reading-text">${esc(a.standing)}</p>`;
   h += a.suggestions.length ? `<ul class="helplist">${a.suggestions.map(s => {
     const links = s.about.map(aboutLink).filter(Boolean).join(" · ");
-    return `<li class="help k-${esc(s.kind)}"><div class="type">${esc(helpKind[s.kind] || s.kind)}</div><div class="body"><p class="htext">${esc(s.text)}</p>${s.why ? `<p class="hwhy">${esc(s.why)}</p>` : ""}${links ? `<p class="hwhy">About: ${links}</p>` : ""}</div></li>`;
+    const word = s.id ? `<div class="verdict" data-sug="${esc(s.id)}"><span class="small">${s.verdict ? "Your word on this:" : "Was this:"}</span>${verdictWord.map(([k, w]) => `<button class="btn mini${s.verdict === k ? " on" : ""}" type="button" data-mark="${k}" aria-pressed="${s.verdict === k}"${isRewound() ? " disabled" : ""}>${w}</button>`).join("")}</div>` : "";
+    return `<li class="help k-${esc(s.kind)}"><div class="type">${esc(helpKind[s.kind] || s.kind)}</div><div class="body"><p class="htext">${esc(s.text)}</p>${s.why ? `<p class="hwhy">${esc(s.why)}</p>` : ""}${links ? `<p class="hwhy">About: ${links}</p>` : ""}${word}</div></li>`;
   }).join("")}</ul>` : `<p class="small">No suggestions. Nothing here needs doing right now.</p>`;
   if (a.leftOut && a.leftOut.length) h += `<p class="small">${a.leftOut.length} line${a.leftOut.length === 1 ? " in this stream was" : "s in this stream were"} not shown to the AI, because ${a.leftOut.length === 1 ? "it reads" : "they read"} as an order to an AI: ${a.leftOut.map(p => "“" + esc(p) + "”").join(", ")}. Nothing was removed from the stream.</p>`;
   if (a.since) h += `<p class="small">${a.since} step${a.since === 1 ? "" : "s"} since this was made. Press Help analysis again for a fresh one.</p>`;
@@ -141,6 +144,13 @@ $("#view-state").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.go) { setFocus(b.dataset.go); showView("map"); return; }
   if (b.id === "helpbtn") { runHelp(); return; }
+  if (b.dataset.mark) {
+    const sug = b.closest("[data-sug]"); if (!sug || !S.analysis) return;
+    if (isRewound()) { toast("You're looking at an earlier step. Go back to latest or branch first."); return; }
+    const mark = b.dataset.mark;
+    await stateAction({ type: "verdict", analysisId: S.analysis.id, suggestionId: sug.dataset.sug, mark }, "verdict", () => toast("Noted. It is counted in Evidence."));
+    return;
+  }
   if (b.dataset.goalgo) { reveal(document.querySelector(`[data-goal="${CSS.escape(b.dataset.goalgo)}"]`)); return; }
   if (b.dataset.factgo) { reveal(document.querySelector(`[data-state="${CSS.escape(b.dataset.factgo)}"]`)); return; }
   if (b.dataset.lego) { showView("loose"); return; }

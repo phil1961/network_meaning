@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.8.0
+  File Version: 0.9.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, and
   the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
@@ -30,6 +30,7 @@
       <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
       <button class="tab" role="tab" id="tab-loose" data-view="loose" aria-selected="false">Loose Ends<span class="count" id="lecount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-timeline" data-view="timeline" aria-selected="false">Timeline</button>
+      <button class="tab" role="tab" id="tab-evidence" data-view="evidence" aria-selected="false">Evidence</button>
       <button class="tab" role="tab" id="tab-talk" data-view="talk" aria-selected="false">Talk</button>
       <button class="tab" role="tab" id="tab-script" data-view="script" aria-selected="false">Script</button>
       <button class="tab" role="tab" id="tab-help" data-view="help" aria-selected="false">Help</button>
@@ -193,6 +194,18 @@
       </div>
     </section>
 
+    <!-- EVIDENCE: what became of the machine's claims, counted from the steps -->
+    <section class="view" id="view-evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden>
+      <div class="tl-wrap">
+        <div class="le-head">
+          <h2>Evidence</h2>
+          <span class="small" id="evidencewhen"></span>
+        </div>
+        <p class="small" style="margin:0">What became of the AI's claims in this stream, counted from its steps: what it proposed, and what you did with it. It counts the machine, not you. Use the Step slider to see the counts as they stood earlier.</p>
+        <div class="evgrid" id="evidencebody"></div>
+      </div>
+    </section>
+
     <!-- TALK -->
     <section class="view" id="view-talk" role="tabpanel" aria-labelledby="tab-talk" hidden>
       <div class="talk">
@@ -265,6 +278,24 @@
           <p class="small" style="margin:0" id="signupnote"></p>
           <div class="status" id="adminstatus" role="status"></div>
         </form>
+        <form class="card" id="signupform">
+          <h3>Who may sign up</h3>
+          <div class="row">
+            <select id="signupmode" aria-label="Who may sign up">
+              <option value="open">Anyone who can reach this page</option>
+              <option value="code">Anyone who has the invite code</option>
+              <option value="closed">Nobody: only people an admin adds</option>
+            </select>
+            <span class="field grow" id="signupcodewrap" hidden style="flex-direction:row;align-items:center;gap:8px">
+              <label class="small" for="signupcode">Invite code</label>
+              <input class="input grow" type="text" id="signupcode" placeholder="A phrase to give your friends (4 or more characters)" autocomplete="off">
+            </span>
+            <button class="btn primary" type="submit">Save</button>
+            <button class="btn" type="button" id="signupserver" hidden title="Remove the setting made here, so the server's own setting stands again">Use the server's setting</button>
+          </div>
+          <p class="small" style="margin:0" id="signupfrom"></p>
+          <div class="status" id="signupstatus" role="status"></div>
+        </form>
         <ul class="le-list" id="userlist"></ul>
       </div>
     </section>
@@ -319,6 +350,20 @@
     <div class="status" id="loginstatus" role="status"></div>
     <div class="actions" style="align-items:center"><button class="btn primary" type="submit" id="loginbtn">Sign in</button><button class="linkbtn" type="button" id="loginswap" hidden>Create an account</button><button class="linkbtn" type="button" id="loginguest">Look around as a guest</button></div>
     <p class="small" style="margin:0">New here? Look around as a guest, then open the Help tab.</p>
+  </form>
+</div>
+<div class="scrim" id="pwscrim" hidden>
+  <form class="modal login" id="pwform" aria-labelledby="pwtitle">
+    <h2 id="pwtitle">Change your password</h2>
+    <p class="small" style="margin:0" id="pwlead"></p>
+    <label class="small" for="pwcurrent">Your current password</label>
+    <input class="input" type="password" id="pwcurrent" autocomplete="current-password" required>
+    <label class="small" for="pwnew">A new password</label>
+    <input class="input" type="password" id="pwnew" autocomplete="new-password" placeholder="8 or more characters" required>
+    <label class="small" for="pwagain">The new password again</label>
+    <input class="input" type="password" id="pwagain" autocomplete="new-password" required>
+    <div class="status" id="pwstatus" role="status"></div>
+    <div class="actions"><button class="btn primary" type="submit" id="pwsave">Change it</button><button class="btn" type="button" id="pwclose">Cancel</button></div>
   </form>
 </div>
 <div class="scrim" id="infoscrim" hidden>

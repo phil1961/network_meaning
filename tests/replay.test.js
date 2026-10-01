@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/replay.test.js
-   File Version: 0.5.0
+   File Version: 0.6.0
    ───────────────────────────────────────────── */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -193,6 +193,29 @@ test("help analysis: the latest one is in view, counts the steps since, changes 
   assert.equal(S2.analysis.since, 0);
   assert.deepEqual(S2.analysis.suggestions, []);
   assert.equal(replay(steps.slice(0, 9)).analysis.id, "h1", "rewinding brings the earlier analysis back");
+});
+
+test("a verdict marks one suggestion of the analysis in view, changes nothing else, and does not make the analysis stale", () => {
+  const sug = (id, text) => ({ id, kind: "question", text, why: "", about: [] });
+  const steps = bobbySteps().slice(0, 7);
+  steps.push(act(7, "Sep 30", { type: "analysis", id: "h1", model: "m", standing: "s", suggestions: [sug("h1-1", "One?"), sug("h1-2", "Two?")] }));
+  const before = replay(steps);
+  steps.push(act(8, "Oct 1", { type: "verdict", analysisId: "h1", suggestionId: "h1-2", mark: "knew" }));
+  const S = replay(steps);
+  assert.deepEqual(S.analysis.suggestions.map(x => x.verdict), [undefined, "knew"]);
+  assert.equal(S.analysis.suggestions[1].verdictOn, "Oct 1");
+  assert.equal(S.analysis.since, 0, "giving your word on a suggestion is not a change in the state of play");
+  assert.deepEqual([S.goals, S.state, S.nodes], [before.goals, before.state, before.nodes]);
+  steps.push(act(9, "Oct 2", { type: "verdict", analysisId: "h1", suggestionId: "h1-2", mark: "wrong" }));
+  assert.equal(replay(steps).analysis.suggestions[1].verdict, "wrong", "the latest word stands");
+  /* what is refused: an unknown mark, another analysis, a suggestion that is not there, an id that is not an id */
+  for (const bad of [{ mark: "splendid" }, { analysisId: "h0" }, { suggestionId: "h1-9" }, { suggestionId: "__proto__" }]) {
+    const S2 = replay(steps.slice(0, 8).concat([act(8, "Oct 1", { type: "verdict", analysisId: "h1", suggestionId: "h1-1", mark: "new", ...bad })]));
+    assert.deepEqual(S2.analysis.suggestions.map(x => x.verdict), [undefined, undefined], JSON.stringify(bad));
+  }
+  assert.equal(actionOk({ type: "verdict", analysisId: "h1", suggestionId: "h1-1", mark: "new" }), true);
+  assert.equal(actionOk({ type: "verdict", analysisId: "constructor", suggestionId: "h1-1", mark: "new" }), false);
+  assert.equal(replay(steps.slice(0, 8)).analysis.suggestions[1].verdict, undefined, "rewinding takes the mark off again");
 });
 
 test("world maps: items are given or supposed, linked across maps, confirmed or ruled out, and nothing is deleted", () => {

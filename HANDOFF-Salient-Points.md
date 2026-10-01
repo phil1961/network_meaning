@@ -626,6 +626,27 @@ server under: http://www.toughguycomputing.com/network_meaning"
   Plain HTTP is sent on to HTTPS.
 - Then: "Awesome. Commit and push when you are done."
 
+**2026-09-30, an invite code.** [Phil] "Yes, add that feature too when you
+are on to make changes."
+
+- "That feature" is signing up by invite code. Phil means to show the site
+  to "a friend or two" and not to publicize it.
+- Built the same night (app 0.9.0): the Admin tab chooses who may sign up,
+  anyone, anyone with the invite code, or nobody.
+
+**2026-09-30, change password; go.** [Phil] "Okay, he's doing some admin
+stuff. Also, I need a Change Password Capability for Users while you are at
+it. And don't forget, the IIS App will have to be restarted if you make
+changes. Commit and Push when through."
+
+- The word to start on the evidence pieces, with a change of password
+  added. Built the same night (app 0.9.0): the Evidence tab, a word on
+  each Help analysis suggestion, script lines that check, and **Change
+  password** beside Sign out. `HANDOFF.md` §17 has the detail and says
+  which tests were not run.
+- Then: "When you are done, update any needed docs, commit and push. And
+  sync with google drive connector."
+
 ### What the corpus already says about the app
 
 **Input**

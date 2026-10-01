@@ -1,22 +1,25 @@
 /* ─────────────────────────────────────────────
    File: src/client/85-script.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The Script view and the stepper. The language itself is in
    src/shared/script.js (inlined above): parseScript() reads the text and
    planStep() says what one line should do. This module carries each plan
    out through the same functions the buttons call, one line at a time, and
    shows the view where it happened. The stepper is a dock under the page
-   that stays in view on every tab while a script is open. */
-let srun = null; /* { steps, i, names, date, busy, playing, msg, error, marks:[] } while a script is open */
-const viewWord = { map: "the map", state: "State", add: "Add text", loose: "Loose Ends", timeline: "the timeline", talk: "Talk", script: "Script" };
+   that stays in view on every tab while a script is open. An "expect" line
+   is a check: it changes nothing and never stops the run; the stepper marks
+   it held or not and counts them. */
+let srun = null; /* { steps, i, names, date, busy, playing, msg, error, checks:{index: held}, missed } while a script is open */
+const viewWord = { map: "the map", state: "State", add: "Add text", loose: "Loose Ends", timeline: "the timeline", evidence: "Evidence", talk: "Talk", script: "Script" };
 
 function scriptCheck() {
   const p = parseScript($("#scripttext").value);
   const st = $("#scriptstatus"), el = $("#scripterrors");
   const calls = p.steps.filter(s => s.verb === "text" || s.verb === "help").length;
+  const checks = p.steps.filter(s => s.verb === "expect").length;
   if (p.errors.length) { st.textContent = `${p.errors.length} line${p.errors.length === 1 ? "" : "s"} can't be read. Nothing runs until they are fixed.`; st.classList.add("bad"); }
-  else { st.textContent = p.steps.length ? `${p.steps.length} line${p.steps.length === 1 ? "" : "s"} to run` + (calls ? `, ${calls} of them call${calls === 1 ? "s" : ""} the model.` : ". No model calls.") : "Nothing to run yet."; st.classList.remove("bad"); }
+  else { st.textContent = p.steps.length ? `${p.steps.length} line${p.steps.length === 1 ? "" : "s"} to run` + (calls ? `, ${calls} of them call${calls === 1 ? "s" : ""} the model.` : ". No model calls.") + (checks ? ` ${checks} check${checks === 1 ? "" : "s"}.` : "") : "Nothing to run yet."; st.classList.remove("bad"); }
   el.hidden = !p.errors.length;
   el.innerHTML = p.errors.map(e => `<li><span class="n">line ${e.line}</span>${esc(e.message)}</li>`).join("");
   $("#scriptopen").disabled = !!p.errors.length || !p.steps.length;
@@ -25,7 +28,7 @@ function scriptCheck() {
 function scriptOpen() {
   const p = scriptCheck();
   if (p.errors.length || !p.steps.length) return;
-  srun = { steps: p.steps, i: 0, names: {}, date: null, busy: false, playing: false, msg: "Press Step to run the first line, or Play to run them all.", error: "", marks: [] };
+  srun = { steps: p.steps, i: 0, names: {}, date: null, busy: false, playing: false, msg: "Press Step to run the first line, or Play to run them all.", error: "", checks: {}, missed: false };
   lsSet("nm.script", $("#scripttext").value);
   renderDock();
 }
@@ -33,14 +36,17 @@ function renderDock() {
   $("#dock").hidden = !srun;
   if (!srun) return;
   const n = srun.steps.length, done = srun.i >= n;
-  $("#dockpos").textContent = done ? `Done · ${n} of ${n} run` : `${srun.i} of ${n} run · next is line ${srun.steps[srun.i].line}`;
+  const held = Object.values(srun.checks).filter(Boolean).length, checked = Object.keys(srun.checks).length;
+  const tally = checked ? ` · ${held} of ${checked} check${checked === 1 ? "" : "s"} held` : "";
+  $("#dockpos").textContent = (done ? `Done · ${n} of ${n} run` : `${srun.i} of ${n} run · next is line ${srun.steps[srun.i].line}`) + tally;
   $("#docklines").innerHTML = srun.steps.map((s, k) => {
-    const cls = k < srun.i ? "done" : k === srun.i ? (srun.error ? "cur err" : "cur") : "";
-    return `<li class="${cls}"><span class="mk">${k < srun.i ? "✓" : k === srun.i ? (srun.error ? "!" : srun.busy ? "…" : "▶") : ""}</span><span class="n">${s.line}</span><code>${esc(s.raw)}</code></li>`;
+    const missed = srun.checks[k] === false;
+    const cls = k < srun.i ? (missed ? "done missed" : "done") : k === srun.i ? (srun.error ? "cur err" : "cur") : "";
+    return `<li class="${cls}"><span class="mk">${k < srun.i ? (missed ? "✗" : "✓") : k === srun.i ? (srun.error ? "!" : srun.busy ? "…" : "▶") : ""}</span><span class="n">${s.line}</span><code>${esc(s.raw)}</code></li>`;
   }).join("");
   const cur = $("#docklines li.cur") || $("#docklines li:last-child");
   if (cur) { const ol = $("#docklines"); ol.scrollTop = Math.max(0, cur.offsetTop - ol.clientHeight / 2 + cur.offsetHeight / 2); }
-  const m = $("#dockmsg"); m.textContent = srun.error || srun.msg || ""; m.classList.toggle("bad", !!srun.error);
+  const m = $("#dockmsg"); m.textContent = srun.error || srun.msg || ""; m.classList.toggle("bad", !!srun.error || srun.missed);
   $("#dockstep").disabled = srun.busy || srun.playing || done;
   $("#dockplay").disabled = done || (srun.busy && !srun.playing);
   $("#dockplay").textContent = srun.playing ? "Pause" : "Play";
@@ -66,6 +72,7 @@ function srShow(at, type) {
     return;
   }
   if (at.on === "flag") { showView("loose"); return; }
+  if (at.on === "suggestion") { showView("state"); const el = document.querySelector(`[data-sug="${CSS.escape(at.id)}"]`); if (el) { el.scrollIntoView({ block: "center" }); el.closest("li").classList.add("flash"); } return; }
   showView("state");
   const el = document.querySelector(`[data-${at.on === "state" ? "state" : "goal"}="${CSS.escape(at.id)}"]`);
   if (!el) return;
@@ -81,6 +88,7 @@ async function srExec(s) {
   const needRegistered = what => { if (isGuest()) { needUserInfo(what); throw "This line uses the AI, which is for registered users. A guest can run every other line."; } };
   switch (plan.do) {
     case "note": return plan.text;
+    case "check": srun.checks[srun.i] = plan.ok; srun.missed = !plan.ok; return plan.text;
     case "date": srun.date = plan.date; return `Steps from here are dated ${plan.date}.`;
     case "show": showView(plan.view); if (plan.map) { setMap(plan.map); return `Showing the map of ${mapWord[plan.map]}.`; } return `Showing ${viewWord[plan.view] || plan.view}.`;
     case "focus": showView("map"); setFocus(plan.id); return `On the map: “${S.nodes[plan.id].t}”.`;
@@ -146,7 +154,7 @@ async function srExec(s) {
 async function srStep() {
   const r = srun;
   if (!r || r.busy || r.i >= r.steps.length) return false;
-  r.busy = true; r.error = ""; renderDock();
+  r.busy = true; r.error = ""; r.missed = false; renderDock();
   let ok = true;
   try { r.msg = await srExec(r.steps[r.i]); r.i++; }
   catch (e) { ok = false; r.playing = false; r.error = `Line ${r.steps[r.i].line}: ` + (typeof e === "string" ? e : e && e.message ? e.message : "Something went wrong."); }
