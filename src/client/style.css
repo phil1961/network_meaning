@@ -1,34 +1,46 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.8.0
+   File Version: 0.9.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
+/* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
+   background to the whole thing or styles"). A warm matte paper for the
+   whole app, cream panels on it, and a deep slate band for the header. All
+   of it is these tokens: change a colour here and it changes everywhere.
+   --head* are the header band; --bar is the stream bar under it. */
 :root{
-  --paper:#EDF0F2;
-  --panel:#F8FAFB;
-  --ink:#18212E;
-  --muted:#586476;
-  --line:#C8D0D9;
+  --paper:#E8E1D1;
+  --panel:#FBF8F0;
+  --ink:#1D2430;
+  --muted:#565D69;
+  --line:#D2C8B3;
   --accent:#2346C8;
-  --accent-soft:#DDE4FA;
-  --reading:#80509A;
-  --open:#B56F0A;
-  --warn:#B3362B;
-  --ok:#2E7D4F;
+  --accent-soft:#DFE5F5;
+  --reading:#7A4A94;
+  --open:#9A5B06;
+  --warn:#A8322A;
+  --ok:#2B7349;
+  --head:#22384A;
+  --head-ink:#F5F0E3;
+  --head-muted:#B7C3CC;
+  --head-accent:#E6BC62;
+  --bar:#DDD5C2;
   --font-words:"Newsreader", "Iowan Old Style", Georgia, serif;
   --font-ui:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-data:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#0F141B; --panel:#161D27; --ink:#E4E9F0; --muted:#95A1B2; --line:#2B3645;
-    --accent:#8AA2FF; --accent-soft:#1E2A4D; --reading:#C9A0DE; --open:#E5A640; --warn:#EF7A6E; --ok:#6CC592;
+    --paper:#15191C; --panel:#1E2428; --ink:#EAE5D9; --muted:#9DA5AC; --line:#333C42;
+    --accent:#8FA6FF; --accent-soft:#222D4C; --reading:#CDA6E0; --open:#E3A948; --warn:#EF7F73; --ok:#72C898;
+    --head:#0F1C26; --head-ink:#F0EADC; --head-muted:#9FB0BC; --head-accent:#E6BC62; --bar:#191E22;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --paper:#0F141B; --panel:#161D27; --ink:#E4E9F0; --muted:#95A1B2; --line:#2B3645;
-  --accent:#8AA2FF; --accent-soft:#1E2A4D; --reading:#C9A0DE; --open:#E5A640; --warn:#EF7A6E; --ok:#6CC592;
+  --paper:#15191C; --panel:#1E2428; --ink:#EAE5D9; --muted:#9DA5AC; --line:#333C42;
+  --accent:#8FA6FF; --accent-soft:#222D4C; --reading:#CDA6E0; --open:#E3A948; --warn:#EF7F73; --ok:#72C898;
+  --head:#0F1C26; --head-ink:#F0EADC; --head-muted:#9FB0BC; --head-accent:#E6BC62; --bar:#191E22;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -40,7 +52,15 @@ button,input,select,textarea{font:inherit;color:inherit}
 button:disabled{opacity:.5;cursor:not-allowed}
 
 .shell{display:flex;flex-direction:column;min-height:100%}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 16px;border-bottom:3px solid var(--head-accent);background:var(--head);color:var(--head-ink)}
+/* on the header band: light words on the deep colour, gold for what is chosen */
+header .pill{color:var(--head-muted);border-color:var(--head-muted)}
+header .tab{color:var(--head-muted)}
+header .tab:hover{color:var(--head-ink)}
+header .tab[aria-selected="true"]{color:var(--head-ink);border-bottom-color:var(--head-accent)}
+header .who{color:var(--head-muted)}
+header .linkbtn{color:var(--head-accent)}
+header :focus-visible{outline-color:var(--head-accent)}
 .brand{display:flex;align-items:baseline;gap:10px}
 .brand h1{margin:0;font-family:var(--font-words);font-weight:600;font-size:21px;letter-spacing:-.01em}
 .pill{font-family:var(--font-data);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:1px 8px}
@@ -50,7 +70,7 @@ nav{display:flex;gap:4px;overflow-x:auto;max-width:100%}
 .count{font-family:var(--font-data);font-size:11px;background:var(--open);color:var(--panel);border-radius:99px;padding:0 6px;margin-left:4px}
 
 /* stream bar */
-.streambar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--paper)}
+.streambar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--bar)}
 .sb-group{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .sb-label{font-family:var(--font-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 select,.input{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;max-width:100%}
@@ -235,6 +255,10 @@ ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:13px;z-index:30;max-width:calc(100% - 32px)}
 
 /* ---------- State: Now and Goals ---------- */
+/* a colour along the top of each card says what it holds: what is true (green), what is being moved toward (blue), the machine's reading (purple) */
+#nowcard{border-top:3px solid var(--ok)}
+#goalcard{border-top:3px solid var(--accent)}
+.helpcard{border-top:3px solid var(--reading)}
 .stategrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start;max-width:1240px;margin:0 auto}
 @media (max-width:960px){.stategrid{grid-template-columns:minmax(0,1fr)}}
 .factlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
@@ -286,9 +310,9 @@ form.inline .input{width:100%}
 .help .hwhy{margin:0;font-size:13px;color:var(--muted)}
 
 /* ---------- The maps of one world: selector, supposed items, map colours ---------- */
-:root{--m-env:#2E7D4F;--m-mind:#2346C8;--m-moral:#B56F0A}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--m-env:#6CC592;--m-mind:#8AA2FF;--m-moral:#E5A640}}
-:root[data-theme="dark"]{--m-env:#6CC592;--m-mind:#8AA2FF;--m-moral:#E5A640}
+:root{--m-env:#2B7349;--m-mind:#2346C8;--m-moral:#9A5B06}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--m-env:#72C898;--m-mind:#8FA6FF;--m-moral:#E3A948}}
+:root[data-theme="dark"]{--m-env:#72C898;--m-mind:#8FA6FF;--m-moral:#E3A948}
 .mapsel{display:flex;flex-wrap:wrap;gap:4px}
 .seg{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:500;color:var(--muted);display:inline-flex;align-items:center;gap:6px;border-bottom-width:3px}
 .seg:hover{border-color:var(--ink)}

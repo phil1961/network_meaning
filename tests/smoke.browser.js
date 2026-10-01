@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.9.0
+   File Version: 0.9.1
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -113,7 +113,9 @@ try {
   await click("#tab-talk");
   await click("#mic");
   await pause(400);
-  ok(await js("document.getElementById('transcript').textContent.includes('car will start')"), "talk demo plays the sample transcript");
+  ok(await js("document.getElementById('transcript').textContent.includes('drive Mom to the eye doctor') && document.querySelector('#transcript .garble')?.textContent === 'off the mall adjust'"), "talk demo plays a made-up session, with one mis-heard word marked");
+  ok(await js("!document.documentElement.innerHTML.includes('Verbenade') && !document.documentElement.innerHTML.includes('Phil talking')"), "and none of the owner's own words are in it");
+  ok(await js("getComputedStyle(document.querySelector('header')).backgroundColor !== getComputedStyle(document.body).backgroundColor && getComputedStyle(document.body).backgroundColor !== 'rgb(237, 240, 242)'"), "the app has its colours: a matte background and a header band of its own");
 
   /* the state layer, on the Darlene sample */
   await js("document.getElementById('streamsel').value = 'darlene'; document.getElementById('streamsel').dispatchEvent(new Event('change'))");

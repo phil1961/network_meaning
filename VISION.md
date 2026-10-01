@@ -452,6 +452,27 @@ in its own app pool. A visitor who arrives over plain HTTP is sent to
 HTTPS. The details are in `README.md` ("On the server") and
 `HANDOFF.md` §16.
 
+**2026-09-30, the Talk demo.** "Replace the Talk tab demo with a made-up
+one"
+
+Done the same night (app 0.9.1). The Talk tab had replayed a few of Phil's
+own sentences about faith to every visitor. It now plays a made-up session:
+Darlene talking about Thursday, with one mis-heard word ("off the mall
+adjust" for ophthalmologist) and one question. With this, nothing of
+Phil's own is in the page that everyone receives; a test holds that.
+
+**2026-09-30, colour.** "also while you are at it provide some colors to
+the app. Either matte background to the whole thing or styles. Your
+choice."
+
+Done the same night (app 0.9.1). Claude chose a matte background with a
+little style on top: a warm matte paper for the whole app with cream panels
+on it, a deep slate band for the header with the chosen tab in gold, and a
+colour along the top of each State card (green for Now, blue for Goals,
+purple for Help analysis). The three map colours are unchanged in meaning.
+Every colour is a token at the top of `src/client/style.css`, with a dark
+set beside it, so the palette can be changed in one place.
+
 ---
 
 ## 1. The experience in one paragraph

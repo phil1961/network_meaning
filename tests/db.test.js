@@ -443,7 +443,7 @@ test("an admin sets who may sign up from the Admin tab, and that wins over the s
   assert.equal((await j("POST", "/api/admin/users", { email: "flo@example.com", password: "flo-was-given-this" })).status, 201, "an admin can still add people when signing up is closed");
   /* open again, then back to the server's own setting */
   assert.equal((await j("PATCH", "/api/admin/settings", { signup: "open" })).body.from, "admin");
-  assert.equal((await as(null, "POST", "/api/signup", { email: "gus@example.com", password: "gus-has-a-password" })).status, 201);
+  assert.equal((await as(null, "POST", "/api/signup", { email: "hank@example.com", password: "hank-has-a-password" })).status, 201); /* a new email: gus already has an account from an earlier test */
   process.env.SIGNUP_CODE = "bobby-milk";
   assert.deepEqual((await j("PATCH", "/api/admin/settings", { signup: "server" })).body, { signup: "code", code: "bobby-milk", from: "server" });
   assert.equal((await db.query("SELECT count(*)::int AS n FROM settings")).rows[0].n, 0);

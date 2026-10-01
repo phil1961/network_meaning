@@ -780,6 +780,10 @@ Things to look at and say yes or no to:
    To close it, add `SIGNUP=closed` to `web.config` or `.env`.
 8. The Talk tab still replays a few of Phil's own sentences to every
    visitor. Remove it, or replace it with a made-up one?
+   *(Answered and done, 0.9.1: "Replace the Talk tab demo with a made-up
+   one." It is Darlene talking about Thursday. The same change gave the
+   app its colours, at Phil's request: a warm matte background and a slate
+   header band; the tokens are at the top of `src/client/style.css`.)*
 9. May others add to a shared stream, or only read and copy it?
 10. The made-up worlds, Bobby's and Darlene's: what is wrong, and what
     complications to add.

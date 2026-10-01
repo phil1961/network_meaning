@@ -647,6 +647,22 @@ changes. Commit and Push when through."
 - Then: "When you are done, update any needed docs, commit and push. And
   sync with google drive connector."
 
+**2026-09-30, the Talk demo.** [Phil] "Replace the Talk tab demo with a
+made-up one"
+
+- Done the same night (app 0.9.1): a made-up session, Darlene talking
+  about Thursday. This closes the open point above about the Talk tab.
+  Nothing of Phil's own is now in the page every visitor receives.
+
+**2026-09-30, colour.** [Phil] "also while you are at it provide some colors
+to the app. Either matte background to the whole thing or styles. Your
+choice."
+
+- Done the same night (app 0.9.1). Claude's choice, not Phil's words: a warm
+  matte background, cream panels, a deep slate header band with gold for
+  the chosen tab, and a colour along the top of each State card.
+- [lost] Not yet said: whether he likes these colours.
+
 ### What the corpus already says about the app
 
 **Input**

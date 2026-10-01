@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.9.0
+   File Version: 0.9.1
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.9.0",
+  version: "0.9.1",
   corrections: [
+    ["The Talk tab replayed the owner's own words to every visitor, and the app was grey",
+     "The Talk demo is now a made-up session, Darlene talking about Thursday. The app has colour: a warm matte background, a deep header band with the chosen tab in gold, and a colour along the top of each State card."],
     ["Nothing counted what became of the AI's claims",
      "An Evidence tab. It counts, from the steps of the stream, what the AI proposed and what you did with it: readings kept or discarded, goals confirmed or refused, loose ends settled, items dropped for pointing at nothing, split by model. It rewinds with the Step slider. It counts the machine, not you."],
     ["A Help analysis suggestion could only be read",
