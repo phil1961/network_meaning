@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/shared/replay.js
-   File Version: 0.6.0
+   File Version: 0.7.0
    ─────────────────────────────────────────────
    The map is a projection of the stream. State = replay(steps[0..cursor)).
    This reducer runs on the server (to give the model the current map) and
@@ -30,7 +30,15 @@
    since counts the steps applied after it, so the page can say it is stale.
    The person can give their word on each suggestion (action "verdict":
    new to me, already knew, or wrong). That marks the suggestion and changes
-   nothing else; it is what src/shared/evidence.js counts. */
+   nothing else; it is what src/shared/evidence.js counts.
+
+   Arranging a diagram by hand (Phil, 2026-10-01: "I also want to drag a
+   single box"). The diagram is drawn around a middle item, and a box can be
+   dragged away from where the layout puts it. That is kept, per middle
+   item, as a move from the layout's own place (action "place"):
+     st.places  {middleId: {boxId: {dx, dy}}}
+   It changes how the map is drawn and nothing about what it says.
+   {type:"place", around, reset:true} puts that middle's boxes back. */
 
 export const LINK_LABELS = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to", "connects to", "my reading"];
 /* Links a traceback may walk. A path through a contradiction or a
@@ -77,8 +85,10 @@ export const UNSAID = "unsaid";
    such as "__proto__" could only ever be an ordinary key; ids are checked
    as well so that nothing odd is stored. The server uses actionOk() to
    refuse a bad action before it is saved. */
-export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis", "verdict"];
-const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b", "analysisId", "suggestionId"];
+export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis", "verdict", "place"];
+const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b", "analysisId", "suggestionId", "around"];
+/* How far a box may be dragged from where the layout draws it, in the layout's units. */
+export const PLACE_MAX = 2000;
 /* The person's word on one Help analysis suggestion. */
 export const VERDICTS = ["new", "knew", "wrong"];
 export function safeId(v) { return typeof v === "string" && /^[A-Za-z0-9_.:-]{1,80}$/.test(v) && v !== "__proto__" && v !== "constructor" && v !== "prototype"; }
@@ -90,7 +100,7 @@ const bare = () => Object.create(null);
 export const GOAL_STATUSES = ["proposed", "open", "reached", "stuck", "dropped"];
 
 export function emptyState() {
-  return { nodes: bare(), links: [], flags: [], outcomes: bare(), ingests: 0, passes: [], question: null, state: bare(), goals: bare(), analysis: null };
+  return { nodes: bare(), links: [], flags: [], outcomes: bare(), ingests: 0, passes: [], question: null, state: bare(), goals: bare(), analysis: null, places: bare() };
 }
 
 export function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -103,9 +113,9 @@ export function replay(steps) {
 
 export function applyStep(st, step) {
   if (!step) return;
-  /* A verdict is about the analysis itself, not a change in the state of play, so it does not make the analysis stale. */
-  const verdict = step.kind === "action" && step.action && step.action.type === "verdict";
-  if (st.analysis && !verdict) st.analysis.since++;
+  /* A verdict is about the analysis itself, and moving a box is about how the diagram is drawn. Neither is a change in the state of play, so neither makes the analysis stale. */
+  const aside = step.kind === "action" && step.action && (step.action.type === "verdict" || step.action.type === "place");
+  if (st.analysis && !aside) st.analysis.since++;
   if (step.kind === "ingest") applyResult(st, step.result || {}, step);
   else if (step.kind === "action") applyAction(st, step);
 }
@@ -249,6 +259,15 @@ function applyWorldAction(st, a, step) {
     }
     case "ruleout": {
       if (n && n.map && !n.ruledOut) { n.ruledOut = true; n.replaced = true; n.history.push(`${step.date}: ruled out${note} It is kept, struck through.`); }
+      return true;
+    }
+    case "place": {
+      /* Where the person put a box, for the diagram drawn around one middle item. The middle itself stays in the middle. */
+      if (!a.around || !st.nodes[a.around]) return true;
+      if (a.reset) { delete st.places[a.around]; return true; }
+      if (!n || a.id === a.around) return true;
+      const far = v => Math.max(-PLACE_MAX, Math.min(PLACE_MAX, Math.round(Number(v) || 0)));
+      (st.places[a.around] || (st.places[a.around] = bare()))[a.id] = { dx: far(a.dx), dy: far(a.dy) };
       return true;
     }
     default: return false;

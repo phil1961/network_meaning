@@ -69,6 +69,11 @@ Sign out) by giving the current one. For the owner the current one is
 working afterwards, as the way back in. Sessions already open are not
 ended by a change of password.
 
+Each sign-in is counted, with the time of the first and the last
+(`users.login_count`, `first_login_at`, `last_login_at`), and shown on the
+Admin tab. Signing up counts as the first. A request made with a cookie
+that is still good is not a sign-in.
+
 Who may sign up (anyone, anyone with an invite code, nobody) is set by an
 admin on the **Admin** tab and kept in the `settings` table. That setting
 wins over `SIGNUP` and `SIGNUP_CODE` below; with none made there, the
@@ -141,6 +146,20 @@ and driven from the keyboard (arrows, `+`, `-`, `0`). These change the view
 only, by setting the SVG's `viewBox` (`applyMapView()` in
 `src/client/60-map.js`): they make no step. The size is remembered in the
 browser; a move is dropped when another item becomes the middle.
+
+The Map view fits the window. `fitMap()` gives the SVG the height that is
+left between the bars above it and the bottom of the window, and the panel
+beside it a matching maximum height. At 100% the drawing is scaled to that
+frame, but not below `MAP_SIZE.legible` screen pixels to a layout unit, so
+on a short window part of the drawing is outside the frame and the frame's
+edge says so.
+
+A single box can be dragged. That is an action step of type `place`
+(`{id, around, dx, dy}`: the box, the middle item it was drawn around, and
+how far it sits from where the layout draws it), kept in `st.places`, so
+it is saved, rewinds and branches. `{type: "place", around, reset: true}`
+is **Tidy**. A `place` step, like a `verdict`, does not count as a step
+since the last Help analysis.
 
 The Stream menu says what each stream holds before it is chosen: its steps,
 and how many items are on its Environment, Mental state and Assumptions
@@ -261,7 +280,7 @@ both.
 | `src/server/` | `db.js` (pool), `migrate.js` (numbered SQL), `auth.js` (sign-in, sign-up, levels, signed cookie), `screen.js` (the check before every AI call), `owner-sample.js` (the owner's own sample stream, never in the page), `ideaify.js` (prompt + Claude call), `normalize.js` (validate the answer), `analyze.js` (help analysis: prompt + validation), `streams.js` (append-only store) |
 | `src/shared/` | `replay.js` (steps → map), `spans.js` (text → spans), `script.js` (the scripting language: parse, plan and check), `evidence.js` (steps → counts of what became of the machine's claims); ESM for the server and tests, inlined for the page |
 | `src/client/` | `page.html`, `style.css`, numbered modules in load order (`65-statelayer.js` is the State view, `77-evidence.js` the Evidence view, `85-script.js` the Script view and the stepper, `95-admin.js` the Admin tab) |
-| `sql/` | `001-init.sql`, `002-users.sql` (levels, passwords, shared streams), `003-settings.sql` (what an admin sets from the Admin tab) and later migrations |
+| `sql/` | `001-init.sql`, `002-users.sql` (levels, passwords, shared streams), `003-settings.sql` (what an admin sets from the Admin tab), `004-logins.sql` (how often each person signed in, first and last) and later migrations |
 | `tests/` | `node --test` suites and `smoke.browser.js` |
 | `build.js` | Assembler and `--check` gate |
 | `web.config` | IIS hosting via HttpPlatformHandler, and the public site's settings |
@@ -278,7 +297,8 @@ GET  /api/auth                      -> {signup: "open" | "code" | "closed"}
 POST /api/login {email, password}   POST /api/signup {email, password, code?}
 POST /api/logout                    GET /api/me   -> {id, email, level, admin}
 POST /api/me/password {current, password}                 change your own password
-GET  /api/admin/users               POST /api/admin/users {email, password, level?}     (admin)
+GET  /api/admin/users               each with logins, firstLogin, lastLogin             (admin)
+POST /api/admin/users {email, password, level?}                                        (admin)
 PATCH /api/admin/users/:id {level?, password?, disabled?}                              (admin)
 GET  /api/admin/settings            -> {signup, code, from: "admin" | "server"}        (admin)
 PATCH /api/admin/settings {signup: "open" | "code" | "closed" | "server", code?}       (admin)

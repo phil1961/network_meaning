@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.10.0
+   File Version: 0.11.0
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -185,35 +185,61 @@ try {
   ok(await js("document.querySelector('#panel h2')?.textContent") === "Bobby sets out from home.", "Environment opens around its middle item");
   ok(await js("document.querySelectorAll('#map .node').length") === 7, "the whole environment map is drawn, two links out");
 
+  /* the Map view fits the window: the diagram's frame takes the room that is left, and the page does not scroll */
+  ok(await js("document.documentElement.scrollHeight <= window.innerHeight && document.querySelector('.canvas').getBoundingClientRect().bottom <= window.innerHeight && document.getElementById('panel').getBoundingClientRect().bottom <= window.innerHeight"), "the whole Map view is inside the window, with nothing below its lower edge", await js("document.documentElement.scrollHeight + ' of ' + window.innerHeight"));
+  ok(await js("(() => { const m = document.getElementById('map'), r = m.getBoundingClientRect(), vb = m.viewBox.baseVal; return Math.abs(r.width / vb.width - r.height / vb.height) < 0.01 && r.width / vb.width >= 0.719; })()"), "the drawing fills its frame at one scale, never smaller than can be read");
+
   /* size, move and center: how the diagram is looked at. None of it makes a step. */
   const vb = () => js("document.getElementById('map').getAttribute('viewBox')");
-  ok((await vb()) === "0 0 1160 720" && await js("document.getElementById('mapsize').textContent === '100%' && document.getElementById('mapcenter').disabled === true"), "the diagram opens at full size with the middle item in the middle");
+  const vbn = async () => (await vb()).split(" ").map(Number);
+  const near = (a, b, by = 0.6) => Math.abs(a - b) <= by;
+  const same = (a, b) => a.length === 4 && a.every((n, i) => near(n, b[i]));
+  const v0 = await vbn();
+  ok(near(v0[0] + v0[2] / 2, 580) && near(v0[1] + v0[3] / 2, 360) && await js("document.getElementById('mapsize').textContent === '100%' && document.getElementById('mapcenter').disabled === true && document.getElementById('maptidy').disabled === true"), "the diagram opens at full size with the middle item in the middle, and nothing to tidy", v0.join(" "));
   await click("#maplarger");
-  ok((await vb()) === "116 72 928 576" && (await js("document.getElementById('mapsize').textContent")) === "125%", "+ makes the diagram larger, about its middle");
+  const v1 = await vbn();
+  ok(near(v1[2], v0[2] / 1.25) && near(v1[0] + v1[2] / 2, 580) && near(v1[1] + v1[3] / 2, 360) && (await js("document.getElementById('mapsize').textContent")) === "125%", "+ makes the diagram larger, about its middle", v1.join(" "));
   await click("#mapctl [data-move='left']");
-  ok((await vb()) === "255.2 72 928 576" && await js("document.getElementById('mapcenter').disabled === false"), "the left arrow moves the diagram left");
+  let v = await vbn();
+  ok(near(v[0], v1[0] + 0.15 * v1[2]) && near(v[1], v1[1]) && await js("document.getElementById('mapcenter').disabled === false"), "the left arrow moves the diagram left", v.join(" "));
   await click("#mapctl [data-move='down']");
-  ok((await vb()) === "255.2 -14.4 928 576", "the down arrow moves it down");
+  v = await vbn();
+  ok(near(v[1], v1[1] - 0.15 * v1[3]), "the down arrow moves it down", v.join(" "));
   await click("#mapcenter");
-  ok((await vb()) === "116 72 928 576" && await js("document.getElementById('mapcenter').disabled === true"), "Center puts the middle item back in the middle and keeps the size");
+  ok(same(await vbn(), v1) && await js("document.getElementById('mapcenter').disabled === true"), "Center puts the middle item back in the middle and keeps the size");
   const mapBox = await js("(() => { const m = document.getElementById('map'); m.scrollIntoView({ block: 'center' }); const r = m.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width }; })()");
-  await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: mapBox.x + 30, y: mapBox.y + 30 }, S);
-  await send("Input.dispatchMouseEvent", { type: "mousePressed", x: mapBox.x + 30, y: mapBox.y + 30, button: "left", clickCount: 1 }, S);
-  for (const dx of [20, 60, 100]) await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: mapBox.x + 30 + dx, y: mapBox.y + 30, button: "left", buttons: 1 }, S);
-  await send("Input.dispatchMouseEvent", { type: "mouseReleased", x: mapBox.x + 130, y: mapBox.y + 30, button: "left", clickCount: 1 }, S);
-  await pause(120);
-  const dragged = (await vb()).split(" ").map(Number);
-  ok(Math.abs(dragged[0] - (116 - 100 / mapBox.w * 928)) < 0.5 && dragged[1] === 72 && (await js("document.querySelector('#panel h2')?.textContent")) === "Bobby sets out from home.", "dragging with the mouse moves the diagram with the pointer and selects nothing", dragged.join(" "));
+  const drag = async (x, y, dx, dy) => {
+    await send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y }, S);
+    await send("Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", clickCount: 1 }, S);
+    for (const f of [0.2, 0.6, 1]) await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: x + dx * f, y: y + dy * f, button: "left", buttons: 1 }, S);
+    await send("Input.dispatchMouseEvent", { type: "mouseReleased", x: x + dx, y: y + dy, button: "left", clickCount: 1 }, S);
+    await pause(150);
+  };
+  await drag(mapBox.x + 30, mapBox.y + 30, 100, 0);
+  v = await vbn();
+  ok(near(v[0], v1[0] - 100 / mapBox.w * v1[2]) && near(v[1], v1[1]) && (await js("document.querySelector('#panel h2')?.textContent")) === "Bobby sets out from home.", "dragging the empty part of the diagram moves the whole diagram with the pointer and selects nothing", v.join(" "));
   await js("document.getElementById('map').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }))");
-  ok(Math.abs((await vb()).split(" ").map(Number)[1] - 158.4) < 0.01, "an arrow key moves it too, once the keyboard is in the diagram");
+  ok(near((await vbn())[1], v1[1] + 0.15 * v1[3]), "an arrow key moves it too, once the keyboard is in the diagram");
   await js("document.querySelector('#map .node[data-id=\"w6\"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
-  ok((await vb()) === "116 72 928 576" && (await js("document.querySelector('#panel h2')?.textContent")) === "A store that sells milk is within reach.", "when another item becomes the middle, the move is forgotten and the size is kept");
+  ok(same(await vbn(), v1) && (await js("document.querySelector('#panel h2')?.textContent")) === "A store that sells milk is within reach.", "when another item becomes the middle, the move is forgotten and the size is kept");
   ok(await js("localStorage.getItem('nm.mapsize')") === "1.25", "the size chosen is remembered in this browser");
   await click("#mapsmaller");
   await click("#mapsmaller");
-  ok((await vb()) === "-145 -90 1450 900" && (await js("document.getElementById('mapsize').textContent")) === "80%", "− makes the diagram smaller than the frame");
+  v = await vbn();
+  ok(near(v[2], v0[2] / 0.8) && (await js("document.getElementById('mapsize').textContent")) === "80%", "− makes the diagram smaller than its frame", v.join(" "));
   await js("document.getElementById('map').dispatchEvent(new KeyboardEvent('keydown', { key: '0', bubbles: true }))");
-  ok((await vb()) === "0 0 1160 720" && await js("document.getElementById('mapsize').textContent === '100%' && document.getElementById('scrubout').textContent.startsWith('63 of 63')"), "0 puts everything back, and none of it made a step");
+  ok(same(await vbn(), v0) && await js("document.getElementById('mapsize').textContent === '100%' && document.getElementById('scrubout').textContent.startsWith('63 of 63')"), "0 puts everything back, and none of it made a step");
+  /* a part of the drawing out of the frame is said on that edge */
+  await click("#maplarger"); await click("#maplarger");
+  ok(await js("/more/.test(document.getElementById('mapmore')?.textContent || '')"), "made larger, the diagram says on its edge that part of it is outside the frame", await js("document.getElementById('mapmore')?.textContent"));
+  await js("document.getElementById('map').dispatchEvent(new KeyboardEvent('keydown', { key: '0', bubbles: true }))");
+  /* the key folds away to give the diagram room, and the frame takes the room */
+  const keyWas = await js("document.getElementById('maplegend').open"), tallWas = await js("document.getElementById('map').getBoundingClientRect().height");
+  await click("#maplegend summary");
+  await pause(150);
+  ok(await js("document.getElementById('maplegend').open") === !keyWas && (await js("document.getElementById('map').getBoundingClientRect().height")) !== tallWas && await js("document.documentElement.scrollHeight <= window.innerHeight"), "opening or closing the key changes the diagram's frame, and the view still fits the window");
+  await click("#maplegend summary");
+  await pause(150);
   await js("document.querySelector('#map .node[data-id=\"w3\"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))");
   ok(await js("document.querySelector('#panel .chip.supposed')?.textContent === 'supposed' && !!document.querySelector('#panel [data-confirm]') && !!document.querySelector('#panel [data-ruleout]')"), "a supposed item says so and can be confirmed or ruled out");
   ok(await js("document.getElementById('itemtext').placeholder.startsWith('e.g. ') && !!document.getElementById('itemdir') && [...document.getElementById('itemlabel').options].some(o => o.textContent === 'rests on')"), "the panel offers to add to the map, joined to the item in focus");
@@ -293,6 +319,34 @@ try {
   ok(await js("document.getElementById('helpbody').textContent.includes('1 step since this was made')"), "a word on a suggestion does not make the analysis stale: only the goal put forth counts as a step since");
   await click("#tab-evidence");
   ok((await evRow("Already knew")) === "1 of 3" && (await evRow("Wrong")) === "1 of 3" && (await evRow("New to me")) === "0 of 3" && (await evRow("Not marked yet")) === "1", "Evidence counts the guest's words on the suggestions");
+  /* a guest drags a single box: where it is dropped is a step in their own copy, and Tidy puts it back */
+  await click("#tab-map");
+  await pause(200);
+  const boxAt = id => js(`(() => { const g = document.querySelector('#map .node[data-id="${id}"]'); if (!g) return null; const m = /translate\\(([-\\d.]+),([-\\d.]+)\\)/.exec(g.getAttribute('transform')), r = g.querySelector('.box').getBoundingClientRect(); return { x: +m[1], y: +m[2], cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; })()`);
+  const stepsNow = () => js("parseInt(document.getElementById('scrubout').textContent, 10)");
+  const scaleNow = () => js("(() => { const m = document.getElementById('map'); return m.getBoundingClientRect().width / m.viewBox.baseVal.width; })()");
+  ok((await js("document.querySelector('#panel h2')?.textContent")) === "Darlene took Thursday morning off to drive her mother" && !!(await boxAt("dr1")), "the guest's copy of the Darlene map is around the sentence, with the reading beside it");
+  const b0 = await boxAt("dr1"), n0 = await stepsNow(), sc = await scaleNow();
+  await drag(b0.cx, b0.cy, 60, -40);
+  await pause(300);
+  const b1 = await boxAt("dr1");
+  ok(near(b1.x, b0.x + 60 / sc, 1.5) && near(b1.y, b0.y - 40 / sc, 1.5) && (await stepsNow()) === n0 + 1 && (await js("document.querySelector('#panel h2')?.textContent")) === "Darlene took Thursday morning off to drive her mother", "dragging a box moves that box, keeps it where it was dropped as one step, and selects nothing", JSON.stringify([b0, b1, sc]));
+  ok(await js("document.getElementById('maptidy').disabled === false && document.getElementById('scrubout').textContent.includes('You moved a box')"), "the step says a box was moved, and Tidy is offered");
+  ok(await js("document.getElementById('helpbody') && true") && await js("(() => { document.getElementById('tab-state').click(); const t = document.getElementById('helpbody').textContent.includes('1 step since this was made'); document.getElementById('tab-map').click(); return t; })()"), "moving a box does not make the Help analysis stale");
+  const mid0 = await js("(() => { const g = document.querySelector('#map .node[data-id=\"d1\"]'); return g.getAttribute('transform'); })()"), vbBefore = await vb();
+  const midBox = await js("(() => { const r = document.querySelector('#map .node[data-id=\"d1\"] .box').getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; })()");
+  await drag(midBox.cx, midBox.cy, 50, 0);
+  ok((await js("document.querySelector('#map .node[data-id=\"d1\"]').getAttribute('transform')")) === mid0 && (await vb()) !== vbBefore && (await stepsNow()) === n0 + 1, "dragging the middle item moves the whole diagram, and makes no step");
+  await click("#mapcenter");
+  await js("document.getElementById('scrub').value = String(" + "0" + " + parseInt(document.getElementById('scrub').max, 10) - 1); document.getElementById('scrub').dispatchEvent(new Event('input'))");
+  await pause(200);
+  const back = await boxAt("dr1");
+  ok(near(back.x, b0.x, 0.5) && near(back.y, b0.y, 0.5), "rewound one step, the box is back where the layout drew it");
+  await click("#tolatest");
+  await click("#maptidy");
+  await pause(300);
+  const tidy = await boxAt("dr1");
+  ok(near(tidy.x, b0.x, 0.5) && near(tidy.y, b0.y, 0.5) && (await stepsNow()) === n0 + 2 && await js("document.getElementById('maptidy').disabled === true"), "Tidy puts the boxes back, as a step of its own");
   await click("#tab-state");
   await click("#helpbtn");
   ok(await js("document.getElementById('infoscrim').hidden === false && document.getElementById('infotext').textContent.includes('registered users') && document.getElementById('infogo').hidden === false"), "Help analysis tells a guest it is for registered users and offers an account");

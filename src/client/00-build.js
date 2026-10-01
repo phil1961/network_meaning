@@ -1,12 +1,18 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.10.0
+   File Version: 0.11.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.10.0",
+  version: "0.11.0",
   corrections: [
+    ["The Map view was taller than the window, and its lower edge was out of sight",
+     "The diagram's frame now takes the room that is left in the window, so the whole Map view is in sight without scrolling, and the panel beside it scrolls inside itself. The drawing is fitted to the frame but never made too small to read: where part of it is outside the frame, the edge says so, and Move or a drag brings it in. The key to the diagram folds away to leave more room."],
+    ["A box on the diagram could not be moved",
+     "Drag a single box to where you want it. Where you drop it is kept as a step, so it is saved and rewinds with everything else. Tidy puts the boxes back. Dragging the middle item, or the empty part of the diagram, moves the whole diagram."],
+    ["Nothing recorded who had signed in, or when",
+     "The Admin tab now shows, for each person, how many times they have signed in and when they first and last did. It counts from today."],
     ["The diagram was one fixed size and could not be moved",
      "Size, move and center controls above the diagram: make it smaller or larger, move it left, right, up or down, and put the middle item back in the middle. You can also drag the diagram with the mouse, hold Ctrl and turn the wheel, or use the arrow keys, + and − once the keyboard is in the diagram. The size you choose is remembered."],
     ["The Talk tab replayed the owner's own words to every visitor, and the app was grey",

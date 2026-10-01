@@ -92,6 +92,9 @@ How to read the diagram:
   another map appears where the item in the middle links to it.
 - **+n** beside a box means it has more links than this view shows.
 
+**Key to the diagram**, under the diagram, opens a reminder of these. It
+folds away to leave the diagram more room.
+
 Select any box to put it in the middle. The panel on the right shows its
 exact words, its open questions and what it connects to. Following a link
 into another map changes the map in view.
@@ -102,12 +105,26 @@ Just above the diagram, on the right, are the controls for looking at it:
   percentage between them puts it back to full size.
 - **Move:** the four arrows move the diagram left, up, down and right.
 - **Center** puts the middle item back in the middle.
+- **Tidy** puts any boxes you dragged back where the diagram draws them.
 
-With a mouse you can also drag the diagram, and hold Ctrl while turning the
-wheel to change its size. With the keyboard in the diagram, the arrow keys
-move it, **+** and **−** change its size, and **0** puts everything back.
-None of this changes the map itself: it makes no step. The size you choose
-is remembered; a move is forgotten when another item becomes the middle.
+With a mouse you can also drag the empty part of the diagram to move all of
+it, and hold Ctrl while turning the wheel to change its size. With the
+keyboard in the diagram, the arrow keys move it, **+** and **−** change its
+size, and **0** puts everything back. None of this changes the map itself:
+it makes no step. The size you choose is remembered; a move is forgotten
+when another item becomes the middle.
+
+The diagram is fitted to your window, so the whole Map view is in sight
+without scrolling. On a short window the drawing is not shrunk past the
+point where the words can be read. If part of it is outside the frame, the
+edge says so (**more below**, for instance): move the diagram, or make it
+smaller, to bring that part in.
+
+**Drag a single box** to put it where you want it. Where you drop it is
+kept, as a step, for the diagram drawn around that middle item: it is saved
+with the stream and rewinds like everything else. Dragging the middle item
+moves the whole diagram instead. On a phone, a finger scrolls the page, so
+boxes are moved with a mouse.
 
 To improve a map, select an item and use the panel: **Confirm it**, **Rule
 it out**, or **Add** a new item joined to the one in the middle.
@@ -228,8 +245,11 @@ lines `text` and `help`, which press those buttons).
 
 The **Admin** tab is at the right-hand end of the tabs. Only an admin sees
 it. It lists everyone with an account: their level, whether
-they signed up or were added, how many streams they have, and how many AI
-calls they made in the last day. From there you can add someone, change a
+they signed up or were added, how many streams they have, how many AI
+calls they made in the last day, and how many times they have signed in,
+with the date and time of the first and the last. Sign-ins are counted from
+the day this was added; coming back with a session that is still good is
+not a sign-in. From there you can add someone, change a
 level, set a new password, and disable or enable an account. Disabling
 stops someone signing in at once; their streams are kept.
 

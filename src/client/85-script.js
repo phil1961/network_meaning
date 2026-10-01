@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/85-script.js
-   File Version: 0.5.0
+   File Version: 0.5.1
    ─────────────────────────────────────────────
    The Script view and the stepper. The language itself is in
    src/shared/script.js (inlined above): parseScript() reads the text and
@@ -33,7 +33,9 @@ function scriptOpen() {
   renderDock();
 }
 function renderDock() {
+  const shown = !$("#dock").hidden;
   $("#dock").hidden = !srun;
+  if (shown === !srun) fitMap(); /* the stepper came or went: the diagram gives it room, or takes the room back */
   if (!srun) return;
   const n = srun.steps.length, done = srun.i >= n;
   const held = Object.values(srun.checks).filter(Boolean).length, checked = Object.keys(srun.checks).length;

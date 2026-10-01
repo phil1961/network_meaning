@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/server/auth.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    Who is signed in. Email is the unique key. A person signs up themselves
    (when SIGNUP allows it) or is added by an admin; either way they get a
@@ -152,9 +152,17 @@ export async function createUser({ email, password, addedBy = null, level = "use
 export async function listUsers() {
   const r = await query(`SELECT u.id, u.email, u.level, u.disabled_at, u.created_at, a.email AS added_by,
       (SELECT count(*) FROM streams s WHERE s.user_id = u.id)::int AS streams,
-      (SELECT count(*) FROM api_calls c WHERE c.user_id = u.id AND c.at > now() - interval '24 hours')::int AS calls_today
+      (SELECT count(*) FROM api_calls c WHERE c.user_id = u.id AND c.at > now() - interval '24 hours')::int AS calls_today,
+      u.login_count, u.first_login_at, u.last_login_at
     FROM users u LEFT JOIN users a ON a.id = u.added_by ORDER BY (u.email = $1) DESC, u.created_at, u.id`, [ownerEmail()]);
-  return r.rows.map(x => ({ id: x.id, email: x.email, level: x.level, admin: x.level === "admin", disabled: !!x.disabled_at, createdAt: x.created_at, addedBy: x.added_by, owner: x.email === ownerEmail(), streams: x.streams, callsToday: x.calls_today }));
+  return r.rows.map(x => ({ id: x.id, email: x.email, level: x.level, admin: x.level === "admin", disabled: !!x.disabled_at, createdAt: x.created_at, addedBy: x.added_by, owner: x.email === ownerEmail(), streams: x.streams, callsToday: x.calls_today,
+    logins: x.login_count, firstLogin: x.first_login_at, lastLogin: x.last_login_at }));
+}
+/* A sign-in happened: one more to the count, the first time kept, the last time set (Phil, 2026-10-01).
+   Signing up signs a person in, so it counts as their first. Coming back with a cookie that is still good
+   is not a sign-in and is not counted. */
+export async function recordLogin(userId) {
+  await query("UPDATE users SET login_count = login_count + 1, first_login_at = COALESCE(first_login_at, now()), last_login_at = now() WHERE id = $1", [userId]);
 }
 export async function setPassword(id, password) {
   if (!validPassword(password)) throw { code: "bad_password", message: `A password needs at least ${PASSWORD_MIN} characters.` };

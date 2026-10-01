@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/db.test.js
-   File Version: 0.6.0
+   File Version: 0.7.0
    ─────────────────────────────────────────────
    Streams and steps against a real Postgres. Skips unless TEST_DATABASE_URL
    is set (never the production DATABASE_URL: this test creates and drops
@@ -449,6 +449,40 @@ test("an admin sets who may sign up from the Admin tab, and that wins over the s
   assert.equal((await db.query("SELECT count(*)::int AS n FROM settings")).rows[0].n, 0);
   delete process.env.SIGNUP_CODE; delete process.env.SIGNUPS_PER_HOUR;
   assert.deepEqual((await as(null, "GET", "/api/auth")).body, { signup: "open" });
+});
+
+test("each sign-in is counted, with the first and the last time; signing up is the first; a wrong password and a cookie still good are not sign-ins", { skip }, async () => {
+  process.env.SIGNUPS_PER_HOUR = "50";
+  const row = async email => (await db.query("SELECT login_count, first_login_at, last_login_at FROM users WHERE email = $1", [email])).rows[0];
+  const hal = await as(null, "POST", "/api/signup", { email: "hal@example.com", password: "hal-has-a-password" });
+  assert.equal(hal.status, 201);
+  let r = await row("hal@example.com");
+  assert.equal(r.login_count, 1, "signing up signs you in, and that is the first");
+  assert.ok(r.first_login_at instanceof Date && r.last_login_at instanceof Date);
+  const first = r.first_login_at.getTime();
+  assert.equal((await as(hal.cookie, "GET", "/api/me")).status, 200);
+  assert.equal((await as(null, "POST", "/api/login", { email: "hal@example.com", password: "not-his-password" })).status, 401);
+  assert.equal((await row("hal@example.com")).login_count, 1, "neither a request with the cookie nor a wrong password is a sign-in");
+  await new Promise(res => setTimeout(res, 20));
+  assert.equal((await as(null, "POST", "/api/login", { email: "hal@example.com", password: "hal-has-a-password" })).status, 200);
+  assert.equal((await as(null, "POST", "/api/login", { email: "HAL@example.com", password: "hal-has-a-password" })).status, 200);
+  r = await row("hal@example.com");
+  assert.equal(r.login_count, 3);
+  assert.equal(r.first_login_at.getTime(), first, "the first time is kept");
+  assert.ok(r.last_login_at.getTime() > first, "the last time moves on");
+  /* the owner is counted too, and the Admin tab is given all three */
+  const before = (await row("test@example.com")).login_count;
+  assert.equal((await as(null, "POST", "/api/login", { password: "correct horse" })).status, 200);
+  assert.equal((await row("test@example.com")).login_count, before + 1);
+  const list = (await j("GET", "/api/admin/users")).body, h = list.find(u => u.email === "hal@example.com");
+  assert.equal(h.logins, 3);
+  assert.equal(new Date(h.firstLogin).getTime(), first);
+  assert.ok(new Date(h.lastLogin).getTime() > first);
+  /* someone an admin added has not signed in yet */
+  assert.equal((await j("POST", "/api/admin/users", { email: "ivy@example.com", password: "ivy-was-given-this" })).status, 201);
+  const ivy = (await j("GET", "/api/admin/users")).body.find(u => u.email === "ivy@example.com");
+  assert.deepEqual([ivy.logins, ivy.firstLogin, ivy.lastLogin], [0, null, null]);
+  delete process.env.SIGNUPS_PER_HOUR;
 });
 
 test("appendStep assigns dense sequence numbers under concurrency", { skip }, async () => {

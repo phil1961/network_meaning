@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/60-map.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The map: a neighborhood around one idea, the side panel (your words,
    history, open questions, connections, traceback), search, and Draft.
@@ -16,26 +16,74 @@
    do all three; so do dragging with the mouse, Ctrl and the wheel, and the
    keyboard. The view is how the diagram is looked at, not part of the
    stream: it makes no step. The size is remembered in this browser; a
-   move is forgotten as soon as another item becomes the middle. */
+   move is forgotten as soon as another item becomes the middle.
+
+   The diagram fits the window (Phil, 2026-10-01: "the page itself is too
+   big to fit on a regular sized browser window"). Its frame takes the room
+   that is left between the bars above it and the bottom of the window, so
+   the whole Map view is in sight without scrolling. At 100% the drawing is
+   scaled to fit that frame, but never so small that the words can't be
+   read: on a short window part of the drawing is out of the frame, and the
+   Move controls or a drag bring it in.
+
+   A single box can be dragged to where you want it (Phil, the same day:
+   "I also want to drag a single box"). That does change the map as drawn,
+   so it is a step ("place"): it is saved, it rewinds, and Tidy puts the
+   boxes back. Dragging the middle item, or the empty part of the diagram,
+   moves the whole diagram. */
 const svg = $("#map");
-const MAP_SIZE = { min: 0.5, max: 3, step: 1.25 };
+const MAP_SIZE = { min: 0.5, max: 3, step: 1.25, legible: 0.72, least: 300 };   /* legible: the smallest scale, in screen pixels to one unit of the layout, that 100% may be; least: the shortest the frame may be, in pixels */
 let mapBase = { W: 960, H: 600 };   /* the frame the layout was drawn in */
-let mapView = { k: Math.min(MAP_SIZE.max, Math.max(MAP_SIZE.min, parseFloat(lsGet("nm.mapsize")) || 1)), x: 0, y: 0 };   /* k: size, 1 = the whole frame; x, y: how far the view has moved from the middle, in the layout's units */
+let mapView = { k: Math.min(MAP_SIZE.max, Math.max(MAP_SIZE.min, parseFloat(lsGet("nm.mapsize")) || 1)), x: 0, y: 0 };   /* k: size, 1 = fitted to the frame; x, y: how far the view has moved from the middle, in the layout's units */
+let mapScale = 1;                   /* screen pixels to one unit of the layout, as last drawn */
 let mapViewOf = "";                 /* which map and middle item the move belongs to */
 let mapDragged = false;             /* true just after a drag, so the click that ends it selects nothing */
+let mapTemp = null;                 /* { id, x, y } while a box is being dragged: where it is for now, in the layout's units */
+let mapLaid = {};                   /* where the layout itself put each box, before anything was dragged */
+let mapExtent = null;               /* { x0, y0, x1, y1 }: the part of the frame the boxes take up, or null on an empty map */
 
+/* Give the diagram's frame the room left in the window, then draw the view in it. */
+function fitMap() {
+  if ($("#view-map").hidden) return;
+  const wide = svg.getBoundingClientRect().width || svg.clientWidth; if (!wide) return;
+  const here = el => el.getBoundingClientRect().top + window.scrollY, px = (el, prop) => parseFloat(getComputedStyle(el)[prop]) || 0;
+  /* what lies under the page's content: its own margins, and the stepper when it is open */
+  const foot = px($("main"), "paddingBottom") + px(document.body, "marginBottom") + ($("#dock").hidden ? 0 : $("#dock").offsetHeight) + 1;
+  /* what lies under the diagram inside its frame: the list of items out of reach, the key, the frame's edge */
+  const under = $(".canvas").getBoundingClientRect().bottom - svg.getBoundingClientRect().bottom;
+  const room = Math.max(MAP_SIZE.least, Math.floor(window.innerHeight - here(svg) - under - foot));
+  /* never taller than the drawing needs at this width, so a tall window shows no empty band */
+  svg.style.height = Math.round(Math.min(room, wide * mapBase.H / mapBase.W)) + "px";
+  /* beside the diagram, the panel keeps to the window too and scrolls inside itself; under it, on a narrow screen, it runs on down the page */
+  const panel = $("#panel"), beside = panel.getBoundingClientRect().left > svg.getBoundingClientRect().left + wide - 4;
+  panel.style.maxHeight = beside ? Math.max(MAP_SIZE.least, Math.floor(window.innerHeight - here(panel) - foot)) + "px" : "";
+  applyMapView();
+}
 /* Set the part of the drawing that is shown, from mapView, and say so on the controls. */
 function applyMapView() {
   const v = mapView, B = mapBase, r = n => Math.round(n * 100) / 100;
+  const box = svg.getBoundingClientRect(), bw = box.width || B.W, bh = box.height || B.H;
   v.k = Math.min(MAP_SIZE.max, Math.max(MAP_SIZE.min, v.k));
   /* the middle of the view never leaves the drawing, so the diagram cannot be lost */
   v.x = Math.min(B.W / 2, Math.max(-B.W / 2, v.x)); v.y = Math.min(B.H / 2, Math.max(-B.H / 2, v.y));
-  const w = B.W / v.k, h = B.H / v.k;
+  mapScale = Math.max(Math.min(bw / B.W, bh / B.H), MAP_SIZE.legible) * v.k;
+  const w = bw / mapScale, h = bh / mapScale;
   svg.setAttribute("viewBox", `${r(B.W / 2 + v.x - w / 2)} ${r(B.H / 2 + v.y - h / 2)} ${r(w)} ${r(h)}`);
   $("#mapsize").textContent = Math.round(v.k * 100) + "%";
   $("#mapsmaller").disabled = v.k <= MAP_SIZE.min + 0.001;
   $("#maplarger").disabled = v.k >= MAP_SIZE.max - 0.001;
   $("#mapcenter").disabled = !v.x && !v.y;
+  /* where boxes lie outside the frame, say so on that edge, so nothing is out of sight without a sign of it */
+  const old = svg.querySelector("#mapmore"); if (old) old.remove();
+  const E = mapExtent; if (!E) return;
+  const x0 = B.W / 2 + v.x - w / 2, y0 = B.H / 2 + v.y - h / 2, fs = 11 / mapScale, pad = 8 / mapScale;
+  const say = (x, y, anchor, words) => `<text x="${r(x)}" y="${r(y)}" text-anchor="${anchor}" font-family="IBM Plex Mono, monospace" font-size="${r(fs)}" style="fill:var(--accent);stroke:var(--panel);stroke-width:${r(4 / mapScale)};paint-order:stroke">${words}</text>`;
+  let more = "";
+  if (E.y0 < y0) more += say(x0 + w / 2, y0 + pad + fs, "middle", "▲ more above");
+  if (E.y1 > y0 + h) more += say(x0 + w / 2, y0 + h - pad, "middle", "▼ more below");
+  if (E.x0 < x0) more += say(x0 + pad, y0 + h / 2, "start", "◀ more");
+  if (E.x1 > x0 + w) more += say(x0 + w - pad, y0 + h / 2, "end", "more ▶");
+  if (more) svg.insertAdjacentHTML("beforeend", `<g id="mapmore" pointer-events="none">${more}</g>`);
 }
 /* Larger or smaller. With a point given (in the layout's units), that point stays where it is on screen. */
 function sizeMap(k, at) {
@@ -46,7 +94,7 @@ function sizeMap(k, at) {
   applyMapView();
 }
 /* Move the diagram by a part of what is in view: dx, dy of 1 is a whole view to the right or down. */
-function moveMap(dx, dy) { mapView.x -= dx * mapBase.W / mapView.k; mapView.y -= dy * mapBase.H / mapView.k; applyMapView(); }
+function moveMap(dx, dy) { const vb = svg.viewBox.baseVal; mapView.x -= dx * vb.width; mapView.y -= dy * vb.height; applyMapView(); }
 function centerMap() { mapView.x = 0; mapView.y = 0; applyMapView(); }
 const mapWord = { said: "what was said", env: "the environment", mind: "the mental state", moral: "the assumptions" };
 const mapColor = { env: "var(--m-env)", mind: "var(--m-mind)", moral: "var(--m-moral)" };
@@ -158,8 +206,9 @@ function renderMap() {
   /* a move belongs to one middle item on one map: when either changes, the new middle is drawn in the middle */
   const viewOf = mapSel + "|" + (f || "");
   if (viewOf !== mapViewOf) { mapViewOf = viewOf; mapView.x = 0; mapView.y = 0; }
+  $("#maptidy").disabled = !(f && S.places[f] && Object.keys(S.places[f]).length) || isRewound();
   if (!f) {
-    mapBase = { W: 960, H: 600 }; applyMapView();
+    mapBase = { W: 960, H: 600 }; mapExtent = null;
     if (world) {
       $("#focuslabel").innerHTML = `Nothing on the map of <b>${esc(mapWord[mapSel])}</b> yet`;
       svg.innerHTML = `<text x="480" y="280" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="18" fill="var(--muted)">Nothing on this map yet.</text><text x="480" y="310" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">Add the first item in the panel, or run a script.</text>`;
@@ -169,19 +218,29 @@ function renderMap() {
       svg.innerHTML = `<text x="480" y="280" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="18" fill="var(--muted)">Nothing on the map yet.</text><text x="480" y="310" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">Open “Add text” and paste something to start.</text>`;
       $("#panel").innerHTML = `<div class="empty"><b>An empty map</b><span>Paste or drop text in Add text. Claude pulls out your ideas and links them here.</span><button class="btn primary" data-goadd="1">Add text</button></div>`;
     }
-    fixVars(svg);
+    fixVars(svg); fitMap();
     return;
   }
   const lay = world ? worldLayout(f, mapSel) : nearLayout(f);
-  mapBase = { W: lay.W, H: lay.H }; applyMapView();
+  mapBase = { W: lay.W, H: lay.H };
+  /* boxes the person dragged are drawn where they were put, kept inside the frame; one being dragged now is where the pointer has it */
+  const put = S.places[f] || {};
+  mapLaid = {};
+  for (const p of lay.nodes) {
+    mapLaid[p.id] = { x: p.x, y: p.y };
+    const o = put[p.id], held = mapTemp && mapTemp.id === p.id;
+    if (o || held) { p.x = Math.min(lay.W - 30, Math.max(30, held ? mapTemp.x : p.x + o.dx)); p.y = Math.min(lay.H - 24, Math.max(24, held ? mapTemp.y : p.y + o.dy)); }
+  }
   $("#focuslabel").innerHTML = world ? `The map of <b>${esc(mapWord[mapSel])}</b>, around <b>${esc(S.nodes[f].t)}</b>` : `Showing the neighborhood of <b>${esc(S.nodes[f].t)}</b>`;
   const fb = boxFor(f, true);
   const at = { [f]: { x: lay.cx, y: lay.cy, b: fb } };
   for (const p of lay.nodes) at[p.id] = p;
+  mapExtent = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const p of Object.values(at)) { mapExtent.x0 = Math.min(mapExtent.x0, p.x - p.b.w / 2); mapExtent.x1 = Math.max(mapExtent.x1, p.x + p.b.w / 2); mapExtent.y0 = Math.min(mapExtent.y0, p.y - p.b.h / 2); mapExtent.y1 = Math.max(mapExtent.y1, p.y + p.b.h / 2); }
   let s = `<defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
     <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--reading)"/></marker>
-  </defs><g class="fade-in">`;
+  </defs><g${mapTemp ? "" : ' class="fade-in"'}>`;
   const slotPad = id => (S.nodes[id].slots || []).length ? 16 : 0;
   let labels = "";
   for (const { l, label } of lay.edges) {
@@ -205,7 +264,8 @@ function renderMap() {
     $("#maploose").hidden = false;
     $("#maploose").innerHTML = `<span>On this map, not within two links of this item:</span>` + lay.loose.map(id => `<button class="linkbtn" data-go="${esc(id)}">${esc(clip(S.nodes[id].t, 48))}</button>`).join("");
   }
-  renderPanel();
+  if (!mapTemp) renderPanel();
+  fitMap();
 }
 svg.addEventListener("click", e => { if (mapDragged) { mapDragged = false; return; } const g = e.target.closest("[data-id]"); if (g && g.dataset.id !== focus) setFocus(g.dataset.id); });
 svg.addEventListener("keydown", e => {
@@ -226,6 +286,7 @@ $("#mapctl").addEventListener("click", e => {
   else if (b.id === "maplarger") sizeMap(mapView.k * MAP_SIZE.step);
   else if (b.id === "mapsize") sizeMap(1);
   else if (b.id === "mapcenter") centerMap();
+  else if (b.id === "maptidy") tidyMap();
   else if (b.dataset.move) { const d = { left: [-0.15, 0], right: [0.15, 0], up: [0, -0.15], down: [0, 0.15] }[b.dataset.move]; if (d) moveMap(d[0], d[1]); }
 });
 /* where a point on the screen is in the layout's units */
@@ -239,28 +300,68 @@ svg.addEventListener("wheel", e => {
   e.preventDefault();
   sizeMap(mapView.k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), mapPoint(e));
 }, { passive: false });
-/* Drag with the mouse or a pen to move the diagram. A finger still scrolls the page; the arrow buttons move the diagram on a phone. */
+/* Put the boxes around this middle item back where the layout draws them. A step, like the moves it undoes. */
+async function tidyMap() {
+  const mid = mapMid(); if (!mid || !S.places[mid]) return;
+  if (await recordAction({ type: "place", around: mid, reset: true }, "place")) { rebuild(); toast("The boxes are back where the layout draws them."); }
+}
+/* The item in the middle of the diagram in view, or null. */
+function mapMid() { return focus && S.nodes[focus] && mapOf(S.nodes[focus]) === mapSel ? focus : null; }
+
+/* Drag with the mouse or a pen. On a box that is not the middle, the drag moves that box, and where it is
+   dropped is kept as a step. Anywhere else, the middle box included, it moves the whole diagram, which
+   keeps nothing. A finger still scrolls the page; on a phone the arrow buttons move the diagram. */
 let mapDrag = null;
 svg.addEventListener("pointerdown", e => {
   if (e.pointerType === "touch" || e.button !== 0) return;
-  mapDrag = { id: e.pointerId, cx: e.clientX, cy: e.clientY, x: mapView.x, y: mapView.y, moved: false };
+  const d = mapDrag = { id: e.pointerId, cx: e.clientX, cy: e.clientY, x: mapView.x, y: mapView.y, moved: false, box: null };
+  const g = e.target.closest("[data-id]"), mid = mapMid();
+  if (g && mid && g.dataset.id !== mid && mapLaid[g.dataset.id]) {
+    const at = /translate\(([-\d.]+),([-\d.]+)\)/.exec(g.getAttribute("transform") || "");
+    if (at) d.box = { id: g.dataset.id, mid, x: +at[1], y: +at[2] };
+  }
 });
 svg.addEventListener("pointermove", e => {
   const d = mapDrag; if (!d || e.pointerId !== d.id) return;
   const dx = e.clientX - d.cx, dy = e.clientY - d.cy;
-  if (!d.moved) { if (Math.hypot(dx, dy) < 5) return; d.moved = true; svg.classList.add("panning"); try { svg.setPointerCapture(d.id); } catch (err) { /* the pointer is gone */ } }
-  const r = svg.getBoundingClientRect();
-  mapView.x = d.x - dx / (r.width || 1) * mapBase.W / mapView.k;
-  mapView.y = d.y - dy / (r.height || 1) * mapBase.H / mapView.k;
+  if (!d.moved) {
+    if (Math.hypot(dx, dy) < 5) return;
+    if (d.box && isRewound()) { mapDrag = null; toast("You're looking at an earlier step. Go back to latest or branch first."); return; }
+    d.moved = true; svg.classList.add(d.box ? "placing" : "panning");
+    try { svg.setPointerCapture(d.id); } catch (err) { /* the pointer is gone */ }
+  }
+  if (d.box) {
+    mapTemp = { id: d.box.id, x: Math.min(mapBase.W - 30, Math.max(30, d.box.x + dx / mapScale)), y: Math.min(mapBase.H - 24, Math.max(24, d.box.y + dy / mapScale)) };
+    renderMap();
+    return;
+  }
+  mapView.x = d.x - dx / mapScale; mapView.y = d.y - dy / mapScale;
   applyMapView();
 });
-const endMapDrag = e => {
+const endMapDrag = async e => {
   const d = mapDrag; if (!d || e.pointerId !== d.id) return;
-  mapDrag = null; svg.classList.remove("panning");
-  if (d.moved) { mapDragged = true; setTimeout(() => { mapDragged = false; }, 0); }
+  mapDrag = null; svg.classList.remove("panning", "placing");
+  if (!d.moved) return;
+  mapDragged = true; setTimeout(() => { mapDragged = false; }, 0);
+  if (!d.box) return;
+  const held = mapTemp, laid = mapLaid[d.box.id];
+  mapTemp = null;
+  if (e.type === "pointercancel" || !held || !laid) { renderMap(); return; }
+  if (await recordAction({ type: "place", id: d.box.id, around: d.box.mid, dx: Math.round(held.x - laid.x), dy: Math.round(held.y - laid.y) }, "place")) rebuild();
+  else renderMap();
 };
 svg.addEventListener("pointerup", endMapDrag);
 svg.addEventListener("pointercancel", endMapDrag);
+/* the frame follows the window */
+window.addEventListener("resize", () => { if (!$("#view-map").hidden) fitMap(); });
+/* The key to the diagram folds away to leave the diagram more room. It starts open on a tall window and
+   closed on a short one; once the person opens or closes it, that is remembered. */
+{
+  const key = $("#maplegend"), was = lsGet("nm.mapkey");
+  key.open = was ? was === "open" : window.innerHeight >= 820;
+  key.addEventListener("toggle", fitMap);
+  key.querySelector("summary").addEventListener("click", () => setTimeout(() => lsSet("nm.mapkey", key.open ? "open" : "closed"), 0));
+}
 function setFocus(id) { if (!S.nodes[id]) return; focus = id; mapSel = mapOf(S.nodes[id]); renderMap(); const g = svg.querySelector(`[data-id="${CSS.escape(id)}"]`); if (g) g.focus({ preventScroll: true }); }
 function setMap(m) { if (!WORLD_MAPS[m]) return; mapSel = m; if (!(focus && S.nodes[focus] && mapOf(S.nodes[focus]) === m)) focus = mapMiddle(S, m) || focus; renderMap(); }
 $("#mapsel").addEventListener("click", e => { const b = e.target.closest("[data-map]"); if (b) setMap(b.dataset.map); });

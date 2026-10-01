@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/95-admin.js
-   File Version: 0.3.0
+   File Version: 0.4.0
    ─────────────────────────────────────────────
    The Admin tab: the admin panel (Phil, 2026-09-30). Who has an account, how they
    came by it, and what an admin can do: add someone, set their level
@@ -26,6 +26,8 @@ function renderAdmin() {
   $("#userlist").innerHTML = people.length ? people.map(u => {
     const you = me && u.id === me.id;
     const chips = (u.owner ? `<span class="chip mine">owner</span>` : "") + `<span class="chip${u.level === "admin" ? " mine" : u.level === "guest" ? " supposed" : ""}">${esc(u.level)}</span>` + (u.disabled ? `<span class="chip replaced">disabled</span>` : "") + (you ? `<span class="chip">you</span>` : "");
+    const when = iso => { try { return new Date(iso).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } };
+    const signins = u.logins ? `signed in ${u.logins} time${u.logins === 1 ? "" : "s"} · first ${esc(when(u.firstLogin))} · last ${esc(when(u.lastLogin))}` : "no sign-in recorded yet";
     const how = u.owner ? "the owner, signs in with the server's password" : u.addedBy ? `added by ${esc(u.addedBy)}` : "signed up";
     let acts = "";
     if (!u.owner && !you) {
@@ -34,7 +36,7 @@ function renderAdmin() {
         : `<div class="actions"><label class="small" for="lv-${u.id}">Level</label><select id="lv-${u.id}" data-level="${u.id}">${["guest", "user", "admin"].map(l => `<option value="${l}"${l === u.level ? " selected" : ""}>${l[0].toUpperCase() + l.slice(1)}</option>`).join("")}</select><button class="btn" data-pwopen="${u.id}">Set a new password</button><button class="btn${u.disabled ? "" : " danger"}" data-disable="${u.id}" data-to="${u.disabled ? "0" : "1"}">${u.disabled ? "Enable" : "Disable"}</button></div>`;
     }
     return `<li class="le${u.disabled ? " done" : ""}" data-user="${u.id}"><div class="type">${chips}</div>
-      <div class="body"><p class="text">${esc(u.email)}</p><p class="detail">${how} · since ${esc(stamp(u.createdAt))} · ${u.streams} stream${u.streams === 1 ? "" : "s"} · ${u.callsToday} model call${u.callsToday === 1 ? "" : "s"} in the last day</p>${acts}</div></li>`;
+      <div class="body"><p class="text">${esc(u.email)}</p><p class="detail">${how} · since ${esc(stamp(u.createdAt))} · ${u.streams} stream${u.streams === 1 ? "" : "s"} · ${u.callsToday} model call${u.callsToday === 1 ? "" : "s"} in the last day</p><p class="detail" data-signins="${u.logins || 0}">${signins}</p>${acts}</div></li>`;
   }).join("") : `<li class="empty">Nobody yet.</li>`;
 }
 async function loadPeople() {

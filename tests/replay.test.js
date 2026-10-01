@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/replay.test.js
-   File Version: 0.6.0
+   File Version: 0.7.0
    ───────────────────────────────────────────── */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -216,6 +216,36 @@ test("a verdict marks one suggestion of the analysis in view, changes nothing el
   assert.equal(actionOk({ type: "verdict", analysisId: "h1", suggestionId: "h1-1", mark: "new" }), true);
   assert.equal(actionOk({ type: "verdict", analysisId: "constructor", suggestionId: "h1-1", mark: "new" }), false);
   assert.equal(replay(steps.slice(0, 8)).analysis.suggestions[1].verdict, undefined, "rewinding takes the mark off again");
+});
+
+test("a box dragged by hand is kept as a move from where the layout draws it, for one middle item, and can be put back", () => {
+  const item = (id, text) => ({ kind: "action", date: "Oct 1", source: "item", action: { type: "item", id, map: "env", text, supposed: true } });
+  const place = a => ({ kind: "action", date: "Oct 1", source: "place", action: { type: "place", ...a } });
+  const steps = [item("w1", "Home."), item("w2", "A store."), item("w3", "A car.")];
+  assert.deepEqual(Object.keys(replay(steps).places), [], "nothing is placed until someone drags a box");
+  steps.push(place({ id: "w2", around: "w1", dx: 40.6, dy: -25.2 }));
+  let S = replay(steps);
+  assert.deepEqual(S.places.w1.w2, { dx: 41, dy: -25 }, "whole units, for the diagram drawn around w1");
+  assert.equal(S.places.w2, undefined, "around another middle item the layout's own place stands");
+  steps.push(place({ id: "w2", around: "w1", dx: 10, dy: 0 }), place({ id: "w3", around: "w1", dx: 99999, dy: "far" }));
+  S = replay(steps);
+  assert.deepEqual(S.places.w1.w2, { dx: 10, dy: 0 }, "the latest place of a box stands");
+  assert.deepEqual(S.places.w1.w3, { dx: 2000, dy: 0 }, "a move is kept within bounds, and a number that is not one counts as none");
+  assert.deepEqual([S.nodes.w2.words, S.nodes.w2.supposed, S.links.length], ["A store.", true, 0], "moving a box changes nothing about what the map says");
+  /* what is refused: the middle itself, a box or a middle that is not there, ids that are not ids */
+  for (const bad of [{ id: "w1", around: "w1", dx: 5, dy: 5 }, { id: "nope", around: "w1", dx: 5, dy: 5 }, { id: "w2", around: "nope", dx: 5, dy: 5 }, { id: "w2", dx: 5, dy: 5 }]) {
+    assert.deepEqual(replay(steps.concat([place(bad)])).places, S.places, JSON.stringify(bad));
+  }
+  assert.equal(actionOk({ type: "place", id: "w2", around: "w1", dx: 1, dy: 1 }), true);
+  assert.equal(actionOk({ type: "place", id: "w2", around: "__proto__", dx: 1, dy: 1 }), false);
+  assert.equal(({}).w2, undefined, "nothing was written where it should not be");
+  /* Tidy, and rewinding */
+  steps.push(place({ around: "w1", reset: true }));
+  assert.equal(replay(steps).places.w1, undefined, "putting the boxes back clears that middle's moves");
+  assert.deepEqual(replay(steps.slice(0, 4)).places.w1.w2, { dx: 41, dy: -25 }, "and an earlier step shows the box where it was then");
+  /* it is not a change in the state of play */
+  const withHelp = [...steps.slice(0, 3), { kind: "action", date: "Oct 1", source: "help analysis", action: { type: "analysis", id: "h1", model: "m", standing: "s", suggestions: [] } }, place({ id: "w2", around: "w1", dx: 5, dy: 5 })];
+  assert.equal(replay(withHelp).analysis.since, 0, "moving a box does not make a Help analysis stale");
 });
 
 test("world maps: items are given or supposed, linked across maps, confirmed or ruled out, and nothing is deleted", () => {

@@ -492,6 +492,43 @@ the browser. Not built, and it may be what "move" was also meant to cover:
 moving one box by hand to arrange a map. That would change the map and
 would have to be a step, so it is left for Phil to ask for.
 
+**2026-10-01, drag a single box; the page is too big.** "Yes, I also want
+to drag a single box, and also, the page itself is too big to fit on a
+regular sized browser window. I cant see the bottom of the app's lower
+edge"
+
+("cant" is as typed.)
+
+Both built the same night (app 0.11.0). A box other than the middle one can
+be dragged, and where it is dropped is a step. The Map view now takes the
+height of the window: the diagram's frame is the room that is left, and
+the panel beside it scrolls inside itself. Claude's choices, for Phil to
+judge: a moved box is kept for the diagram drawn around one middle item,
+not for the map as a whole, because the diagram is drawn afresh around
+whatever is in the middle; the drawing is not shrunk below the point where
+its words can be read, so on a short window part of a large map lies
+outside the frame, and the edge says so; and the key to the diagram folds
+away. Only the Map view was made to fit; the other tabs still scroll.
+
+**2026-10-01, sign-in counts.** "also, I want to track the number of times
+a user logs in and his first and last login DTGs"
+
+Built the same night (app 0.11.0). The Admin tab shows, for each person,
+how many times they have signed in and the date and time of the first and
+the last. Claude's readings: signing up counts as the first sign-in;
+coming back with a session that is still good is not counted, so this is a
+count of sign-ins and not of visits; and the count starts from the night
+it was added. "DTG" is taken as date and time; the tab shows them in the
+viewer's own local time, not in the military date-time-group form.
+
+**2026-10-01, it worked.** "awesome. When finished, commit push and sync
+with google drive"
+
+Said after dragging a box on the live site and seeing it stay. A minute
+before, the same drag had sprung back with an error, because the server
+had not yet been restarted with the new code; that is recorded in
+`HANDOFF.md` §19.
+
 ---
 
 ## 1. The experience in one paragraph

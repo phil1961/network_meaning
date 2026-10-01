@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: server.js
-   File Version: 0.7.0
+   File Version: 0.8.0
    ─────────────────────────────────────────────
    Network Meaning: the HTTP entry point. Node's built-in http server, no
    framework. Serves the one built page and a small JSON API. Under IIS,
@@ -102,6 +102,9 @@ async function newUser(fields) {
   catch (e) { if (e && e.code) throw new HttpError(e.code === "exists" ? 409 : 400, e.code, e.message); throw e; }
 }
 
+/* Count a sign-in. If the count cannot be written, the person still gets in: it is said in the log. */
+async function countLogin(u) { try { await auth.recordLogin(u.id); } catch (e) { log(`sign-in not counted for user=${u.id}:`, e && e.message); } }
+
 /* A shared stream is read-only to everyone but its owner, and the model is
    never called on a stream the person can't write to. */
 function mustBeMine(s) {
@@ -188,6 +191,7 @@ async function handleApi(req, res, url) {
     const u = await auth.login(body.email, body.password);
     if (!u) { auth.countUse(key, 900000); await new Promise(r => setTimeout(r, 400)); throw new HttpError(401, "bad_password", "That email or password isn't right."); }
     auth.clearUse(key);
+    await countLogin(u);
     return send(res, 200, u, { "Set-Cookie": auth.makeCookie(u.id, req) });
   }
   if (p === "/signup" && m === "POST") {
@@ -201,6 +205,7 @@ async function handleApi(req, res, url) {
     const u = await newUser({ email: body.email, password: body.password, level: auth.signupLevel() });
     auth.countUse(key, 3600000);
     log(`signup user=${u.id} level=${u.level}`);
+    await countLogin(u);
     return send(res, 201, u, { "Set-Cookie": auth.makeCookie(u.id, req) });
   }
   if (p === "/logout" && m === "POST") return send(res, 200, { ok: true }, { "Set-Cookie": auth.clearCookie() });

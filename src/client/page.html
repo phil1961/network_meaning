@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.10.0
+  File Version: 0.11.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, and
   the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
@@ -83,10 +83,13 @@
               <button class="btn mini" type="button" data-move="down" title="Move the diagram down" aria-label="Move the diagram down">▼</button>
               <button class="btn mini" type="button" data-move="right" title="Move the diagram right" aria-label="Move the diagram right">▶</button>
               <button class="btn mini" type="button" id="mapcenter" title="Put the middle item back in the middle">Center</button>
+              <button class="btn mini" type="button" id="maptidy" title="Put the boxes you dragged back where the layout draws them" disabled>Tidy</button>
             </div>
           </div>
-          <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas"></svg>
+          <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas. Drag a box to move it; drag the background to move the whole diagram."></svg>
           <div class="maploose" id="maploose" hidden></div>
+          <details class="legendwrap" id="maplegend">
+          <summary>Key to the diagram</summary>
           <div class="legend">
             <span><i class="sw"></i>your words, or given</span>
             <span><i class="sw supposed"></i>supposed</span>
@@ -100,6 +103,7 @@
             <span><i class="sw bar m-moral"></i>assumptions</span>
             <span>+n: more connections beyond this view</span>
           </div>
+          </details>
         </div>
         <aside class="panel" id="panel"></aside>
       </div>

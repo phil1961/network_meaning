@@ -899,3 +899,59 @@ centering controls."
   forgotten when the middle changes, and the size being remembered).
 - **No restart needed.** Only the page changed. A hard refresh
   (Ctrl+Shift+R) picks it up.
+
+## 19. Dragging a box, a Map view that fits the window, and sign-in counts (2026-10-01, app 0.11.0)
+
+Three requests from Phil the same night, after trying 0.10.0: "Yes, I also
+want to drag a single box, and also, the page itself is too big to fit on a
+regular sized browser window. I cant see the bottom of the app's lower
+edge" and "I want to track the number of times a user logs in and his first
+and last login DTGs."
+
+- **Dragging a single box.** Drag any box but the middle one and it stays
+  where it is dropped. It is an action step, `place` (`{id, around, dx,
+  dy}`), kept in `st.places` per middle item as a move from the layout's
+  own position, so it is saved, rewinds and branches. **Tidy** in the
+  controls puts that middle's boxes back (`{around, reset: true}`).
+  Dragging the middle box or the empty part of the diagram moves the whole
+  diagram, which makes no step. A `place` step does not make a Help
+  analysis count as stale. On a read-only sample the first drag starts the
+  person's own copy, like any other action. Mouse or pen only: a finger
+  scrolls the page.
+- **The Map view fits the window.** Measured before the change: the
+  diagram was as tall as its width made it, so on a 1366 by 768 screen the
+  page ran 240 pixels past the window, and more on a larger screen. Now
+  `fitMap()` in `src/client/60-map.js` gives the diagram the height that
+  is left in the window, and the panel beside it scrolls inside itself. At
+  100% the drawing is fitted to that frame but never below 0.72 screen
+  pixels to a layout unit (about 9-pixel words). On a short window that
+  leaves part of a world map outside the frame; the frame's edge then says
+  "more below" (or above, left, right). The key to the diagram is now a
+  fold: open on a tall window, closed on a short one, and remembered once
+  the person changes it. The body no longer overflows the window by its
+  own margin.
+- **Sign-in counts.** `sql/004-logins.sql` adds `login_count`,
+  `first_login_at` and `last_login_at` to `users`. `auth.recordLogin()`
+  is called after a good sign-in and after sign-up. If the count cannot be
+  written the person still gets in, and the log says so. The Admin tab
+  shows "signed in N times · first … · last …". Counting starts at this
+  migration: earlier sign-ins were not recorded. A session that is still
+  good is not a sign-in, so with 30-day cookies the count is of sign-ins,
+  not of visits.
+- **A mistake made on the way, worth knowing.** The working copy is the
+  live site, and the page is read from disk on every request, while the
+  server keeps the code it started with. Phil tried dragging a box while
+  the new page was already live and the server did not yet know the
+  `place` action; the server refused it and the page undid the move, as it
+  is built to. Restarting the server fixed it. Build order for anything
+  that adds an action type: restart (save `web.config`) as soon as
+  `src/shared/replay.js` knows the type, before the page that sends it is
+  built.
+- **Tests.** `npm run gate`: 86 tests, 69 pass, 17 skip without
+  `TEST_DATABASE_URL`. The new sign-in count test is among the skipped: it
+  was written and not run by the session that wrote it, like the two in
+  §17. `npm run smoke`: 125 checks pass, among them the fit to the window,
+  a box dragged and tidied by a guest, and the rewind of that move.
+- **Not done.** Moving a box from the keyboard or by touch. Per-box moves
+  in a script (no script word for `place`). A layout that reshapes itself
+  for a short, wide frame instead of running out of it.

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/97-app.js
-   File Version: 0.7.0
+   File Version: 0.7.1
    ─────────────────────────────────────────────
    Views, sign-in, sign-up and looking around as a guest, changing your own
    password, and boot. Last module: everything above is defined. */
@@ -9,6 +9,7 @@ function showView(v) {
   if (v === "admin" && !(me && me.admin)) v = "map";
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
   document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
+  if (v === "map") fitMap();
   if (v === "timeline") renderTimeline();
   if (v === "evidence") renderEvidence();
   if (v === "add") renderAdd();

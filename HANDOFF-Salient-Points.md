@@ -678,6 +678,34 @@ map diagrams, we need some size, move and centering controls."
 - Then: "Proceed to completion, document as needed and push, commit and
   sync with google drive"
 
+**2026-10-01, drag a single box; the page is too big.** [Phil] "Yes, I also
+want to drag a single box, and also, the page itself is too big to fit on a
+regular sized browser window. I cant see the bottom of the app's lower
+edge"
+
+- Built the same night (app 0.11.0). A box can be dragged and stays where
+  it is dropped, as a step; **Tidy** puts the boxes back. The Map view now
+  fits the window.
+- Claude's choices, not Phil's words: a moved box is kept per middle item;
+  the drawing is not shrunk below what can be read, and the frame's edge
+  says when part of it is out of sight; the key to the diagram folds away.
+- [lost] Not yet said: whether the other tabs should fit the window too.
+
+**2026-10-01, sign-in counts.** [Phil] "also, I want to track the number of
+times a user logs in and his first and last login DTGs"
+
+- Built the same night (app 0.11.0): the Admin tab shows how many times
+  each person has signed in, and when they first and last did.
+- Claude's readings: signing up is the first sign-in; a session that is
+  still good is not a sign-in; the count starts the night it was added.
+
+**2026-10-01, it worked.** [Phil] "awesome. When finished, commit push and
+sync with google drive"
+
+- Said after a dragged box stayed put on the live site. The first try had
+  sprung back with an error, because the server had not yet been restarted
+  with the new code.
+
 ### What the corpus already says about the app
 
 **Input**

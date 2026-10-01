@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.10.0
+   File Version: 0.11.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -45,7 +45,9 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important} /* author display rules must not override the hidden attribute */
-html,body{height:100%}
+/* the page keeps the browser's own 8px margin round it; the body is the window less that margin, so a view that fits does not scroll */
+html{height:100%}
+body{height:calc(100% - 16px)}
 body{background:var(--paper);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -411,3 +413,12 @@ form.inline .input{width:100%}
 #mapsize{min-width:52px;font-family:var(--font-data)}
 #map{cursor:grab;-webkit-user-select:none;user-select:none}
 #map.panning{cursor:grabbing}
+
+/* ---------- The Map view fits the window; a box can be dragged ---------- */
+#map{height:auto}
+#map.placing{cursor:grabbing}
+#map.placing .node{cursor:grabbing}
+.panel{overflow-y:auto}
+.legendwrap{border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.legendwrap summary{padding:6px 12px;cursor:pointer;font-family:var(--font-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.legendwrap .legend{border-top:0;padding-top:2px}
