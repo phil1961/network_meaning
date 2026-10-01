@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.9.1
+  File Version: 0.10.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, and
   the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
@@ -72,6 +72,18 @@
           </div>
           <div class="canvasbar sub">
             <div class="focuslabel" id="focuslabel"></div>
+            <div class="mapctl" id="mapctl" role="group" aria-label="Size and position of the diagram">
+              <span class="sb-label">Size</span>
+              <button class="btn mini" type="button" id="mapsmaller" title="Make the diagram smaller" aria-label="Make the diagram smaller">−</button>
+              <button class="btn mini" type="button" id="mapsize" title="Back to full size" aria-label="The size of the diagram. Press to go back to full size.">100%</button>
+              <button class="btn mini" type="button" id="maplarger" title="Make the diagram larger" aria-label="Make the diagram larger">+</button>
+              <span class="sb-label">Move</span>
+              <button class="btn mini" type="button" data-move="left" title="Move the diagram left" aria-label="Move the diagram left">◀</button>
+              <button class="btn mini" type="button" data-move="up" title="Move the diagram up" aria-label="Move the diagram up">▲</button>
+              <button class="btn mini" type="button" data-move="down" title="Move the diagram down" aria-label="Move the diagram down">▼</button>
+              <button class="btn mini" type="button" data-move="right" title="Move the diagram right" aria-label="Move the diagram right">▶</button>
+              <button class="btn mini" type="button" id="mapcenter" title="Put the middle item back in the middle">Center</button>
+            </div>
           </div>
           <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas"></svg>
           <div class="maploose" id="maploose" hidden></div>

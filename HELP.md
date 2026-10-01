@@ -96,6 +96,19 @@ Select any box to put it in the middle. The panel on the right shows its
 exact words, its open questions and what it connects to. Following a link
 into another map changes the map in view.
 
+Just above the diagram, on the right, are the controls for looking at it:
+
+- **Size:** **−** makes the diagram smaller and **+** makes it larger. The
+  percentage between them puts it back to full size.
+- **Move:** the four arrows move the diagram left, up, down and right.
+- **Center** puts the middle item back in the middle.
+
+With a mouse you can also drag the diagram, and hold Ctrl while turning the
+wheel to change its size. With the keyboard in the diagram, the arrow keys
+move it, **+** and **−** change its size, and **0** puts everything back.
+None of this changes the map itself: it makes no step. The size you choose
+is remembered; a move is forgotten when another item becomes the middle.
+
 To improve a map, select an item and use the panel: **Confirm it**, **Rule
 it out**, or **Add** a new item joined to the one in the middle.
 

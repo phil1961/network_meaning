@@ -135,6 +135,13 @@ said, and everything else supposed, the way an investigator would assemble
 it. The same world is a built-in script, so the stepper can assemble it
 line by line.
 
+The diagram has **Size**, **Move** and **Center** controls above it, on the
+right. It can also be dragged with the mouse, sized with Ctrl and the wheel,
+and driven from the keyboard (arrows, `+`, `-`, `0`). These change the view
+only, by setting the SVG's `viewBox` (`applyMapView()` in
+`src/client/60-map.js`): they make no step. The size is remembered in the
+browser; a move is dropped when another item becomes the middle.
+
 The Stream menu says what each stream holds before it is chosen: its steps,
 and how many items are on its Environment, Mental state and Assumptions
 maps (`GET /api/streams` returns these as `maps: {env, mind, moral}`).

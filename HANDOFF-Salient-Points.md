@@ -663,6 +663,21 @@ choice."
   the chosen tab, and a colour along the top of each State card.
 - [lost] Not yet said: whether he likes these colours.
 
+**2026-10-01, size, move and centering controls.** [Phil] "brother ai claude
+has finished. But now I have one more set of changes and they relate to the
+map diagrams, we need some size, move and centering controls."
+
+- Built the same night (app 0.10.0): Size (− and +), Move (four arrows) and
+  Center above the diagram. The view changes, not the map; none of it makes
+  a step.
+- Claude's additions, not Phil's words: dragging with the mouse, Ctrl and
+  the wheel, the keyboard, and remembering the size.
+- [lost] Not yet said: whether "move" was also meant to cover moving one
+  box by hand to arrange a map. That would be a change to the map, and a
+  step. Not built.
+- Then: "Proceed to completion, document as needed and push, commit and
+  sync with google drive"
+
 ### What the corpus already says about the app
 
 **Input**

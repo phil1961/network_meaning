@@ -870,3 +870,32 @@ resources and motivation. `VISION.md` §9, E18 and the notes on E8: the
 means (money, time, physical strength, refreshed in a paycheck, sleep and
 food) are kept apart from motivation (held per goal, refreshed by
 reflection on the right ideas). Phil is still thinking aloud on these.
+
+## 18. Size, move and center controls on the diagram (2026-10-01, app 0.10.0)
+
+Phil: "they relate to the map diagrams, we need some size, move and
+centering controls."
+
+- **What was built.** A group of controls above the diagram, on the right:
+  Size (− and +, and the percentage between them goes back to full size),
+  Move (four arrows) and Center (the middle item back in the middle). Also
+  dragging with the mouse or a pen, Ctrl and the wheel about the pointer,
+  and from the keyboard the arrow keys, + and −, and 0 to put everything
+  back.
+- **How.** All in `src/client/60-map.js`. The layout is unchanged; the view
+  is the SVG's `viewBox`, worked out from `mapView` (`k` for size, from 0.5
+  to 3; `x`, `y` for the move, in the layout's units) by `applyMapView()`.
+  The middle of the view cannot leave the drawing. The size is kept in the
+  browser (`nm.mapsize`); a move is dropped when the map or the middle item
+  changes. It is a view, so it makes no step and the server knows nothing
+  of it.
+- **Left out on purpose.** A finger drag still scrolls the page, so on a
+  phone the arrows are the way to move the diagram. Moving a single box to
+  arrange a map by hand is not built: that would change the map and need a
+  step of its own. The Timeline has no such controls.
+- **Tests.** `npm run gate`: 84 tests, 68 pass, 16 skip without
+  `TEST_DATABASE_URL`. `npm run smoke`: 114 checks pass, 13 of them on
+  these controls (buttons, a mouse drag, the keyboard, the move being
+  forgotten when the middle changes, and the size being remembered).
+- **No restart needed.** Only the page changed. A hard refresh
+  (Ctrl+Shift+R) picks it up.

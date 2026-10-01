@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.9.1
+   File Version: 0.10.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.9.1",
+  version: "0.10.0",
   corrections: [
+    ["The diagram was one fixed size and could not be moved",
+     "Size, move and center controls above the diagram: make it smaller or larger, move it left, right, up or down, and put the middle item back in the middle. You can also drag the diagram with the mouse, hold Ctrl and turn the wheel, or use the arrow keys, + and − once the keyboard is in the diagram. The size you choose is remembered."],
     ["The Talk tab replayed the owner's own words to every visitor, and the app was grey",
      "The Talk demo is now a made-up session, Darlene talking about Thursday. The app has colour: a warm matte background, a deep header band with the chosen tab in gold, and a colour along the top of each State card."],
     ["Nothing counted what became of the AI's claims",

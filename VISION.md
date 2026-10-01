@@ -473,6 +473,25 @@ purple for Help analysis). The three map colours are unchanged in meaning.
 Every colour is a token at the top of `src/client/style.css`, with a dark
 set beside it, so the palette can be changed in one place.
 
+**2026-10-01, size, move and centering controls.** "brother ai claude has
+finished. But now I have one more set of changes and they relate to the map
+diagrams, we need some size, move and centering controls." And then:
+"Proceed to completion, document as needed and push, commit and sync with
+google drive"
+
+Built the same night (app 0.10.0). Above the diagram, on the right: **Size**
+(− and +, with the percentage between them to go back to full size),
+**Move** (four arrows), and **Center**, which puts the middle item back in
+the middle. Claude's reading of the three words, for Phil to correct: size
+is how large the whole diagram is drawn, move is moving the whole diagram
+within its frame, and centering is undoing the move. It is the view that
+changes, not the map: none of it makes a step. Claude's additions:
+dragging the diagram with the mouse, Ctrl and the wheel for size, the
+arrow keys and + and − from the keyboard, and the size being remembered in
+the browser. Not built, and it may be what "move" was also meant to cover:
+moving one box by hand to arrange a map. That would change the map and
+would have to be a step, so it is left for Phil to ask for.
+
 ---
 
 ## 1. The experience in one paragraph

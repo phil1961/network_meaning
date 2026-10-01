@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.9.1
+  File Version: 0.10.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, and
   the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
@@ -20,7 +20,7 @@
 /* ==== begin style.css ==== */
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.9.0
+   File Version: 0.10.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -423,6 +423,15 @@ form.inline .input{width:100%}
 .docklines li.missed{color:var(--warn)}
 .who .linkbtn{font-size:12px}
 
+/* ---------- The view of the diagram: size, move, center ---------- */
+.mapctl{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-left:auto}
+.mapctl .sb-label{margin-left:6px}
+.mapctl .sb-label:first-child{margin-left:0}
+.mapctl .btn.mini{min-width:28px;min-height:24px;line-height:1.2}
+#mapsize{min-width:52px;font-family:var(--font-data)}
+#map{cursor:grab;-webkit-user-select:none;user-select:none}
+#map.panning{cursor:grabbing}
+
 /* ==== end style.css ==== */
 </style>
 </head>
@@ -478,6 +487,18 @@ form.inline .input{width:100%}
           </div>
           <div class="canvasbar sub">
             <div class="focuslabel" id="focuslabel"></div>
+            <div class="mapctl" id="mapctl" role="group" aria-label="Size and position of the diagram">
+              <span class="sb-label">Size</span>
+              <button class="btn mini" type="button" id="mapsmaller" title="Make the diagram smaller" aria-label="Make the diagram smaller">−</button>
+              <button class="btn mini" type="button" id="mapsize" title="Back to full size" aria-label="The size of the diagram. Press to go back to full size.">100%</button>
+              <button class="btn mini" type="button" id="maplarger" title="Make the diagram larger" aria-label="Make the diagram larger">+</button>
+              <span class="sb-label">Move</span>
+              <button class="btn mini" type="button" data-move="left" title="Move the diagram left" aria-label="Move the diagram left">◀</button>
+              <button class="btn mini" type="button" data-move="up" title="Move the diagram up" aria-label="Move the diagram up">▲</button>
+              <button class="btn mini" type="button" data-move="down" title="Move the diagram down" aria-label="Move the diagram down">▼</button>
+              <button class="btn mini" type="button" data-move="right" title="Move the diagram right" aria-label="Move the diagram right">▶</button>
+              <button class="btn mini" type="button" id="mapcenter" title="Put the middle item back in the middle">Center</button>
+            </div>
           </div>
           <svg id="map" viewBox="0 0 960 600" role="img" aria-label="Map of connected ideas"></svg>
           <div class="maploose" id="maploose" hidden></div>
@@ -686,6 +707,9 @@ form.inline .input{width:100%}
 <p>How to read the diagram:</p>
 <ul><li>A <b>solid</b> box is given: something said, or confirmed.</li><li>A <b>dashed</b> box is supposed. It stays dashed until it is confirmed or ruled out. A ruled-out item is kept, struck through.</li><li>A dashed box labelled <b>my reading</b> is the AI's interpretation. You can keep it or discard it.</li><li>A small <b>hollow dot</b> under a box is an open question about it.</li><li>The <b>coloured bar</b> on a box says which map it belongs to. A box from another map appears where the item in the middle links to it.</li><li><b>+n</b> beside a box means it has more links than this view shows.</li></ul>
 <p>Select any box to put it in the middle. The panel on the right shows its exact words, its open questions and what it connects to. Following a link into another map changes the map in view.</p>
+<p>Just above the diagram, on the right, are the controls for looking at it:</p>
+<ul><li><b>Size:</b> <b>−</b> makes the diagram smaller and <b>+</b> makes it larger. The percentage between them puts it back to full size.</li><li><b>Move:</b> the four arrows move the diagram left, up, down and right.</li><li><b>Center</b> puts the middle item back in the middle.</li></ul>
+<p>With a mouse you can also drag the diagram, and hold Ctrl while turning the wheel to change its size. With the keyboard in the diagram, the arrow keys move it, <b>+</b> and <b>−</b> change its size, and <b>0</b> puts everything back. None of this changes the map itself: it makes no step. The size you choose is remembered; a move is forgotten when another item becomes the middle.</p>
 <p>To improve a map, select an item and use the panel: <b>Confirm it</b>, <b>Rule it out</b>, or <b>Add</b> a new item joined to the one in the middle.</p>
 <h3>State: where things stand</h3>
 <ul><li><b>Now</b> holds what is true at this step. A fact can stop being true; it moves to <b>Past</b> and keeps both dates.</li><li><b>Goals</b> are put forth by you, or read in your text by the AI and offered for you to confirm. Each <b>move</b> toward a goal says whether it brought the goal closer, changed nothing, or set it back. A move the AI read in your text says none of those: it is shown as read in your text, and nothing is assumed about it.</li><li>When a goal is <b>reached</b>, a new fact lands in Now. A goal can also be marked <b>ground is stuck</b>, or dropped.</li><li><b>Help analysis</b> reads where things stand and makes a few suggestions. Each one points at what it rests on, and nothing changes until you act. Under each suggestion you can give your word on it: <b>New to me</b>, <b>Already knew</b>, or <b>Wrong</b>. That is how the app learns whether its suggestions are worth having. The sample <i>Darlene and the appointment</i> ends with a made-up analysis you can try this on.</li></ul>
@@ -1984,13 +2008,15 @@ function spanLabel(sp) {
 /* ==== module client/00-build.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.9.1
+   File Version: 0.10.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.9.1",
+  version: "0.10.0",
   corrections: [
+    ["The diagram was one fixed size and could not be moved",
+     "Size, move and center controls above the diagram: make it smaller or larger, move it left, right, up or down, and put the middle item back in the middle. You can also drag the diagram with the mouse, hold Ctrl and turn the wheel, or use the arrow keys, + and − once the keyboard is in the diagram. The size you choose is remembered."],
     ["The Talk tab replayed the owner's own words to every visitor, and the app was grey",
      "The Talk demo is now a made-up session, Darlene talking about Thursday. The app has colour: a warm matte background, a deep header band with the chosen tab in gold, and a colour along the top of each State card."],
     ["Nothing counted what became of the AI's claims",
@@ -2539,7 +2565,7 @@ $("#branch").addEventListener("click", branchHere);
 /* ==== module client/60-map.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/60-map.js
-   File Version: 0.3.1
+   File Version: 0.4.0
    ─────────────────────────────────────────────
    The map: a neighborhood around one idea, the side panel (your words,
    history, open questions, connections, traceback), search, and Draft.
@@ -2547,8 +2573,46 @@ $("#branch").addEventListener("click", branchHere);
    of the environment, the mental state, and the assumptions. The selector
    above the diagram picks which. "What was said" shows one step out from
    the focus, as before. A world map shows two steps out within that map,
-   plus the focus's own links into the other maps. */
+   plus the focus's own links into the other maps.
+
+   The view of the diagram (Phil, 2026-10-01: "we need some size, move and
+   centering controls"): it can be made larger or smaller, moved, and put
+   back with the middle item in the middle. The buttons above the diagram
+   do all three; so do dragging with the mouse, Ctrl and the wheel, and the
+   keyboard. The view is how the diagram is looked at, not part of the
+   stream: it makes no step. The size is remembered in this browser; a
+   move is forgotten as soon as another item becomes the middle. */
 const svg = $("#map");
+const MAP_SIZE = { min: 0.5, max: 3, step: 1.25 };
+let mapBase = { W: 960, H: 600 };   /* the frame the layout was drawn in */
+let mapView = { k: Math.min(MAP_SIZE.max, Math.max(MAP_SIZE.min, parseFloat(lsGet("nm.mapsize")) || 1)), x: 0, y: 0 };   /* k: size, 1 = the whole frame; x, y: how far the view has moved from the middle, in the layout's units */
+let mapViewOf = "";                 /* which map and middle item the move belongs to */
+let mapDragged = false;             /* true just after a drag, so the click that ends it selects nothing */
+
+/* Set the part of the drawing that is shown, from mapView, and say so on the controls. */
+function applyMapView() {
+  const v = mapView, B = mapBase, r = n => Math.round(n * 100) / 100;
+  v.k = Math.min(MAP_SIZE.max, Math.max(MAP_SIZE.min, v.k));
+  /* the middle of the view never leaves the drawing, so the diagram cannot be lost */
+  v.x = Math.min(B.W / 2, Math.max(-B.W / 2, v.x)); v.y = Math.min(B.H / 2, Math.max(-B.H / 2, v.y));
+  const w = B.W / v.k, h = B.H / v.k;
+  svg.setAttribute("viewBox", `${r(B.W / 2 + v.x - w / 2)} ${r(B.H / 2 + v.y - h / 2)} ${r(w)} ${r(h)}`);
+  $("#mapsize").textContent = Math.round(v.k * 100) + "%";
+  $("#mapsmaller").disabled = v.k <= MAP_SIZE.min + 0.001;
+  $("#maplarger").disabled = v.k >= MAP_SIZE.max - 0.001;
+  $("#mapcenter").disabled = !v.x && !v.y;
+}
+/* Larger or smaller. With a point given (in the layout's units), that point stays where it is on screen. */
+function sizeMap(k, at) {
+  const v = mapView, B = mapBase, was = v.k;
+  v.k = Math.min(MAP_SIZE.max, Math.max(MAP_SIZE.min, Math.abs(k - 1) < 0.04 ? 1 : k));
+  if (at) { const cx = B.W / 2 + v.x, cy = B.H / 2 + v.y; v.x = at.x + (cx - at.x) * was / v.k - B.W / 2; v.y = at.y + (cy - at.y) * was / v.k - B.H / 2; }
+  lsSet("nm.mapsize", String(v.k));
+  applyMapView();
+}
+/* Move the diagram by a part of what is in view: dx, dy of 1 is a whole view to the right or down. */
+function moveMap(dx, dy) { mapView.x -= dx * mapBase.W / mapView.k; mapView.y -= dy * mapBase.H / mapView.k; applyMapView(); }
+function centerMap() { mapView.x = 0; mapView.y = 0; applyMapView(); }
 const mapWord = { said: "what was said", env: "the environment", mind: "the mental state", moral: "the assumptions" };
 const mapColor = { env: "var(--m-env)", mind: "var(--m-mind)", moral: "var(--m-moral)" };
 /* A new item is joined to the one in focus with a word from WORLD_LINKS
@@ -2656,8 +2720,11 @@ function renderMap() {
   const world = mapSel !== "said";
   const f = focus && S.nodes[focus] && mapOf(S.nodes[focus]) === mapSel ? focus : null;
   $("#maploose").hidden = true;
+  /* a move belongs to one middle item on one map: when either changes, the new middle is drawn in the middle */
+  const viewOf = mapSel + "|" + (f || "");
+  if (viewOf !== mapViewOf) { mapViewOf = viewOf; mapView.x = 0; mapView.y = 0; }
   if (!f) {
-    svg.setAttribute("viewBox", "0 0 960 600");
+    mapBase = { W: 960, H: 600 }; applyMapView();
     if (world) {
       $("#focuslabel").innerHTML = `Nothing on the map of <b>${esc(mapWord[mapSel])}</b> yet`;
       svg.innerHTML = `<text x="480" y="280" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="18" fill="var(--muted)">Nothing on this map yet.</text><text x="480" y="310" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" fill="var(--muted)">Add the first item in the panel, or run a script.</text>`;
@@ -2671,7 +2738,7 @@ function renderMap() {
     return;
   }
   const lay = world ? worldLayout(f, mapSel) : nearLayout(f);
-  svg.setAttribute("viewBox", `0 0 ${lay.W} ${lay.H}`);
+  mapBase = { W: lay.W, H: lay.H }; applyMapView();
   $("#focuslabel").innerHTML = world ? `The map of <b>${esc(mapWord[mapSel])}</b>, around <b>${esc(S.nodes[f].t)}</b>` : `Showing the neighborhood of <b>${esc(S.nodes[f].t)}</b>`;
   const fb = boxFor(f, true);
   const at = { [f]: { x: lay.cx, y: lay.cy, b: fb } };
@@ -2705,8 +2772,60 @@ function renderMap() {
   }
   renderPanel();
 }
-svg.addEventListener("click", e => { const g = e.target.closest("[data-id]"); if (g && g.dataset.id !== focus) setFocus(g.dataset.id); });
-svg.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { const g = e.target.closest("[data-id]"); if (g) { e.preventDefault(); setFocus(g.dataset.id); } } });
+svg.addEventListener("click", e => { if (mapDragged) { mapDragged = false; return; } const g = e.target.closest("[data-id]"); if (g && g.dataset.id !== focus) setFocus(g.dataset.id); });
+svg.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { const g = e.target.closest("[data-id]"); if (g) { e.preventDefault(); setFocus(g.dataset.id); } return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  /* with the keyboard in the diagram: arrows move it, + and - size it, 0 puts it back */
+  const move = { ArrowLeft: [-0.15, 0], ArrowRight: [0.15, 0], ArrowUp: [0, -0.15], ArrowDown: [0, 0.15] }[e.key];
+  if (move) { e.preventDefault(); moveMap(move[0], move[1]); }
+  else if (e.key === "+" || e.key === "=") { e.preventDefault(); sizeMap(mapView.k * MAP_SIZE.step); }
+  else if (e.key === "-" || e.key === "_") { e.preventDefault(); sizeMap(mapView.k / MAP_SIZE.step); }
+  else if (e.key === "0") { e.preventDefault(); mapView.x = 0; mapView.y = 0; sizeMap(1); }
+});
+
+/* the controls above the diagram */
+$("#mapctl").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "mapsmaller") sizeMap(mapView.k / MAP_SIZE.step);
+  else if (b.id === "maplarger") sizeMap(mapView.k * MAP_SIZE.step);
+  else if (b.id === "mapsize") sizeMap(1);
+  else if (b.id === "mapcenter") centerMap();
+  else if (b.dataset.move) { const d = { left: [-0.15, 0], right: [0.15, 0], up: [0, -0.15], down: [0, 0.15] }[b.dataset.move]; if (d) moveMap(d[0], d[1]); }
+});
+/* where a point on the screen is in the layout's units */
+function mapPoint(e) {
+  const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+  return { x: vb.x + (e.clientX - r.left) / (r.width || 1) * vb.width, y: vb.y + (e.clientY - r.top) / (r.height || 1) * vb.height };
+}
+/* Ctrl and the wheel: larger or smaller, about the pointer. The wheel alone still scrolls the page. */
+svg.addEventListener("wheel", e => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  e.preventDefault();
+  sizeMap(mapView.k * (e.deltaY < 0 ? 1.1 : 1 / 1.1), mapPoint(e));
+}, { passive: false });
+/* Drag with the mouse or a pen to move the diagram. A finger still scrolls the page; the arrow buttons move the diagram on a phone. */
+let mapDrag = null;
+svg.addEventListener("pointerdown", e => {
+  if (e.pointerType === "touch" || e.button !== 0) return;
+  mapDrag = { id: e.pointerId, cx: e.clientX, cy: e.clientY, x: mapView.x, y: mapView.y, moved: false };
+});
+svg.addEventListener("pointermove", e => {
+  const d = mapDrag; if (!d || e.pointerId !== d.id) return;
+  const dx = e.clientX - d.cx, dy = e.clientY - d.cy;
+  if (!d.moved) { if (Math.hypot(dx, dy) < 5) return; d.moved = true; svg.classList.add("panning"); try { svg.setPointerCapture(d.id); } catch (err) { /* the pointer is gone */ } }
+  const r = svg.getBoundingClientRect();
+  mapView.x = d.x - dx / (r.width || 1) * mapBase.W / mapView.k;
+  mapView.y = d.y - dy / (r.height || 1) * mapBase.H / mapView.k;
+  applyMapView();
+});
+const endMapDrag = e => {
+  const d = mapDrag; if (!d || e.pointerId !== d.id) return;
+  mapDrag = null; svg.classList.remove("panning");
+  if (d.moved) { mapDragged = true; setTimeout(() => { mapDragged = false; }, 0); }
+};
+svg.addEventListener("pointerup", endMapDrag);
+svg.addEventListener("pointercancel", endMapDrag);
 function setFocus(id) { if (!S.nodes[id]) return; focus = id; mapSel = mapOf(S.nodes[id]); renderMap(); const g = svg.querySelector(`[data-id="${CSS.escape(id)}"]`); if (g) g.focus({ preventScroll: true }); }
 function setMap(m) { if (!WORLD_MAPS[m]) return; mapSel = m; if (!(focus && S.nodes[focus] && mapOf(S.nodes[focus]) === m)) focus = mapMiddle(S, m) || focus; renderMap(); }
 $("#mapsel").addEventListener("click", e => { const b = e.target.closest("[data-map]"); if (b) setMap(b.dataset.map); });

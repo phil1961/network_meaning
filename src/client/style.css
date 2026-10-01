@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.9.0
+   File Version: 0.10.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -402,3 +402,12 @@ form.inline .input{width:100%}
 .docklines li.missed .mk{color:var(--warn)}
 .docklines li.missed{color:var(--warn)}
 .who .linkbtn{font-size:12px}
+
+/* ---------- The view of the diagram: size, move, center ---------- */
+.mapctl{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-left:auto}
+.mapctl .sb-label{margin-left:6px}
+.mapctl .sb-label:first-child{margin-left:0}
+.mapctl .btn.mini{min-width:28px;min-height:24px;line-height:1.2}
+#mapsize{min-width:52px;font-family:var(--font-data)}
+#map{cursor:grab;-webkit-user-select:none;user-select:none}
+#map.panning{cursor:grabbing}

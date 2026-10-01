@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.9.1
+   File Version: 0.10.0
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -184,6 +184,37 @@ try {
   await click("#mapsel [data-map='env']");
   ok(await js("document.querySelector('#panel h2')?.textContent") === "Bobby sets out from home.", "Environment opens around its middle item");
   ok(await js("document.querySelectorAll('#map .node').length") === 7, "the whole environment map is drawn, two links out");
+
+  /* size, move and center: how the diagram is looked at. None of it makes a step. */
+  const vb = () => js("document.getElementById('map').getAttribute('viewBox')");
+  ok((await vb()) === "0 0 1160 720" && await js("document.getElementById('mapsize').textContent === '100%' && document.getElementById('mapcenter').disabled === true"), "the diagram opens at full size with the middle item in the middle");
+  await click("#maplarger");
+  ok((await vb()) === "116 72 928 576" && (await js("document.getElementById('mapsize').textContent")) === "125%", "+ makes the diagram larger, about its middle");
+  await click("#mapctl [data-move='left']");
+  ok((await vb()) === "255.2 72 928 576" && await js("document.getElementById('mapcenter').disabled === false"), "the left arrow moves the diagram left");
+  await click("#mapctl [data-move='down']");
+  ok((await vb()) === "255.2 -14.4 928 576", "the down arrow moves it down");
+  await click("#mapcenter");
+  ok((await vb()) === "116 72 928 576" && await js("document.getElementById('mapcenter').disabled === true"), "Center puts the middle item back in the middle and keeps the size");
+  const mapBox = await js("(() => { const m = document.getElementById('map'); m.scrollIntoView({ block: 'center' }); const r = m.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width }; })()");
+  await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: mapBox.x + 30, y: mapBox.y + 30 }, S);
+  await send("Input.dispatchMouseEvent", { type: "mousePressed", x: mapBox.x + 30, y: mapBox.y + 30, button: "left", clickCount: 1 }, S);
+  for (const dx of [20, 60, 100]) await send("Input.dispatchMouseEvent", { type: "mouseMoved", x: mapBox.x + 30 + dx, y: mapBox.y + 30, button: "left", buttons: 1 }, S);
+  await send("Input.dispatchMouseEvent", { type: "mouseReleased", x: mapBox.x + 130, y: mapBox.y + 30, button: "left", clickCount: 1 }, S);
+  await pause(120);
+  const dragged = (await vb()).split(" ").map(Number);
+  ok(Math.abs(dragged[0] - (116 - 100 / mapBox.w * 928)) < 0.5 && dragged[1] === 72 && (await js("document.querySelector('#panel h2')?.textContent")) === "Bobby sets out from home.", "dragging with the mouse moves the diagram with the pointer and selects nothing", dragged.join(" "));
+  await js("document.getElementById('map').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }))");
+  ok(Math.abs((await vb()).split(" ").map(Number)[1] - 158.4) < 0.01, "an arrow key moves it too, once the keyboard is in the diagram");
+  await js("document.querySelector('#map .node[data-id=\"w6\"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
+  ok((await vb()) === "116 72 928 576" && (await js("document.querySelector('#panel h2')?.textContent")) === "A store that sells milk is within reach.", "when another item becomes the middle, the move is forgotten and the size is kept");
+  ok(await js("localStorage.getItem('nm.mapsize')") === "1.25", "the size chosen is remembered in this browser");
+  await click("#mapsmaller");
+  await click("#mapsmaller");
+  ok((await vb()) === "-145 -90 1450 900" && (await js("document.getElementById('mapsize').textContent")) === "80%", "− makes the diagram smaller than the frame");
+  await js("document.getElementById('map').dispatchEvent(new KeyboardEvent('keydown', { key: '0', bubbles: true }))");
+  ok((await vb()) === "0 0 1160 720" && await js("document.getElementById('mapsize').textContent === '100%' && document.getElementById('scrubout').textContent.startsWith('63 of 63')"), "0 puts everything back, and none of it made a step");
+  await js("document.querySelector('#map .node[data-id=\"w3\"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))");
   ok(await js("document.querySelector('#panel .chip.supposed')?.textContent === 'supposed' && !!document.querySelector('#panel [data-confirm]') && !!document.querySelector('#panel [data-ruleout]')"), "a supposed item says so and can be confirmed or ruled out");
   ok(await js("document.getElementById('itemtext').placeholder.startsWith('e.g. ') && !!document.getElementById('itemdir') && [...document.getElementById('itemlabel').options].some(o => o.textContent === 'rests on')"), "the panel offers to add to the map, joined to the item in focus");
   await js("document.querySelector('#map .node[data-id=\"w6\"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
