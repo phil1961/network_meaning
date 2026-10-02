@@ -706,6 +706,63 @@ sync with google drive"
   sprung back with an error, because the server had not yet been restarted
   with the new code.
 
+**2026-10-02, three new docs, and the relationship labels.** [Phil] "their
+are three new docs in google drive. Find them and read"
+
+- Three Google Docs made that morning in a browser session, in the Drive
+  folder `network_meaning-docs`, not in the repo: a briefing on
+  relationship labels for the terminal session; *Sunlight, Movement, and
+  the Meaning Problem*; and *From Energy to Decisions — Grounding the
+  Meaning App*. The prose is the browser session's, not Phil's dictation.
+- Their line of thought: energy is abundant, the scarce thing is "the
+  wanting", and the app is for choosing where a life's energy goes. "Energy
+  is becoming free; meaning is not."
+- Then: [Phil] "find the relationship labels in the code and document them"
+- Done as `RELATIONSHIP-LABELS.md`. 39 labels in two lists, free words from
+  scripts beyond them, and nothing that reasons reads a label back. No code
+  was changed.
+
+**2026-10-02, the relationship doc as the core of the engine.** [Phil] "I
+believe this relationship doc will be the core of the magic of the yet to
+be built engine. So lets keep our mind wide open on its uses and
+capabilites."
+
+- Taken as how to write it: describe what is there, lay the uses out, choose
+  none. That is §10 of the document, and E20 in `VISION.md` §9 (Claude's,
+  proposed, not built).
+- [lost] Not yet said: what "the engine" is.
+
+**2026-10-02, trauma and long recorded patterns.** [Phil] "A person's
+mental map has components of trauma, and long recorded behavior patterns,
+that are triggered by discovered patterns he encounters."
+
+- Recorded, not built on. Said with nothing asked, a few minutes after the
+  statement above.
+- Claude's reading, not Phil's words: the maps have no place yet for a
+  mental item that is old and laid down by a wound or by repetition, for a
+  pattern met in the world as against one fact, or for "triggered by". None
+  of the 39 labels says it.
+- [lost] Not yet said: whether "discovered patterns" are discovered by the
+  person or by the app.
+
+**2026-10-02, the ultimate purpose.** [Phil] "Give me some options abuot
+what you think the ultimate purpose of this app will be?"
+
+- Claude gave six, none of them Phil's: deciding where a life's energy
+  goes; seeing why one does what one does; understanding another person's
+  world; working out and writing a body of thought; a shared library of
+  what is worth doing; a test bench for a theory of meaning. The full
+  wording is in `VISION.md` under the same date.
+- [lost] Not yet said: which, if any, Phil holds.
+
+**2026-10-02, "I agree".** [Phil] "commit, push and sync with google drive,
+and I agree."
+
+- Said in reply to the six options and Claude's lean: the purposes nest,
+  and the one the others serve is seeing a world truly, one's own and then
+  another's. The wording of the lean is Claude's; the agreement is Phil's.
+- [lost] Not yet said: whether he agrees with all of it or a part.
+
 ### What the corpus already says about the app
 
 **Input**

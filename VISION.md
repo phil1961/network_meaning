@@ -529,6 +529,84 @@ before, the same drag had sprung back with an error, because the server
 had not yet been restarted with the new code; that is recorded in
 `HANDOFF.md` §19.
 
+**2026-10-02, three new docs, and the relationship labels.** "their are
+three new docs in google drive. Find them and read"
+
+("their" is as typed.)
+
+The three are Google Docs made that morning in a browser session, in the
+Drive folder `network_meaning-docs`. They are not in this repo. *Meaning
+Map — Relationship Models: Framework & Review Brief* is a briefing for the
+terminal session: the meaning of a map is largely in its labelled links,
+with six families of relationship, seven questions to ask of each label,
+and five checks on the set. *Sunlight, Movement, and the Meaning Problem*
+is a chain of thought from a solar panel to its closing claim that
+saturation "is a meaning problem": energy is abundant, the scarce thing is
+"the wanting", and how an act feels governs whether it is wanted again.
+*From Energy to Decisions — Grounding the Meaning App* joins the two: "Energy
+is becoming free; meaning is not." The prose of all three is the browser
+session's, not Phil's dictation, so they are quoted here as documents and
+not as his words.
+
+Then: "find the relationship labels in the code and document them"
+
+Done the same day as `RELATIONSHIP-LABELS.md`: 39 labels in two lists
+(`LINK_LABELS` and `WORLD_LINKS` in `src/shared/replay.js`), and free words
+from scripts beyond them. No code was changed.
+
+**2026-10-02, the relationship doc as the core of the engine.** "I believe
+this relationship doc will be the core of the magic of the yet to be built
+engine. So lets keep our mind wide open on its uses and capabilites."
+
+("lets" and "capabilites" are as typed.)
+
+Said while the document was being written. Taken as an instruction on how
+to write it: say what the code has, and lay the uses out without choosing
+among them. Section 10 of `RELATIONSHIP-LABELS.md` does that, and E20 in §9
+records it as Claude's, proposed and not built. "The yet to be built
+engine" is Phil's phrase; what the engine is has not been said.
+
+**2026-10-02, trauma and long recorded patterns.** "A person's mental map
+has components of trauma, and long recorded behavior patterns, that are
+triggered by discovered patterns he encounters."
+
+Said a few minutes later, with nothing asked. Recorded and not built on.
+Claude's reading, for Phil to correct: three things here have no place on
+a map today. A mental-state item that is old, laid down by a wound or by
+long repetition. A *pattern* met in the world, as against a single fact.
+And the relationship between them, "triggered by", which none of the 39
+labels says; the nearest, "gives rise to", does not tell a fresh response
+from an old one firing again. Noted in `RELATIONSHIP-LABELS.md` §10, M.
+
+**2026-10-02, the ultimate purpose.** "Give me some options abuot what you
+think the ultimate purpose of this app will be?"
+
+("abuot" is as typed.)
+
+Asked of Claude, so the answers are Claude's and none is Phil's. Six were
+given: (1) an instrument for deciding where one life's energy goes; (2) a
+mirror in which a person sees why they do what they do, old patterns
+included; (3) a way to understand another person's world, and for people to
+find where their worlds differ; (4) a companion for working out and writing
+a body of thought traced back to its anchors, which is where the project
+began; (5) a shared library of what people have found worth doing; (6) a
+test bench for a theory of meaning. Claude's lean, said as a lean: they
+nest, and the one the others serve is (3) by way of (2): seeing a world
+truly, one's own and then a neighbour's. Phil has not answered.
+
+**2026-10-02, "I agree".** "commit, push and sync with google drive, and I
+agree."
+
+Said in reply to the six options and the lean above, with nothing else
+between. Claude takes "I agree" to be about the lean as it was put to him
+in the session: "these nest rather than compete. You cannot aim your energy
+well (1) while an old pattern is aiming it for you (2), and understanding a
+neighbour (3) is the same act turned outward. So I would put it as seeing a
+world truly, your own and then another's." Those words are Claude's; the
+agreement is Phil's, and it is two words. Whether he agrees with the whole
+of it or with a part has not been said, and it should not be built on as if
+he had written it.
+
 ---
 
 ## 1. The experience in one paragraph
@@ -975,7 +1053,8 @@ button he asked for, E13 the scripting language and stepper, E14 the
 maps of one world with Bobby's world made up, E15 accounts and the three
 levels, and E16 the check before every call to the AI. E17 (evidence) and
 E18 (spendable resources) come from a parallel session the same night, and
-E19 is what was done about the two reviews. Earlier experiments
+E19 is what was done about the two reviews. E20 (2026-10-02) is what the
+relationship labels could carry for the engine. Earlier experiments
 are revised by a note that refers
 to them, never rewritten in place.
 
@@ -1831,6 +1910,32 @@ one world on real material first.
 *For:* the fixes hold up when Phil and one more person use the public site.
 *Against:* a fix has made honest use harder, most likely the save queue
 refusing new changes on a bad connection.
+
+**E20. The relationship labels as something the engine reads.**
+*Status: proposed, not built, 2026-10-02. Prompted by Phil: "I believe this
+relationship doc will be the core of the magic of the yet to be built
+engine. So lets keep our mind wide open on its uses and capabilites." The
+review of what exists is `RELATIONSHIP-LABELS.md`; the uses are its §10.
+All of it is Claude's.*
+What the review found: a link is `{a, b, f, read}`, there are 39 labels in
+two lists, and nothing that reasons ever reads a label back. Neither AI
+call is shown a link. Only the traceback to an anchor looks at what a
+label says.
+What is proposed, kept wide on purpose: thirteen uses, A to M in that
+section, none chosen. Among them: a record for each label that the engine
+reads; walking the same map by different labels for different questions
+(what this sets in motion, what has to hold, why it matters, what stands
+against it); a question raised by every link; a link that can itself be
+supposed, confirmed or ruled out; and a relationship for what sets off an
+old pattern, from Phil's statement of the same day on trauma.
+Three things nearly all of them need first: a link that can be pointed
+at, a way to change or withdraw a link as a step, and the labels'
+meanings kept in one place.
+*For:* one of the uses, tried by hand on Bobby's or Darlene's world,
+tells Phil something about the world that the diagram alone did not.
+*Against:* the walks give nothing a person would not see at a glance on a
+map this size, or the labels have to be made so strict that they stop
+being words the person would say.
 
 **Open, and it changes E1 and E2:** whether the nesting is exactly three
 levels (idea, containing concept, perspective) or a concept can sit within

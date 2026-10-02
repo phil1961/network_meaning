@@ -955,3 +955,52 @@ and last login DTGs."
 - **Not done.** Moving a box from the keyboard or by touch. Per-box moves
   in a script (no script word for `place`). A layout that reshapes itself
   for a short, wide frame instead of running out of it.
+
+## 20. The relationship labels, documented (2026-10-02, app 0.11.0, no code changed)
+
+Phil pointed the session at three new Google Docs in the Drive folder
+(a briefing on relationship labels, and two on energy, movement and
+meaning), then asked: "find the relationship labels in the code and
+document them." His statements of the day are in `VISION.md` under "The
+goal"; what follows is where things stand.
+
+- **New file: `RELATIONSHIP-LABELS.md`.** What the code has, read from the
+  code and checked by running the reducer and the normalizer on small
+  cases. A link is `{a, b, f, read}`. There are 39 labels in two lists in
+  `src/shared/replay.js`: `LINK_LABELS` (15, for ideas the AI reads from
+  text) and `WORLD_LINKS` (16 within a map, 10 across). A script may write
+  any words. The document gives each label's meaning (written down for the
+  world labels, Claude's reading for the idea labels, which have none), its
+  family, how it gets onto a map, and what the code does with it.
+- **The finding that matters most for what comes next.** Nothing that
+  reasons reads a label. Ideaify and Help analysis are not shown links.
+  Only the traceback looks at what a label says.
+- **Things found on the way, none fixed.** Listed in the document's §8;
+  these are the ones a later session could trip on:
+  - The traceback walks only the 13 labels on `DERIVATION_LABELS`, so world
+    labels, a script's free words, and five words in the owner's sample
+    ("tests", "grounds", "reframes", "raised with", "same session") are not
+    walked. Six ideas in the owner's sample show no path to an anchor for
+    that reason alone.
+  - `LINK_CHOICES` in `src/server/ideaify.js` repeats thirteen of
+    `LINK_LABELS` by hand. No test ties them.
+  - The AI can choose "replaces" as an ordinary link label, which marks
+    nothing as replaced; the normalizer's own "replaces" link does.
+  - A script's label keeps its capitals; the AI's is lowered.
+  - By hand, a pair of items holds one link. From the AI across two
+    readings, it can hold one each way.
+  - A link has no id and cannot be changed or removed.
+- **Kept open on purpose.** Phil: "I believe this relationship doc will be
+  the core of the magic of the yet to be built engine. So lets keep our
+  mind wide open on its uses and capabilites." The document's §10 lists
+  thirteen possible uses and chooses none; `VISION.md` §9 has it as E20,
+  proposed. Do not build from §10 without Phil saying which.
+- **Not done.** The three Drive docs were read and not copied into the
+  repo. The database was not read, so which labels the AI uses on real
+  streams is unknown. The tests were not run, because no code changed;
+  `tests/script.test.js` reads `METHOD-Deriving-the-Maps.md`, which was
+  not touched.
+- **The purpose, asked and answered in two words.** Phil asked for options
+  on the app's ultimate purpose. Claude gave six and a lean (they nest;
+  seeing a world truly, one's own and then another's). Phil: "I agree."
+  Both are in `VISION.md` under "The goal", 2026-10-02.
