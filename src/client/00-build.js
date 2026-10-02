@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.11.0
+   File Version: 0.12.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.11.0",
+  version: "0.12.0",
   corrections: [
+    ["The help said nothing about the words on the links, or about what the app is reaching for",
+     "Two new sections in Help. The links lists every word a link can carry, 39 of them, with what each one says and what kind of relationship it is. The aspiration says what the app is for: seeing a world truly, your own and then someone else's. It says plainly that this part is not built yet."],
     ["The Map view was taller than the window, and its lower edge was out of sight",
      "The diagram's frame now takes the room that is left in the window, so the whole Map view is in sight without scrolling, and the panel beside it scrolls inside itself. The drawing is fitted to the frame but never made too small to read: where part of it is outside the frame, the edge says so, and Move or a drag brings it in. The key to the diagram folds away to leave more room."],
     ["A box on the diagram could not be moved",

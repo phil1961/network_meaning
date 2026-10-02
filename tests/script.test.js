@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: tests/script.test.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The scripting language: reading a script, pointing at things, and what
    each line asks the app to do. The built-in scripts are run here against
@@ -9,7 +9,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { parseScript, planStep, findRef, scriptToSteps, checkExpect, SCRIPT_VERBS, SCRIPT_HELP, SCRIPT_EXAMPLES, EXPECT_KINDS } from "../src/shared/script.js";
 import fs from "node:fs";
-import { replay, currentState, pastState, mapOf, pickFocusIn, WORLD_MAPS, WORLD_LINKS } from "../src/shared/replay.js";
+import { replay, currentState, pastState, mapOf, pickFocusIn, WORLD_MAPS, WORLD_LINKS, LINK_LABELS } from "../src/shared/replay.js";
 
 /* Run a script the way the stepper does, minus the server: every action
    plan becomes a step, and the next line sees the replayed state. */
@@ -155,6 +155,23 @@ test("the built-in world script assembles four maps of one world, with what is g
   assert.deepEqual(S.links.map(l => l.f).filter(f => !words.includes(f)), [], "every link in Bobby's world uses a word from WORLD_LINKS");
   const method = fs.readFileSync(new URL("../METHOD-Deriving-the-Maps.md", import.meta.url), "utf8");
   assert.deepEqual(words.filter(w => !method.includes(w)), [], "METHOD-Deriving-the-Maps.md names every word in WORLD_LINKS");
+});
+
+test("the help lists every link word: the same words as the code, in the same order, and its counts add up", () => {
+  const help = fs.readFileSync(new URL("../HELP.md", import.meta.url), "utf8").replace(/\r\n?/g, "\n");
+  /* the first cell of each row of the table under a ### heading, the header and the |---| row left out */
+  const firstCells = heading => {
+    const at = help.indexOf("### " + heading); assert.ok(at >= 0, `HELP.md has the section “${heading}”`);
+    const rows = []; let seen = false;
+    for (const l of help.slice(at).split("\n").slice(1)) { if (l.startsWith("|")) { seen = true; rows.push(l.split("|").map(c => c.trim())); } else if (seen || l.startsWith("#")) break; }
+    return rows.slice(2);
+  };
+  assert.deepEqual(firstCells("Between ideas read from text").map(r => r[1]), LINK_LABELS, "the words between ideas are LINK_LABELS");
+  assert.deepEqual(firstCells("Within one map").map(r => r[1]), WORLD_LINKS.within, "the words within one map are WORLD_LINKS.within");
+  assert.deepEqual(firstCells("From one map to another").map(r => r[1]), WORLD_LINKS.across, "the words from one map to another are WORLD_LINKS.across");
+  const different = new Set([...LINK_LABELS, ...WORLD_LINKS.within, ...WORLD_LINKS.across]).size;
+  assert.ok(help.includes(`There are ${different} different words in two lists`), "the help says how many different words there are");
+  assert.equal(firstCells("The words by kind").reduce((n, r) => n + Number(r[3]), 0), different, "the count by kind adds up to that number");
 });
 
 test("world-map lines: given or supposed, links across maps, questions, confirm and rule out", () => {

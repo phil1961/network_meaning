@@ -607,3 +607,4 @@ made a choice that looks like his to make.
 | Version | Date | What changed |
 |---|---|---|
 | 1 | 2026-10-02 | First written, from the code at app 0.11.0 (commit 823ee87). No code was changed. |
+| 1, note | 2026-10-02 | The same day, at app 0.12.0, the help gained a section listing all 39 words (`HELP.md`, "The links"). Two things in this document are changed by that. Section 3 says no idea label has a written meaning: the help now gives each one, in the wording of the "Reading" column here. The AI is still given only the bare words. And a test now holds the help's tables to `LINK_LABELS` and `WORLD_LINKS`. The help sorts the words into eleven kinds: the six families of section 7, in plainer words, and five more for the nine labels that fit none. |

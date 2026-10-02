@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: build.js
-   File Version: 0.2.0
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    Assembles public/index.html from src/client and src/shared. The same
    idea as the Markdown Editor's build: straight concatenation in filename
@@ -39,12 +39,14 @@ function modules() {
 }
 /* HELP.md to HTML for the Help tab, so the repo's help and the app's help
    are one file. A small subset on purpose: # headings, paragraphs, - and
-   1. lists (with wrapped lines), > quotes, ``` fences, **bold**, *italic*,
-   `code`. Anything else in HELP.md shows as plain text. */
+   1. lists (with wrapped lines), > quotes, ``` fences, | tables | with a
+   header row, **bold**, *italic*, `code`. Anything else in HELP.md shows
+   as plain text. */
 function mdToHtml(md) {
   const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const inline = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/\*([^*]+)\*/g, "<i>$1</i>");
   const lines = md.replace(/\r\n?/g, "\n").split("\n");
+  const isRow = l => /^\|.*\|\s*$/.test(l);
   const out = []; let para = [], list = null, quote = [], i = 0;
   const flush = () => {
     if (para.length) { out.push(`<p>${inline(para.join(" "))}</p>`); para = []; }
@@ -57,7 +59,17 @@ function mdToHtml(md) {
     const h = /^(#{1,3})\s+(.*)$/.exec(l);
     if (h) { flush(); out.push(`<h${h[1].length + 1}>${inline(h[2])}</h${h[1].length + 1}>`); continue; }
     if (!l.trim()) { flush(); continue; }
-    const item = /^(?:-|(\d+)\.)\s+(.*)$/.exec(l);
+    if (isRow(l)) {
+      /* a table: the first row is the header, the |---| row under it is dropped, a cell cannot hold a | */
+      flush();
+      const rows = []; for (; i < lines.length && isRow(lines[i]); i++) rows.push(lines[i].trim().slice(1, -1).split("|").map(c => c.trim()));
+      i--;
+      const [head, ...body] = rows.filter(r => !r.every(c => /^:?-+:?$/.test(c)));
+      const row = (cells, tag) => `<tr>${cells.map(c => `<${tag}>${inline(c)}</${tag}>`).join("")}</tr>`;
+      out.push(`<div class="tablewrap"><table><thead>${row(head, "th")}</thead><tbody>${body.map(r => row(r, "td")).join("")}</tbody></table></div>`);
+      continue;
+    }
+    const item =/^(?:-|(\d+)\.)\s+(.*)$/.exec(l);
     if (item) { if (para.length || quote.length) flush(); const tag = item[1] ? "ol" : "ul"; if (!list || list.tag !== tag) { flush(); list = { tag, items: [] }; } list.items.push(item[2]); continue; }
     if (l.startsWith(">")) { if (para.length || list) flush(); quote.push(l.replace(/^>\s?/, "")); continue; }
     if (list && /^\s+\S/.test(l)) { list.items[list.items.length - 1] += " " + l.trim(); continue; }

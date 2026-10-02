@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.11.0
+   File Version: 0.12.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -371,6 +371,13 @@ form.inline .input{width:100%}
 .helpdoc code{font-family:var(--font-data);font-size:12.5px;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:0 4px}
 .helpdoc pre{font-family:var(--font-data);font-size:12.5px;line-height:1.6;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow:auto;margin:0 0 12px}
 .helpdoc blockquote{margin:0 0 12px;font-family:var(--font-words);font-style:italic;font-size:17px;line-height:1.45;border-left:3px solid var(--ink);padding-left:12px}
+/* a table in the help: the first column is the word being explained; on a narrow screen the table scrolls sideways inside its own frame */
+.helpdoc .tablewrap{overflow-x:auto;margin:0 0 14px}
+.helpdoc table{border-collapse:collapse;width:100%;min-width:500px;font-size:14px;line-height:1.45}
+.helpdoc th,.helpdoc td{text-align:left;vertical-align:top;padding:5px 12px 5px 0;border-bottom:1px solid var(--line)}
+.helpdoc th{font-family:var(--font-data);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.helpdoc td:first-child{white-space:nowrap;font-weight:600}
+.helpdoc td:last-child,.helpdoc th:last-child{padding-right:0}
 
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}

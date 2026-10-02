@@ -763,6 +763,27 @@ and I agree."
   another's. The wording of the lean is Claude's; the agreement is Phil's.
 - [lost] Not yet said: whether he agrees with all of it or a part.
 
+**2026-10-02, "3".** [Phil] "3"
+
+- The whole message. Taken as a choice among the six options: (3),
+  understanding another person's world, and showing where two people's
+  maps of one situation differ.
+- Claude's reading of one character, not confirmed.
+
+**2026-10-02, an aspirational section, and the relationship model, in the
+help.** [Phil] "New task. I want an aspirational section available in our
+help, as well as data on the relationship model."
+
+- Built the same day (app 0.12.0): two new sections in `HELP.md` and so in
+  the Help tab. *The links* lists the 39 link words in tables, with what
+  each says and its kind. *The aspiration* says what the app is reaching
+  for and that it is not built.
+- Claude's, not Phil's words: the wording of the aspiration, the meanings
+  given to the fifteen idea words, and the eleven kinds.
+- [lost] Not yet said: whether the aspiration says what he means, and
+  whether his two statements of the day should be quoted in the public
+  help.
+
 ### What the corpus already says about the app
 
 **Input**

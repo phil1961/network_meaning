@@ -607,6 +607,58 @@ agreement is Phil's, and it is two words. Whether he agrees with the whole
 of it or with a part has not been said, and it should not be built on as if
 he had written it.
 
+**2026-10-02, "3".** "3"
+
+That is the whole message, sent after the commit and the sync were
+reported. Claude takes it as a choice among the six options above, the
+only numbered list that had been put to him: (3), a way to understand
+another person's world, and for people to find where their worlds differ.
+As it was worded to him in the session: "Understanding another person's
+world. This is Bobby and Darlene, and 'thy neighbour': two maps of one
+situation, and the engine shows where they differ." If that reading is
+right, it narrows the "I agree" above to its centre: of the purposes that
+nest, the one the others serve is understanding another person. It is one
+character, and the reading is Claude's until Phil confirms it.
+
+**2026-10-02, an aspirational section, and the relationship model, in the
+help.** "New task. I want an aspirational section available in our help, as
+well as data on the relationship model."
+
+Built the same day (app 0.12.0), as two new sections of `HELP.md`, which is
+also the Help tab.
+
+*The links: how one thing bears on another* sits after the Map section. It
+says how to read a link, how one gets onto a map, and what the app does
+with the words today, which is little. Then the 39 words in three tables
+(between ideas, within one map, from one map to another), each with what it
+says and what kind of relationship it is, and a count by kind. A test holds
+the tables to the lists in the code, word for word and in order.
+
+*The aspiration* sits just before "Where this is going". It says the scarce
+thing is knowing what is worth doing; that the aim is to see a world truly,
+one's own and then someone else's, in three steps; and that the links are
+where it will happen. It quotes two of Phil's statements of this day, on
+trauma and on the relationship doc. It says plainly that only the first
+step exists.
+
+What is Claude's in these, for Phil to correct:
+- The wording of the aspiration. It rests on "I agree" and "3" above, which
+  are three characters between them. If "3" meant something else, the
+  section's centre is wrong.
+- "Energy is becoming free; meaning is not" is taken from the Drive
+  document *From Energy to Decisions*, whose prose is the browser
+  session's.
+- What each of the fifteen idea words says. Nothing in the repo defined
+  them before; the help now does, in Claude's reading, and the AI still
+  chooses among them by the word alone. The world words keep the meanings
+  the method document already gave them.
+- The eleven kinds, and which word is which kind. Six are the families in
+  the relationship brief, in plainer words; five (reading, question,
+  belief, identity, place) are added for the words that fit none.
+- Putting two more of Phil's statements into a page every visitor can
+  read. The help already quoted four at his request ("the help doc should
+  contain something on the ultimate vision"); these two follow that.
+
 ---
 
 ## 1. The experience in one paragraph

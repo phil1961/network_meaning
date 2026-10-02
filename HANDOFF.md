@@ -1004,3 +1004,38 @@ goal"; what follows is where things stand.
   on the app's ultimate purpose. Claude gave six and a lean (they nest;
   seeing a world truly, one's own and then another's). Phil: "I agree."
   Both are in `VISION.md` under "The goal", 2026-10-02.
+
+## 21. The aspiration and the link words, in the help (2026-10-02, app 0.12.0)
+
+Phil: "I want an aspirational section available in our help, as well as
+data on the relationship model."
+
+- **`HELP.md` has two new sections**, and so does the Help tab. *The
+  links: how one thing bears on another* comes after the Map section: how
+  to read a link, how one gets onto a map, the 39 words in three tables
+  with what each says and its kind, and a count by kind. *The aspiration*
+  comes just before "Where this is going".
+- **`build.js` now turns a markdown table into an HTML table.** The first
+  row is the header, the `|---|` row is dropped, and a cell cannot hold a
+  `|`. `src/client/style.css` styles it under `.helpdoc`; on a narrow
+  screen a table scrolls sideways inside its own frame.
+- **The help cannot drift from the code.** A new test in
+  `tests/script.test.js` reads `HELP.md` and fails unless the three tables
+  hold exactly `LINK_LABELS`, `WORLD_LINKS.within` and
+  `WORLD_LINKS.across`, in order, and unless the stated number of words
+  and the count by kind both come to the same total. Adding a label to
+  `src/shared/replay.js` now means adding a row to `HELP.md`, and to
+  `METHOD-Deriving-the-Maps.md` for a world word.
+- **No server change.** Nothing in `src/server/` or `src/shared/` was
+  touched, so no restart was needed. The page was rebuilt, and because the
+  working copy is the live site, the new help was live as soon as it was.
+- **What is Claude's and unconfirmed.** The wording of the aspiration; the
+  meanings of the fifteen idea words (the AI is still given only the bare
+  words, so the help now says more than the prompt does); the eleven
+  kinds. Listed in `VISION.md` under the same date.
+- **Tests.** `npm run gate`: 87 tests, 70 pass, 17 skip without
+  `TEST_DATABASE_URL`. `npm run smoke`: 127 checks pass, two of them new:
+  the four tables with their row counts, and no table wider than the page.
+- **Not done.** The help has no contents list, and it is now long. The
+  meanings of the idea words are in the help and not in the prompt or the
+  code. Nothing in §10 of `RELATIONSHIP-LABELS.md` was built.

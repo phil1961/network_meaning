@@ -129,6 +129,149 @@ boxes are moved with a mouse.
 To improve a map, select an item and use the panel: **Confirm it**, **Rule
 it out**, or **Add** a new item joined to the one in the middle.
 
+## The links: how one thing bears on another
+
+A map is more than its boxes. Each line between two boxes carries a few
+words that say how the first bears on the second. Two maps with the same
+boxes and different words on their lines describe two different worlds, so
+the words matter as much as the boxes do.
+
+How to read a link:
+
+- The arrow runs from the first item to the second. Read it as a sentence:
+  the first, the words, the second. In the panel, a link seen from its far
+  end has **←** before its words.
+- A **dashed** line means one of its ends is supposed, or the link involves
+  the AI's reading. A line in the reading colour involves the AI's reading.
+- Apart from that, every link looks the same. The words are the only thing
+  that tells one kind from another.
+- On the Environment, Mental state and Assumptions maps, the words are
+  shown on the links that touch the middle item. Hold the pointer over any
+  other line to see its words.
+
+How a link gets onto a map:
+
+- **The AI** makes links between the ideas it reads in your text. It
+  chooses from the first list below.
+- **You** make one when you add an item in the panel: you pick the words
+  from the second list, and which way the link points.
+- **A script** line such as `link home store: within reach of` joins two
+  items with any words you write, up to 40 characters.
+- In **Loose Ends**, **Link them** on an echo joins the two ideas with
+  "echoes".
+
+What the app does with the words today is small, and worth saying plainly.
+It draws them. The path from an idea back to an anchor follows only the
+words in the first list, and never "tension with" or "replaces", because a
+contradiction or a correction is not a line of descent. Nothing else reads
+them yet. What they could come to carry is in **The aspiration**, below.
+
+Limits today: a link has no strength; two items hold one link between
+them; and a link, once made, cannot be reworded or taken away, except that
+discarding a reading takes its links with it.
+
+There are 39 different words in two lists. "leads to" is in both lists,
+and "presses" is in both halves of the second.
+
+### Between ideas read from text
+
+Fifteen. The AI chooses among the first thirteen by the word alone; the app
+puts the last two there itself.
+
+| Words | Says | Kind |
+|---|---|---|
+| example of | the first is a case of the second | kind or part |
+| leads to | the first brings about the second | cause |
+| refines | the first says the second more exactly | kind or part |
+| explains | the first accounts for the second | cause |
+| extends to | the first reaches as far as the second | likeness |
+| includes | the second is within the first | kind or part |
+| pairs with | the two belong side by side | likeness |
+| tension with | the two pull against each other | opposition |
+| replaces | the first is said in place of the second, and both are kept | order |
+| echoes | the two resonate | likeness |
+| raises | the first brings up the second, which is a question | question |
+| answers | the first answers the second, which is a question | question |
+| traces to | the first goes back to the second, which is an anchor | kind or part |
+| connects to | the two are joined, and the kind is not said | likeness |
+| my reading | the second is the AI's reading of the first | reading |
+
+"connects to" is what a link is given when no other word fits. "my reading"
+marks who made the link, not how the two are related; if you keep the
+reading, its link becomes "leads to".
+
+### Within one map
+
+Sixteen, for the Environment, Mental state and Assumptions maps, and for
+what was said. These are the words the panel offers.
+
+| Words | Says | Kind |
+|---|---|---|
+| leads to | the first brings about the second | cause |
+| rests on | the first depends on the second | cause |
+| serves | the first is for the sake of the second | cause |
+| allows | the first makes the second possible | cause |
+| presses | the first adds urgency to the second | cause |
+| sharpens | the first makes the second more keenly felt | cause |
+| lets it run | the first leaves the second undisturbed | cause |
+| lacks | the first is missing the second | quality |
+| shared with | the first is held in common with the second | likeness |
+| within reach of | the second can be got to from the first | place |
+| by | the first is done by means of the second | cause |
+| takes | the first requires the second | cause |
+| only if | the first holds only when the second does | cause |
+| part of | the first is a piece of the second | kind or part |
+| blocks | the first stands in the way of the second | opposition |
+| where it starts | the first is the starting point of the second | order |
+
+### From one map to another
+
+Ten. These are where a world hangs together, and they are few. Today only
+a script can make one.
+
+| Words | From → to | Says | Kind |
+|---|---|---|---|
+| read as a lack | what was said → environment | one reading of a word that could mean more than one thing | reading |
+| read as a want | what was said → mental state | another reading of it | reading |
+| read as an ought | what was said → assumptions | a third | reading |
+| gives rise to | environment → mental state | a situation produces a want or a worry | cause |
+| is who | environment → mental state | a person in the world is the person in mind | identity |
+| is trusted | environment → mental state | a fact is taken for granted | belief |
+| makes it worth doing | assumptions → mental state | a rule gives the intention its point | cause |
+| limits how | assumptions → mental state | a rule constrains the way | opposition |
+| presses | assumptions or mental state → mental state | adds urgency | cause |
+| carried out as | mental state → what was said | the intention became the act | order |
+
+The three "read as" words are there so that the app does not answer a
+question for you. "He needs milk" can be a lack in the house, a want in
+him, or something he feels he ought to do. It is read once on each map and
+left for you to choose. "is trusted" is there because a fact and the trust
+in it are two things: the store may have milk while he doubts it, or he may
+count on it and find the shelf empty.
+
+### The words by kind
+
+A first sorting, open to change.
+
+| Kind | What it covers | How many |
+|---|---|---|
+| cause | one brings about, allows, depends on, or is for the sake of the other | 13 |
+| kind or part | one is a case of, a piece of, or goes back to the other | 5 |
+| likeness | the two go together, with no direction | 5 |
+| opposition | one stands against the other | 3 |
+| order | one comes before, or takes the place of, the other | 3 |
+| quality | one says what the other has or lacks | 1 |
+| reading | one is a way of taking the other | 4 |
+| question | one asks, or answers, the other | 2 |
+| belief | one is what is held about the other | 1 |
+| identity | the two are the same person or thing | 1 |
+| place | one can be got to from the other | 1 |
+
+A third of the words are about cause, and nearly all of those are on the
+world maps. Reading, question, belief and identity are about how a mind
+stands toward something: how it takes it, asks about it, counts on it, or
+recognises it. Those are the kinds most particular to this app.
+
 ## State: where things stand
 
 - **Now** holds what is true at this step. A fact can stop being true; it
@@ -261,6 +404,62 @@ the server's own files, and **Use the server's setting** puts that back.
 
 To share a stream with everyone, open it, go to **Add text**, and press
 **Share with everyone** under *This stream*.
+
+## The aspiration
+
+This section says what the app is reaching for. None of it is built yet,
+except where it says so.
+
+**The scarce thing is knowing what is worth doing.** The means to act keep
+getting cheaper and more plentiful. Energy is becoming free; meaning is
+not. A person can spend a day, or a life, in motion that ends where it
+began, or in motion that leaves something standing when it stops: a bond, a
+memory, a changed way of seeing. So the hard question is less often "can
+I?" than "what for?" The app is meant for that question.
+
+**The aim is to see a world truly: your own, and then someone else's.**
+Three steps, each resting on the one before.
+
+1. **See your own world as it is.** What is so, what you want, what you
+   take for granted, and what you take to be right, with what was said
+   kept apart from what is only supposed. This is the part that exists
+   today.
+2. **See what is moving you.** Not everything a person does is chosen
+   fresh. Some of it was laid down long ago and is set off by something
+   met today. A map that could show an old pattern firing would let a
+   person tell it from a choice.
+3. **See another person's world.** Two people in one situation hold two
+   maps of it. Where the maps differ is where the two misunderstand each
+   other. Laying them side by side, and showing where they part, would let
+   people understand one another before they act.
+
+On the second step, in Phil's words:
+
+> A person's mental map has components of trauma, and long recorded
+> behavior patterns, that are triggered by discovered patterns he
+> encounters.
+
+**The links are where this will happen.** The meaning of a map is largely
+in the words on its links (see **The links**, above), and the engine that
+will reason with those words is not built yet. In Phil's words:
+
+> I believe this relationship doc will be the core of the magic of the yet
+> to be built engine.
+
+"This relationship doc" is the record of the link words: what each one
+says, and how it came to be. An engine that reads those words could start
+from a choice and follow it forward to what it sets in motion, back to
+what has to hold for it to work, up to why it matters, and across to what
+stands against it. It could notice a fact that failed while the trust in
+it still stood, which is what a surprise is. It could tell a path that
+comes back to where it started from one that ends in something that lasts.
+Which of these it will do has not been decided, and is being kept open on
+purpose.
+
+**What will not change, however far this goes.** Your words stay your
+words. A guess stays marked as a guess until a person confirms it. Nothing
+is lost. And the app lays a world out; it does not tell anyone what their
+life means. That is for the person to say.
 
 ## Where this is going
 

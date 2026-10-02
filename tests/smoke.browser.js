@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.11.0
+   File Version: 0.12.0
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -383,8 +383,11 @@ try {
 
   /* Help is in the page for everyone, built from HELP.md */
   await click("#tab-help");
-  ok(await js("document.getElementById('view-help').hidden === false && [...document.querySelectorAll('#helpdoc h3')].map(h => h.textContent).join('|')") === "What this is|Getting in|Streams|The Map: four maps of one world|State: where things stand|Add text|Loose Ends, Timeline and Evidence|Script and the stepper|The AI|What is saved, and who can see it|For admins: the Admin tab|Where this is going", "the Help tab shows HELP.md, section by section, ending on where this is going");
-  ok(await js("document.querySelectorAll('#helpdoc blockquote').length === 4 && document.getElementById('helpdoc').textContent.includes('coordinate their actions') && !document.getElementById('helpdoc').textContent.includes('**')"), "its last section carries the vision in Phil's words");
+  ok(await js("document.getElementById('view-help').hidden === false && [...document.querySelectorAll('#helpdoc h3')].map(h => h.textContent).join('|')") === "What this is|Getting in|Streams|The Map: four maps of one world|The links: how one thing bears on another|State: where things stand|Add text|Loose Ends, Timeline and Evidence|Script and the stepper|The AI|What is saved, and who can see it|For admins: the Admin tab|The aspiration|Where this is going", "the Help tab shows HELP.md, section by section, ending on the aspiration and where this is going");
+  ok(await js("document.querySelectorAll('#helpdoc blockquote').length === 6 && document.getElementById('helpdoc').textContent.includes('coordinate their actions') && !document.getElementById('helpdoc').textContent.includes('**')"), "its last two sections carry the aspiration and the vision in Phil's words");
+  /* the link words are tables in the help: three lists and the count by kind */
+  ok(await js("(() => { const t = [...document.querySelectorAll('#helpdoc table')]; return t.length + ':' + t.map(x => x.querySelectorAll('tbody tr').length).join(',') + ':' + t.map(x => x.querySelectorAll('thead th').length).join(','); })()") === "4:15,16,10,11:3,3,4,3", "the help lists the link words in tables: 15 between ideas, 16 within a map, 10 across maps, and 11 kinds");
+  ok(await js("(() => { const d = document.getElementById('helpdoc'); return !d.textContent.includes('|') && [...d.querySelectorAll('table')].every(t => t.getBoundingClientRect().right <= d.getBoundingClientRect().right + 1); })()"), "no table in the help is left as raw text, and none is wider than the page");
   ok(errors.length === 0, "no script errors during the walkthrough", errors.join(" | "));
 } catch (e) {
   fail++; console.log("  FAIL  " + (e && e.message ? e.message : e));
