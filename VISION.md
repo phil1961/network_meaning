@@ -733,6 +733,33 @@ app. Everything else is Claude's, for Phil to judge:
   done that was not.
 - That the stream bar is put away while Start is open.
 
+**2026-10-03, a state taxonomy.** "commit, push and sync with google drive,
+and their is a new doc in the google drive under network_manager_docs"
+
+("their" and "network_manager_docs" are as typed; the folder is
+`network_meaning-docs`.)
+
+The document is *Meaning Guide — State Taxonomy*, a Google Doc made that
+night in a browser session, so its prose is the browser session's. Its
+cue is "the 'helps' index in the front of a Gideon Bible, which maps a
+person's condition to words that speak to it." Its ground is "Christian
+theology — not as one tradition among many, but as a coherence worked out
+over two thousand years," while "people come to these questions from many
+faiths, philosophies, and places, and they are met as they are." "The
+states that follow are not diagnoses. They are doorways." Then twenty-five
+states in five families: existential (mortality, purpose,
+insignificance, undeserved suffering, impermanence), directional (lost,
+a hard decision, starting over, a calling, inertia), relational
+(loneliness, betrayal, love and its obligations, forgiveness, grief),
+inner (guilt, pride and humility, anger, fear and courage, contentment,
+self-deception), and transcendent (awe, gratitude, the desire to connect
+to something larger, doubt and faith as a pair).
+
+Read, recorded, and not built on. Claude's note, for Phil: these are
+states of a person, where the Mental state map holds items a person puts
+forth and the State view holds facts. A family of states that a map could
+be read against is new; nothing in the code has a place for it yet.
+
 ---
 
 ## 1. The experience in one paragraph

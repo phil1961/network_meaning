@@ -816,6 +816,19 @@ tab that is our inviting UI. Lets see how far you get."
 - [lost] Not yet said: whether everyone should land on Start, and whether
   what is done there should join the person's own map.
 
+**2026-10-03, a state taxonomy.** [Phil] "commit, push and sync with google
+drive, and their is a new doc in the google drive under
+network_manager_docs"
+
+- The doc is *Meaning Guide — State Taxonomy*, in `network_meaning-docs`,
+  from a browser session. Twenty-five "anchor states" in five families
+  (existential, directional, relational, inner, transcendent), on the model
+  of the helps index in a Gideon Bible: "not diagnoses. They are doorways."
+  Grounded in Christian theology while meeting people "as they are".
+- Read and recorded, not built on. [lost] Not yet said: what it is for in
+  the app: a way to read a person's map, a way in from Start, or a list
+  the AI matches a question to.
+
 ### What the corpus already says about the app
 
 **Input**
