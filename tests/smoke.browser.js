@@ -406,7 +406,26 @@ try {
   ok((await choices()) === "Carry on|See how this app maps a person's world" && await js("document.getElementById('starttrail').open === true"), "That's enough for now stops, and shows what was crossed");
   await click("#startbody [data-go='on']");
   ok(await js("document.querySelectorAll('#startbody .choice[data-gap]').length === 3") && (await planks()) === 2, "Carry on picks it up where it was left");
-  ok(await js("(() => { const a = document.getElementById('startabout'); a.open = true; const h = [...a.querySelectorAll('h3')].map(x => x.textContent).join('|'); a.open = false; return h; })()") === "What this page is|How it goes|Starting from where you are|The bridge|What it keeps, and what it does not|What it will never do|Why it is here|What is not built yet", "the fold at the foot of Start is HELP-Start.md, section by section");
+  ok(await js("(() => { const a = document.getElementById('startabout'); a.open = true; const h = [...a.querySelectorAll('h3')].map(x => x.textContent).join('|'); a.open = false; return h; })()") === "What this page is|How it goes|Starting from where you are|Walking a few steps with Bobby|The bridge|What it keeps, and what it does not|What it will never do|Why it is here|What is not built yet", "the fold at the foot of Start is HELP-Start.md, section by section");
+  /* Bobby's arc: a third way in. Every answer is a step and a plank; the end is a picture in plain words and three small goods. */
+  await js("location.reload()"); await pause(1500);
+  await click("#loginguest"); await pause(300); /* a guest, so that an answer can be a step in a stream of their own */
+  const stepsAtStart = await js("parseInt(document.getElementById('scrubout').textContent, 10)");
+  await click("#startbody [data-go='story']");
+  ok(await js("document.querySelectorAll('#startbody .choice[data-option]').length === 3 && document.getElementById('startbody').textContent.includes('builds a picture of how you see things') && document.getElementById('startbody').textContent.includes('1 of 5')"), "walking with Bobby opens on the first scene, three ways he might go, and says a picture is being formed");
+  await click("#startbody [data-option='s1a']");
+  await pause(300);
+  ok((await planks()) === 1 && await js("document.getElementById('startsaid').textContent.startsWith('Bobby stops.') && document.getElementById('startbody').textContent.includes('2 of 5')") && (await js("parseInt(document.getElementById('scrubout').textContent, 10)")) === stepsAtStart + 1, "an answer lays a plank, tells what happened next, and is one step in the stream");
+  for (const o of ["s2a", "s3b", "s4a"]) { await click(`#startbody [data-option='${o}']`); await pause(200); }
+  ok((await planks()) === 4 && await js("document.getElementById('startbody').textContent.includes('5 of 5')"), "four answers, four planks, the last scene up");
+  await click("#startbody [data-option='s5a']");
+  await pause(300);
+  ok((await planks()) === 5 && await js("!!document.getElementById('startpicture') && document.getElementById('startpicture').textContent.includes('That is a place, not a verdict on you') && document.querySelectorAll('#startpicture li').length >= 1 && document.querySelectorAll('#startbody .choice[data-gap]').length === 3"), "five answers is a bridge: a picture in plain words, with at least one line about how they see things, and three small goods that fit");
+  ok(await js("!/\\d/.test(document.getElementById('startpicture').textContent.replace(/\\s+/g, ' ')) && !/\\b(score|points|level|profile|personality)\\b/i.test(document.getElementById('startpicture').textContent)"), "the picture shows no number and no grading word");
+  ok(await js("(() => { const d = document.getElementById('startanswers'); return !!d && d.querySelectorAll('li').length === 5 && d.textContent.includes('not saved'); })()"), "what was said for Bobby is listed, five answers, and a guest is told it is not saved");
+  ok(await js("document.getElementById('scrubout').textContent.includes('For Bobby, the call')"), "the stream bar names the answer as a step");
+  /* the curtain lifted, for the admin: the item table and coverage are in the page, and the open stream's numbers */
+  ok(await js("(() => { const t = document.querySelector('#arcadmin table.items'); return !!t && t.querySelectorAll('tbody tr').length === 15 && document.getElementById('arccard').textContent.includes('authored hypotheses'); })()"), "the Admin tab holds the item table, one row per option, with the caveat on the page");
   /* a way in from where the person stands: their own words placed against the states, or the states chosen from a list */
   await js("document.getElementById('startbody').querySelector('[data-go=\"on\"]') && null");
   await js("location.reload()"); await pause(1500);

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/95-admin.js
-   File Version: 0.4.0
+   File Version: 0.5.0
    ─────────────────────────────────────────────
    The Admin tab: the admin panel (Phil, 2026-09-30). Who has an account, how they
    came by it, and what an admin can do: add someone, set their level
@@ -20,9 +20,35 @@ function renderSignup() {
   $("#signupfrom").textContent = s.from === "admin" ? "Set here, by an admin. It wins over the server's own setting." : "This is the server's own setting. Saving a choice here takes its place.";
   $("#signupserver").hidden = s.from !== "admin";
 }
+/* Bobby's arc with the curtain lifted (the spec's admin review component):
+   one row per option with its loadings and signals, the coverage of the
+   ten aspects and the twenty-five states, the quiet threshold as it
+   stands, and the numbers behind the open stream's picture, which the
+   person themselves never sees. */
+const aspectShort = { openness: "Op", intellect: "In", industriousness: "Id", orderliness: "Or", enthusiasm: "En", assertiveness: "As", compassion: "Co", politeness: "Po", volatility: "Vo", withdrawal: "Wi" };
+const signed = n => (n > 0 ? "+" + n : String(n));
+function renderArcAdmin() {
+  const rows = itemRows(), cov = coverage(STATES.map(s => s.id)), t = tally(S.answers);
+  const stateName = id => (stateById(id) || { name: id }).name;
+  let h = `<h4>Item table: one row per option</h4><div class="tablewrap"><table class="items"><thead><tr><th>Plank</th><th>Scene</th><th>Option</th>${ASPECTS.map(a => `<th title="${esc(a.name)}: ${esc(a.about)}">${aspectShort[a.id]}</th>`).join("")}<th>States</th><th>Note</th></tr></thead><tbody>`;
+  for (const r of rows) h += `<tr data-option="${esc(r.option)}"><td>${r.plank}</td><td>${esc(r.title)}</td><td>${esc(r.text)}</td>${ASPECTS.map(a => `<td class="num${r.aspects[a.id] ? (r.aspects[a.id] > 0 ? " pos" : " neg") : ""}">${r.aspects[a.id] ? signed(r.aspects[a.id]) : ""}</td>`).join("")}<td>${Object.entries(r.states).map(([k, w]) => `${esc(stateName(k))} ${signed(w)}`).join(", ")}</td><td class="note">${esc(r.note)}</td></tr>`;
+  h += `</tbody></table></div>`;
+  h += `<h4>Coverage: the aspects</h4><div class="tablewrap"><table><thead><tr><th>Aspect</th><th>Trait</th><th>Items</th><th>Net</th><th>Positive</th><th>Negative</th></tr></thead><tbody>${cov.aspects.map(c => `<tr><td>${esc(aspectById(c.aspect).name)}</td><td>${c.trait}</td><td class="num">${c.items}</td><td class="num">${signed(c.net)}</td><td class="num">${c.pos ? "+" + c.pos : ""}</td><td class="num">${c.neg || ""}</td></tr>`).join("")}</tbody></table></div>`;
+  const reached = cov.states.filter(s => s.routes).sort((a, b) => b.routes - a.routes || b.net - a.net);
+  h += `<h4>Coverage: the states</h4><p class="small">${reached.length} of ${cov.states.length} states are reached by some option. Not reached by any: ${cov.unreached.map(stateName).join(", ") || "none"}.</p><div class="tablewrap"><table><thead><tr><th>State</th><th>Routes</th><th>Net</th></tr></thead><tbody>${reached.map(s => `<tr><td>${esc(stateName(s.state))}</td><td class="num">${s.routes}</td><td class="num">${signed(s.net)}</td></tr>`).join("")}</tbody></table></div>`;
+  h += `<h4>The quiet threshold</h4><p class="small">An aspect is described to the person only when its score is ${PICTURE.quiet} or more from the middle, and at most ${PICTURE.most} aspects are described, the strongest first. ${PICTURE.tuned ? "" : "This threshold is a first guess and has not been tuned; it is set in src/shared/scenes.js."}</p>`;
+  h += `<h4>The picture behind the open stream</h4>`;
+  if (!t.answered) h += `<p class="small">No answers for ${esc(ARC.character)} in this stream at this step.</p>`;
+  else {
+    h += `<p class="small">${t.answered} of ${BRIDGE} answered. The person sees the plain-language lines and the leaning state; these numbers are shown only here.</p><div class="tablewrap"><table><thead><tr><th>Aspect</th><th>Score</th><th>Described as</th></tr></thead><tbody>${ASPECTS.map(a => { const v = t.aspects[a.id], d = describe(t).find(x => x.aspect === a.id); return `<tr><td>${esc(a.name)}</td><td class="num${v ? (v > 0 ? " pos" : " neg") : ""}">${signed(v)}</td><td class="note">${d ? esc(d.says) : "<i>quiet</i>"}</td></tr>`; }).join("")}</tbody></table></div>`;
+    h += `<p class="small">Traits: ${TRAITS.map(tr => `${tr.name} ${signed(t.traits[tr.id])}`).join(" · ")}. States: ${t.states.length ? t.states.map(s => `${esc(stateName(s.id))} ${signed(s.weight)}`).join(", ") : "none signalled"}.</p>`;
+  }
+  $("#arcadmin").innerHTML = h;
+}
+renderArcAdmin();
 function renderAdmin() {
   $("#signupnote").textContent = signupWord[signupHow] || "";
-  renderSignup();
+  renderSignup(); renderArcAdmin();
   $("#userlist").innerHTML = people.length ? people.map(u => {
     const you = me && u.id === me.id;
     const chips = (u.owner ? `<span class="chip mine">owner</span>` : "") + `<span class="chip${u.level === "admin" ? " mine" : u.level === "guest" ? " supposed" : ""}">${esc(u.level)}</span>` + (u.disabled ? `<span class="chip replaced">disabled</span>` : "") + (you ? `<span class="chip">you</span>` : "");

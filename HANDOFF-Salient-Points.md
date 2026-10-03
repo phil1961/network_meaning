@@ -912,6 +912,38 @@ network_meaning-docs"
   than one kind sentence, and wants passages that do not exist yet.
 - [lost] The second of the two documents was not yet in the folder.
 
+**2026-10-03, the browser session lines up with VISION.md.** [Phil] "Read
+the new doc in network_meaning-docs. Cell phone has read your vision doc
+and is interegrating your understands"
+
+- *Browser Claude — Synchronization with VISION.md*: the browser session
+  concurs with VISION's frame; the meaning-guide work is E22; the Big Five
+  layer is phase two on top of the map engine.
+- Phil's decision, as it records it: the profile is admin-visible now and
+  designed to become person-visible later, and the person is told from
+  the start that a picture is being formed ("hiding the number for now is
+  allowed; hiding the fact that there is a number is not").
+- It resolves the plank question as "a scenario ends in a small good":
+  doing preserved, answering on top. The Concurrence had said "alongside,
+  as a third way in". Claude would build both at once unless told not to.
+- Phase order: front door stays; then Bobby's arc, the warm pairs and the
+  admin views; then the person-visible profile.
+- [lost] The go to build has not been given.
+
+**2026-10-03, the go.** [Phil] "Got it. Okay, build"
+
+- Built the same day (app 0.15.0): a third way in on Start, "Or walk a
+  few steps with Bobby". Five scenes, three ways each, answered for Bobby
+  and never about oneself; each answer a step and a plank; at the end a
+  picture in plain words and three small goods. The Admin tab shows what
+  every option carries, the coverage, the threshold and the open stream's
+  numbers, with the caveat. Design record: `VISION.md` E23.
+- Claude's, not Phil's words: the scenes, the fifteen options, every
+  weight and note, the ten pairs of aspect sentences, the threshold of 2,
+  and the wording of the picture.
+- [lost] Not yet said: whether the picture reads as fair; when phase
+  three (the person's own numbers) comes.
+
 ### What the corpus already says about the app
 
 **Input**

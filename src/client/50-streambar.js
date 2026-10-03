@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/50-streambar.js
-   File Version: 0.6.2
+   File Version: 0.7.0
    ─────────────────────────────────────────────
    The bar under the header: which stream, which step, save state. */
 function stepLabel(step) {
@@ -28,6 +28,7 @@ function stepLabel(step) {
       case "analysis": { const k = (a.suggestions || []).length; return `Help analysis · ${k} suggestion${k === 1 ? "" : "s"}`; }
       case "place": return a.reset ? "You put the boxes on a diagram back" : `You moved a box: ${clip(S.nodes[a.id] ? S.nodes[a.id].t : "an item", 50)}`;
       case "verdict": return `Your word on a suggestion: ${{ new: "new to me", knew: "already knew", wrong: "wrong" }[a.mark] || "noted"}`;
+      case "answer": { const f = optionById(a.option); return f ? `For ${ARC.character}, ${f.scene.title.toLowerCase()}: ${clip(f.option.text, 50)}` : "An answer for a character"; }
       default: return "You made a change";
     }
   }

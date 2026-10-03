@@ -1137,3 +1137,58 @@ various pages." The design record is `VISION.md` §9, E22.
   registered users, through `screen.js`. The common-word false positives
   ("my mother" points at love as well as grief) are left to the person's
   choice.
+
+## 24. Bobby's arc: answering for a character, and the admin's curtain lifted (2026-10-03, app 0.15.0)
+
+Five more Drive documents (two specs, the browser session's Concurrence
+and Synchronization, and the Philosophy of the Bridge), Claude's reading
+of them written to a Drive doc with five questions, the answers back, then
+Phil: "Okay, build". The design record is `VISION.md` §9, E23; the
+documents are summarised under "The goal" for 2026-10-03.
+
+- **`src/shared/scenes.js`.** `ASPECTS` (ten, two per trait, each with
+  `low` and `high` sentences), `PICTURE` (the quiet threshold, 2, marked
+  untuned, and the cap of 4), `ARC` (Bobby, five scenes, three options
+  each, with `aspects`, `states`, `note`, `then`), `arcAnswers` (the latest
+  answer per scene from `st.answers`), `nextScene`, `tally` (aspects,
+  traits, ranked states), `describe` (the sentences past the threshold),
+  `itemRows` and `coverage` for the admin. Pure.
+- **`src/shared/replay.js`** (0.8.0): action type `answer` with id fields
+  `arc`, `scene`, `option`; `st.answers` is a list of what was given, and
+  nothing worked out from it is stored. An answer is "aside", like a
+  verdict or a place: it does not make a Help analysis stale. **This was a
+  server change**, so `web.config` was touched to restart before the page
+  was built.
+- **`src/client/92-start.js`** (0.3.0): phases `story` and `picture`; the
+  link "Or walk a few steps with Bobby" on the first offer; an answer is
+  `recordAction({type:"answer", …})` then `rebuild()`, so a guest's answers
+  stay in the tab and a member's are steps in their stream, and a member
+  who comes back picks up at the next scene. The bridge on the arc counts
+  answers in the stream, not the walk. The picture is `describe(tally(S.answers))`
+  plus the top state, and offers that state's three leads. "What you said
+  for Bobby" lists the answers.
+- **`src/client/95-admin.js`** (0.5.0): `renderArcAdmin()` into `#arcadmin`
+  in the new `#arccard`: the item table (15 rows, ten aspect columns),
+  coverage of aspects and states with the unreached states named, the
+  threshold, and the open stream's numbers. Drawn at load and again with
+  `renderAdmin()`. The card is in the Admin view, which only an admin sees.
+- **`src/client/50-streambar.js`**: an answer step reads "For Bobby, the
+  call: …".
+- **Help.** `HELP-Start.md` gained "Walking a few steps with Bobby";
+  `HELP.md` a paragraph under the Admin section.
+- **Tests.** `npm run gate`: 106 tests, 89 pass, 17 skip; seven new in
+  `tests/scenes.test.js` (the shape of the model, every option authored,
+  answers read from the stream, the tallies, the picture and its
+  threshold, coverage, and the grading words). The grading test caught
+  "stay level" ("level") in one aspect sentence; it was reworded. `npm run
+  smoke`: 157 checks, eight new, walking the arc as a guest to the picture
+  and checking the admin table is in the page. A first smoke run failed
+  because the test hid the sign-in card instead of pressing "Look around
+  as a guest", so the answer could not become a step; the test now
+  presses it.
+- **Not done.** Phase three, the picture shown to the person in numbers.
+  Editing weights in the admin view (they are edited in
+  `src/shared/scenes.js`). A second character. The IPIP items are not
+  fetched. Eleven states are reached by no option, and openness and
+  intellect are thinly loaded; the coverage view shows both. No sort or
+  filter on the item table yet.

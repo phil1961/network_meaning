@@ -73,6 +73,44 @@ said sideways: "I feel like a ship with no harbour" matches nothing. When
 it finds nothing it says so and shows you the five families to choose from.
 It never guesses.
 
+## Walking a few steps with Bobby
+
+The third way in, under the first three choices: **Or walk a few steps
+with Bobby**. It is for anyone who would rather not say anything about
+themselves at all.
+
+- **A story, not a questionnaire.** Bobby went to the store to get milk.
+  Five small things happen to him in one evening: an old friend on the
+  corner, an empty shelf, a message from his sister, a kitchen left in a
+  mess, a call he could make. At each one you say what Bobby does, from
+  three ways he might go. You answer for him, never about yourself.
+- **Every answer lays a plank.** There is no right answer and no wrong
+  one. The bridge is built by answering, and what it is made of is what
+  you said for Bobby.
+- **At the end, a picture in plain words.** The page says which of the
+  places a person can stand your answers pointed at most, and, where your
+  answers leaned clearly one way, a sentence or two about how you see
+  things. Both ends of every such sentence are good ways of being a
+  person: finding your footing in what is solid is as honourable as being
+  drawn to what is new. Where your answers did not lean, nothing is said.
+  Then three small goods that fit, and from there it goes as before.
+- **You never see a number, and you are told that there is one.** Behind
+  the picture, each way Bobby might go carries small weights toward ten
+  aspects of character and toward the places a person can stand, written
+  in by hand. They add up as you answer. The page tells you from the start
+  that this picture is being formed. The numbers are kept, for now, by the
+  people who look after this page, so they can be made fairer before they
+  are shown; you will be able to see them too.
+- **Those weights are first guesses.** They are authored hypotheses, not
+  measurements. The people who look after the page can see every one of
+  them on the Admin tab, with the reason each was chosen, and tune them.
+
+Your answers for Bobby are steps in your stream, like everything else you
+do here. As a guest, that stream is not saved and is gone when you close
+the page. Signed in, they are yours, they rewind with the Step slider, and
+coming back later picks the story up where you left it. **What you said
+for Bobby**, under the choices, lists them.
+
 ## The bridge
 
 The picture at the top is two banks with the outline of a bridge between
@@ -135,3 +173,8 @@ This is a first version, and it is small on purpose.
   passages from many traditions to be offered for each place a person can
   stand. Neither is built: the app has no store of passages yet, and
   nothing on this page uses the AI.
+- Bobby's story is one evening, five scenes, one character. The weights
+  behind it are a first draft and have not been tuned against anyone's
+  real answers; the point at which a lean is strong enough to be described
+  is a first guess too. The picture is not yet shown in full to the person
+  it is about; that is promised, not built.

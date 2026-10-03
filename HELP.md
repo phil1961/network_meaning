@@ -411,6 +411,15 @@ the server's own files, and **Use the server's setting** puts that back.
 To share a stream with everyone, open it, go to **Add text**, and press
 **Share with everyone** under *This stream*.
 
+At the foot of the Admin tab, **Bobby's arc: what each answer carries**
+lifts the curtain on the story a person can walk from the Start tab. One
+row per way Bobby might go, with the weights it carries toward ten aspects
+of character and toward the places a person can stand, and the reason each
+was chosen; then what the arc reaches and what it does not; the threshold
+below which an aspect stays quiet; and, for the stream you have open, the
+numbers behind the picture the person was shown in words. Those weights
+are authored hypotheses, not measurements. This is where they get tuned.
+
 ## The aspiration
 
 This section says what the app is reaching for. None of it is built yet,

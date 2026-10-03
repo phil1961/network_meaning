@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/92-start.js
-   File Version: 0.2.0
+   File Version: 0.3.0
    ─────────────────────────────────────────────
    Start: the inviting tab (Phil, 2026-10-02: "Create a new top level tab
    that is our inviting UI"). A person picks one small good, does it, and
@@ -22,6 +22,8 @@
 
    What is on screen at any moment is one of:
      offer     three gaps to choose from
+     story     a scene of Bobby's, and three ways he might go (src/shared/scenes.js)
+     picture   the arc walked: where the answers leaned, in plain words, and three goods that fit
      where     a few words of the person's own, or a list to choose from
      families  the five families of states
      states    the states a person's words point at, or one family's
@@ -34,10 +36,14 @@ let startAt = { phase: "offer", gaps: offer(walk), lead: "Pick whichever you lik
 let startFresh = false;   /* true for the one drawing after a plank is laid, so only the new plank moves */
 let startMeX = 78;        /* where the person stood in the last drawing, in the drawing's units */
 const forWhom = { out: "for someone else", in: "for you" };
+const inStory = () => startAt.phase === "story" || startAt.phase === "picture";
+/* What the person is told before the first answer, and again in the picture: a picture is being formed, and the numbers are not hidden from them for good. */
+const PICTURE_TOLD = "As you go, this builds a picture of how you see things. You will be able to see it too. For now the numbers behind it are kept by the people who look after this page, to make it fairer before it is shown.";
 
 /* The bridge: two banks, the planks laid so far, the ones still to lay drawn faint, and the person. */
 function bridgeSVG() {
-  const n = walk.planks, across = n >= BRIDGE, x0 = 112, span = 416 / BRIDGE, w = span - 7;
+  /* on Bobby's arc the planks are the answers given, read from the stream, so a member's bridge is as they left it */
+  const n = inStory() ? Math.min(BRIDGE, tally(S.answers).answered) : walk.planks, across = n >= BRIDGE, x0 = 112, span = 416 / BRIDGE, w = span - 7;
   const at = across ? 566 : n ? x0 + (n - 0.5) * span : 78;
   let s = `<path class="br-bank" d="M0,150 L0,84 Q58,72 112,86 L112,150 Z"/><path class="br-bank" d="M640,150 L640,84 Q582,72 528,86 L528,150 Z"/>`;
   s += `<path class="br-rail${across ? " built" : ""}" d="M112,54 Q320,82 528,54"/><path class="br-post" d="M112,88 L112,52 M528,88 L528,52"/>`;
@@ -57,13 +63,34 @@ function trailHTML(open) {
   const began = walk.state ? `<p class="small">Where you began: ${esc(stateById(walk.state).name.toLowerCase())}.</p>` : "";
   return `<details class="start-trail" id="starttrail"${open ? " open" : ""}><summary>What you've crossed</summary>${began}${t.did.length ? list(t.did) : `<p class="small">Nothing yet.</p>`}${t.later.length ? `<h4>Kept for later</h4>${list(t.later)}` : ""}<p class="small">This is yours. It lives on this page only: it is not saved, it is not sent anywhere, and it is gone when you close the page.</p></details>`;
 }
+/* What the person said for Bobby, from the stream: a list of their own answers, never a number. */
+function answersHTML() {
+  const given = arcAnswers(S.answers); if (!given.length) return "";
+  return `<details class="start-trail" id="startanswers"><summary>What you said for ${esc(ARC.character)}</summary><ul>${given.map(a => { const f = optionById(a.option); return `<li>${esc(f.scene.title)}: ${esc(f.option.text)}</li>`; }).join("")}</ul><p class="small">${stream.local ? "These are steps in a stream that is not saved: they are gone when you close the page." : "These are steps in your stream, like everything else you do here: they are yours, and they rewind."}</p></details>`;
+}
+/* The scene to answer now: the title, the story so far, and three ways Bobby might go. */
+function storyHTML(scene, first) {
+  return `${first ? `<p class="start-ask">${esc(ARC.lead)}</p><p class="small start-told">${esc(PICTURE_TOLD)}</p>` : ""}<p class="start-ask">${esc(scene.order)} of ${BRIDGE}: ${esc(scene.title)}</p><p class="start-act story">${esc(scene.text)}</p><p class="start-ask">${esc(scene.prompt)}</p><div class="choices">${scene.options.map(o => `<button class="choice" type="button" data-option="${esc(o.id)}">${esc(o.text)}</button>`).join("")}</div><p class="start-foot"><button class="linkbtn" type="button" data-go="back">Back to the three</button></p>`;
+}
+/* The picture at the end of the arc, in plain words: where the answers leaned, which aspects had something to say, and three small goods that fit. Never a number. */
+function pictureHTML(gaps) {
+  const t = tally(S.answers), top = t.states[0] ? stateById(t.states[0].id) : null, lines = describe(t);
+  let h = `<p class="start-act">You're across.</p><p class="start-ask">Five answers for ${esc(ARC.character)}, one plank each. None was wrong; the bridge is what you made it of.</p>`;
+  h += `<div class="picture" id="startpicture">`;
+  if (top) h += `<p>Of the places a person can stand, the one your answers for ${esc(ARC.character)} pointed at most: <b>${esc(top.name)}</b>. That is a place, not a verdict on you.</p>`;
+  if (lines.length) h += `<ul>${lines.map(l => `<li>${esc(l.says)}</li>`).join("")}</ul>`;
+  else h += `<p>Nothing in the answers leaned far enough one way to say anything about how you see things, which is itself a kind of balance.</p>`;
+  h += `<p class="small">${esc(PICTURE_TOLD)}</p></div>`;
+  h += `<p class="start-ask">Three small things of your own that fit there, if you'd like one. They start a bridge of your own.</p><div class="choices">${gaps.map(g => choiceHTML(g, false)).join("")}</div><p class="start-foot"><button class="linkbtn" type="button" data-go="rest">That's enough for now</button></p>`;
+  return h;
+}
 function renderStart() {
   const a = startAt, enough = `<button class="linkbtn" type="button" data-go="rest">That's enough for now</button>`;
   let h = "";
   if (a.phase === "offer") {
     const mixed = new Set(a.gaps.map(g => g.to)).size > 1;
     h = `<p class="start-ask">${esc(a.lead)}</p><div class="choices">${a.gaps.map(g => choiceHTML(g, mixed)).join("")}</div>`;
-    h += `<p class="start-foot">${!walk.state && !walk.log.length ? `<button class="linkbtn" type="button" data-go="where">Or start from where you are</button>` : ""}${walk.to ? `<button class="linkbtn" type="button" data-to="${walk.to === "out" ? "in" : "out"}">${walk.to === "out" ? "Something for me instead" : "Something for someone else instead"}</button>` : ""}${walk.log.length ? enough : ""}</p>`;
+    h += `<p class="start-foot">${!walk.state && !walk.log.length ? `<button class="linkbtn" type="button" data-go="where">Or start from where you are</button><button class="linkbtn" type="button" data-go="story">Or walk a few steps with ${esc(ARC.character)}</button>` : ""}${walk.to ? `<button class="linkbtn" type="button" data-to="${walk.to === "out" ? "in" : "out"}">${walk.to === "out" ? "Something for me instead" : "Something for someone else instead"}</button>` : ""}${walk.log.length ? enough : ""}</p>`;
   } else if (a.phase === "where") {
     /* a way in from where the person stands: a few words of their own, placed against the states, or the states chosen from a list */
     h = `<p class="start-ask">Say where you are, in a few words of your own. They are read on this page and let go: nothing is saved or sent anywhere.</p>
@@ -75,6 +102,10 @@ function renderStart() {
   } else if (a.phase === "states") {
     const fam = s => familyById(s.family).name;
     h = `<p class="start-ask">${esc(a.lead)}</p><div class="choices">${a.states.map(s => `<button class="choice" type="button" data-state="${s.id}"><span class="for">${esc(fam(s))}</span>${esc(s.name)}</button>`).join("")}<button class="choice" type="button" data-go="browse">None of these</button></div><p class="start-foot"><button class="linkbtn" type="button" data-go="back">Back to the three</button></p>`;
+  } else if (a.phase === "story") {
+    h = storyHTML(a.scene, a.first);
+  } else if (a.phase === "picture") {
+    h = pictureHTML(a.gaps);
   } else if (a.phase === "ask") {
     h = `<p class="start-ask">The next one can be for someone else, or for you. Which would you like?</p><div class="choices two"><button class="choice" type="button" data-to="out">For someone else</button><button class="choice" type="button" data-to="in">For me</button></div><p class="start-foot">${enough}</p>`;
   } else if (a.phase === "doing") {
@@ -86,7 +117,7 @@ function renderStart() {
   }
   $("#startbridge").innerHTML = bridgeSVG();
   $("#startsaid").textContent = a.said; $("#startsaid").hidden = !a.said;
-  $("#startbody").innerHTML = h + trailHTML(a.phase === "across" || a.phase === "rest");
+  $("#startbody").innerHTML = h + answersHTML() + trailHTML(a.phase === "across" || a.phase === "rest");
   startFresh = false;
 }
 /* A gap crossed: lay the plank, say what just happened, and size the next offer. */
@@ -96,10 +127,22 @@ function crossGap(g) {
   else if (!walk.to) startAt = { phase: "ask", said: g.done };
   else startAt = { phase: "offer", gaps: offer(walk), lead: g.reach < REACH.max ? "Here's one a little bigger, if you'd like it." : "Here's another, about the same size.", said: g.done };
 }
-$("#view-start").addEventListener("click", e => {
+/* Into Bobby's arc: the next scene the stream has no answer for, or the picture when all five are answered. */
+function enterStory(back, said) {
+  const scene = nextScene(S.answers);
+  if (!scene) { const t = tally(S.answers), top = t.states[0] ? stateById(t.states[0].id) : null; if (top) { walk.state = top.id; walk.to = top.to; } startAt = { phase: "picture", gaps: top ? offerThese(walk, top.leads) : offer(walk), said: said || "", back }; }
+  else startAt = { phase: "story", scene, first: !tally(S.answers).answered, said: said || "", back };
+}
+$("#view-start").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b || !b.closest("#startbody")) return;
   const a = startAt;
-  if (b.dataset.gap) {
+  if (b.dataset.option) {
+    /* an answer for Bobby is a step in the stream; the plank is laid when the step is */
+    const f = optionById(b.dataset.option); if (!f || a.phase !== "story") return;
+    if (!await recordAction({ type: "answer", arc: ARC.id, scene: f.scene.id, option: f.option.id }, "answer")) return;
+    rebuild(); startFresh = true; enterStory(a.back, f.option.then);
+  } else if (b.dataset.go === "story") enterStory(a, "");
+  else if (b.dataset.gap) {
     const g = gapById(b.dataset.gap); if (!g) return;
     if (crossedByChoosing(g)) crossGap(g); else startAt = { phase: "doing", doing: g, said: "" };
   } else if (b.dataset.to) {

@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.14.0
+   File Version: 0.15.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -422,6 +422,20 @@ form.inline .input{width:100%}
 .start-trail ul{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-family:var(--font-words);font-size:16px}
 .start-trail h4{margin:10px 0 0;font-size:13px;font-weight:500;color:var(--muted)}
 .start-about .helpdoc{margin-top:10px}
+.start-told{margin:0;text-align:center}
+.start-act.story{font-size:19px;font-weight:400;text-align:left;text-wrap:pretty}
+.picture{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-family:var(--font-words);font-size:17px;line-height:1.45}
+.picture p{margin:0 0 8px} .picture ul{margin:0 0 8px;padding-left:20px;display:flex;flex-direction:column;gap:6px} .picture .small{font-family:var(--font-ui);margin:4px 0 0}
+/* the arc with the curtain lifted, on the Admin tab */
+.card.arc h4{margin:8px 0 2px;font-size:14px}
+.card.arc .tablewrap{overflow-x:auto}
+.card.arc table{border-collapse:collapse;width:100%;font-size:12.5px;line-height:1.35}
+.card.arc th,.card.arc td{text-align:left;vertical-align:top;padding:4px 8px 4px 0;border-bottom:1px solid var(--line)}
+.card.arc th{font-family:var(--font-data);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.card.arc td.num{font-family:var(--font-data);text-align:right;padding-right:10px;white-space:nowrap}
+.card.arc td.pos{color:var(--ok)} .card.arc td.neg{color:var(--warn)}
+.card.arc td.note{color:var(--muted);min-width:180px}
+.card.arc table.items td:nth-child(3){min-width:200px}
 
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}

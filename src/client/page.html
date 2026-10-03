@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.13.0
+  File Version: 0.15.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
   the SCRIPT marker with the shared and client modules, in filename order, the
   HELP marker with HELP.md as HTML, and the HELPSTART marker with HELP-Start.md
@@ -331,6 +331,12 @@
           <div class="status" id="signupstatus" role="status"></div>
         </form>
         <ul class="le-list" id="userlist"></ul>
+        <!-- Bobby's arc, with the curtain lifted: every option and what it carries, what the arc reaches, and the numbers behind the open stream's picture. Drawn by src/client/95-admin.js from src/shared/scenes.js. -->
+        <div class="card arc" id="arccard">
+          <h3>Bobby's arc: what each answer carries</h3>
+          <p class="small" style="margin:0">The person sees a story and three ways Bobby might go. Each way is written with its loadings on ten aspects of character (two under each of the five traits) and its signals toward the states a person can stand in. Nothing is scored after the fact. <b>These weights are authored hypotheses, not calibrated measurements:</b> IPIP keying is made for direct self-report, and wrapping it in a story means its validated scoring does not carry over. Read the totals as a routing signal, and tune them here.</p>
+          <div id="arcadmin"></div>
+        </div>
       </div>
     </section>
   </main>

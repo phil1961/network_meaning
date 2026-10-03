@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/shared/replay.js
-   File Version: 0.7.0
+   File Version: 0.8.0
    ─────────────────────────────────────────────
    The map is a projection of the stream. State = replay(steps[0..cursor)).
    This reducer runs on the server (to give the model the current map) and
@@ -38,7 +38,15 @@
    item, as a move from the layout's own place (action "place"):
      st.places  {middleId: {boxId: {dx, dy}}}
    It changes how the map is drawn and nothing about what it says.
-   {type:"place", around, reset:true} puts that middle's boxes back. */
+   {type:"place", around, reset:true} puts that middle's boxes back.
+
+   Answers for a character (Phil, 2026-10-03, the Start tab's Bobby arc):
+   each answer the person gives for Bobby is a step, {type:"answer", arc,
+   scene, option}, and is kept as given:
+     st.answers  [{arc, scene, option, date}]
+   What the answers add up to (src/shared/scenes.js) is worked out from
+   them when it is wanted and is never stored. An answer is not a change
+   in the state of play, so it does not make a Help analysis stale. */
 
 export const LINK_LABELS = ["example of", "leads to", "refines", "explains", "extends to", "includes", "pairs with", "tension with", "replaces", "echoes", "raises", "answers", "traces to", "connects to", "my reading"];
 /* Links a traceback may walk. A path through a contradiction or a
@@ -85,8 +93,8 @@ export const UNSAID = "unsaid";
    such as "__proto__" could only ever be an ordinary key; ids are checked
    as well so that nothing odd is stored. The server uses actionOk() to
    refuse a bad action before it is saved. */
-export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis", "verdict", "place"];
-const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b", "analysisId", "suggestionId", "around"];
+export const ACTION_TYPES = ["keep", "discard", "anchor", "flag", "state", "release", "goal", "acceptgoal", "rejectgoal", "move", "reach", "regoal", "item", "link", "ask", "confirm", "ruleout", "analysis", "verdict", "place", "answer"];
+const ID_FIELDS = ["id", "goalId", "stateId", "flagId", "a", "b", "analysisId", "suggestionId", "around", "arc", "scene", "option"];
 /* How far a box may be dragged from where the layout draws it, in the layout's units. */
 export const PLACE_MAX = 2000;
 /* The person's word on one Help analysis suggestion. */
@@ -100,7 +108,7 @@ const bare = () => Object.create(null);
 export const GOAL_STATUSES = ["proposed", "open", "reached", "stuck", "dropped"];
 
 export function emptyState() {
-  return { nodes: bare(), links: [], flags: [], outcomes: bare(), ingests: 0, passes: [], question: null, state: bare(), goals: bare(), analysis: null, places: bare() };
+  return { nodes: bare(), links: [], flags: [], outcomes: bare(), ingests: 0, passes: [], question: null, state: bare(), goals: bare(), analysis: null, places: bare(), answers: [] };
 }
 
 export function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -114,7 +122,7 @@ export function replay(steps) {
 export function applyStep(st, step) {
   if (!step) return;
   /* A verdict is about the analysis itself, and moving a box is about how the diagram is drawn. Neither is a change in the state of play, so neither makes the analysis stale. */
-  const aside = step.kind === "action" && step.action && (step.action.type === "verdict" || step.action.type === "place");
+  const aside = step.kind === "action" && step.action && (step.action.type === "verdict" || step.action.type === "place" || step.action.type === "answer");
   if (st.analysis && !aside) st.analysis.since++;
   if (step.kind === "ingest") applyResult(st, step.result || {}, step);
   else if (step.kind === "action") applyAction(st, step);
@@ -259,6 +267,12 @@ function applyWorldAction(st, a, step) {
     }
     case "ruleout": {
       if (n && n.map && !n.ruledOut) { n.ruledOut = true; n.replaced = true; n.history.push(`${step.date}: ruled out${note} It is kept, struck through.`); }
+      return true;
+    }
+    case "answer": {
+      /* An answer given for a character on the Start tab (src/shared/scenes.js): which arc, which scene, which option. Kept as given; what it adds up to is worked out from the answers, never stored. */
+      if (!a.arc || !a.scene || !a.option) return true;
+      st.answers.push({ arc: a.arc, scene: a.scene, option: a.option, date: step.date });
       return true;
     }
     case "place": {

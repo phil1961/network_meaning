@@ -972,6 +972,81 @@ Claude's notes, for Phil:
 - The second document had not appeared in the folder when Claude looked;
   only this one was newer than the Concurrence.
 
+**2026-10-03, the browser session lines up with this file.** "Read the new
+doc in network_meaning-docs. Cell phone has read your vision doc and is
+interegrating your understands"
+
+("interegrating your understands" is as typed.)
+
+The document is *Browser Claude — Synchronization with VISION.md*,
+written "after reading VISION.md in full". It "does not touch VISION.md".
+It says the five Meaning Guide documents "were written without the author
+seeing how far VISION had come", and that having read it, "the browser
+session concurs with its frame: the app is a verbatim-anchored map of a
+person's thinking over time, built so it cannot flatter, and the Start tab
+is the welcoming front porch onto that engine." The meaning-guide work
+"belongs where VISION already files it — as E22", and the Big Five layer
+is "a phase-two addition on top of a working map engine, not a parallel
+project."
+
+*One decision it records as Phil's, 2026-10-03:* "build the profile
+admin-visible now, and design it to become person-visible later. 'Later'
+is a real plank, not a quiet never." With an honesty condition: "the
+person is told from the start that a picture is being formed, even while
+only the admin can see the number. Hiding the number for now is allowed;
+hiding the fact that there is a number is not." One plain line on Start
+carries it, for example: "As you go, this builds a picture of how you see
+things — you'll be able to see it too."
+
+*Its corrections, for the record:* the app is not Vue; "a plank is two
+things, and they must be joined, not swapped": "let a scenario END in a
+small good to do, so the doing is preserved … and the answering rides on
+top"; the ten-aspect profile is an authored routing signal, with the
+caveat in the admin view; a guest's profile lives in the page only; no
+passage corpus exists, and the routing output stops before it.
+
+*Its phase order:* one, the unfailable first-minute win stays the front
+door; two, Bobby's five-plank arc with loadings, signals and notes, the
+ten warm-language pairs, and the admin item table and coverage summary;
+three, the person-visible profile, "promised from the start".
+"Everything in sections 3 to 5 is for Phil to confirm."
+
+Claude's note, for Phil: the Concurrence answered Q2 with option (b),
+Bobby's arc "ALONGSIDE the small-goods bridge … as a third way in", and
+this document answers it with option (c), "let a scenario END in a small
+good to do." They can both hold: Bobby's arc is a third way in, and each
+of its planks, or its last, ends in a small good the person does. Claude
+would build it that way unless told otherwise.
+
+Read and recorded. The go to build has not been given.
+
+**2026-10-03, the go.** Phil, after asking what "the two uploads are still
+running" meant and hearing: "Got it. Okay, build"
+
+Built the same day (app 0.15.0). The design record is E23 in §9. In
+short: a third way in on Start, "Or walk a few steps with Bobby". Five
+scenes of one evening, three ways Bobby might go at each; the person
+answers for him and never about themselves; every answer is a step in
+the stream and a plank on the bridge. At the end, a picture in plain
+words: the place the answers pointed at most, "a place, not a verdict",
+and at most four honourable sentences about how the person sees things,
+only where the answers leaned clearly; then three small goods that fit.
+The person is told from the start that a picture is being formed and that
+they will be able to see it. The Admin tab gained *Bobby's arc: what each
+answer carries*: the item table, the coverage of aspects and states, the
+quiet threshold, and the numbers behind the open stream's picture, with
+the "authored hypotheses" caveat on the page.
+
+What was decided elsewhere and followed: the Concurrence's five answers,
+the Synchronization's honesty line and phase order, and both of their
+answers to the plank question at once (Bobby's arc is a third way in, and
+its end offers small goods). Claude's, for Phil to judge: Bobby's five
+scenes and fifteen options, every loading, signal and note; the ten
+pairs of sentences for the aspects; the quiet threshold of 2 and the cap
+of four sentences; the wording of the picture and of the line that tells
+the person a picture is being formed; and that an answer does not make a
+Help analysis stale.
+
 ---
 
 ## 1. The experience in one paragraph
@@ -1420,8 +1495,8 @@ levels, and E16 the check before every call to the AI. E17 (evidence) and
 E18 (spendable resources) come from a parallel session the same night, and
 E19 is what was done about the two reviews. E20 (2026-10-02) is what the
 relationship labels could carry for the engine, E21 is the Start tab
-built the same day, and E22 (2026-10-03) the state taxonomy as a way in
-from it. Earlier experiments
+built the same day, E22 (2026-10-03) the state taxonomy as a way in
+from it, and E23 (the same day) Bobby's arc. Earlier experiments
 are revised by a note that refers
 to them, never rewritten in place.
 
@@ -2367,6 +2442,43 @@ that goes by meaning (which needs an embedding model the app does not
 have, or the AI, with its screening); whether passages should be offered
 for a state, and from where; and whether the state a person chose should
 be remembered across visits, which today it is not.
+
+**E23. Bobby's arc: answering for a character, and the picture it forms.**
+*Status: built and testing, 2026-10-03 (app 0.15.0). Phil: "Okay, build",
+on the Drive documents "Bridge, Scenarios & Big Five Integration",
+"Mapping Mechanism & Admin Review Spec", "Concurrence & Answers",
+"Synchronization with VISION.md" and "The Philosophy of the Bridge". The
+model and its rules are theirs; the scenes, weights and words are
+Claude's first draft, written to be tuned.*
+*What was built.* `src/shared/scenes.js`: ten aspects, two under each
+trait, each with an honourable sentence for both ends; Bobby's arc, five
+scenes with three options each, every option carrying its aspect
+loadings, state signals and a note; `tally`, `describe`, `itemRows`,
+`coverage`. The reducer keeps each answer as a step ({type:"answer", arc,
+scene, option}) and stores nothing worked out from them. The Start tab
+walks the arc and ends in the picture; the Admin tab lifts the curtain.
+*The rules kept.* Never a number to the person; both ends honourable; a
+lean described only past a named threshold, at most four; the person
+told from the start; every answer a plank; a guest's answers in the page
+only, a member's in their own stream; the caveat on the admin page; the
+routing output built and the passages left for a corpus.
+*What is thin.* One character, one evening, fifteen options: openness
+and intellect are each loaded by two options, and eleven of the
+twenty-five states are reached by none; the coverage view says so. The
+threshold is a guess. The person's own picture is promised, not shown in
+numbers. Nothing here has met a real answer yet.
+*For:* a person who would not write a line about themselves walks the
+five scenes, reads the picture, and says it is fair, or says where it is
+wrong, which is also a result.
+*Against:* the picture reads as presumptuous or as a horoscope; the
+answers people give for Bobby are what they think Bobby should do and
+not what they would do, so the loadings read the character and not the
+person; or the admin table shows the arc reaching the same three states
+for nearly everyone.
+*Open, and Phil's to say:* when the picture is shown to the person in
+full (phase three); whether to tune the weights by hand in the admin
+view or to make them editable there; a second character, and what the
+IPIP items change once they are fetched.
 
 **Open, and it changes E1 and E2:** whether the nesting is exactly three
 levels (idea, containing concept, perspective) or a concept can sit within

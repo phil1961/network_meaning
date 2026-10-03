@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.14.0
+   File Version: 0.15.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.14.0",
+  version: "0.15.0",
   corrections: [
+    ["There was no way in for someone who would rather not say anything about themselves",
+     "A third way in on Start: walk a few steps with Bobby. Five small things happen to him in one evening; at each, say what he does. There is no right answer, and every answer lays a plank. At the end the page says, in plain words, where your answers leaned and what they had to say about how you see things, and offers three small goods that fit. You are told from the start that a picture is being formed; the numbers behind it are kept for the people who look after the page, and the Admin tab shows them what every answer carries."],
     ["The tabs scrolled away on a long page",
      "The banner and the tabs stay at the top of the window while a page scrolls."],
     ["Start had only one way in: three small goods, the same for everyone",
