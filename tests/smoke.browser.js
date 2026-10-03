@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: tests/smoke.browser.js
-   File Version: 0.12.0
+   File Version: 0.13.0
    ─────────────────────────────────────────────
    Boots the server (no database needed) and drives the built page in a
    real headless browser over the DevTools protocol, no npm packages.
@@ -305,7 +305,7 @@ try {
   ok(await js("document.getElementById('loginbtn').textContent === 'Create my account' && document.getElementById('email').required === true"), "Create an account turns the card into a sign-up");
   await click("#loginswap");
   await click("#loginguest");
-  ok(await js("document.getElementById('loginscrim').hidden === true && document.getElementById('who').textContent.includes('Guest')"), "Look around as a guest puts the card away and says nothing is saved");
+  ok(await js("document.getElementById('loginscrim').hidden === true && document.getElementById('who').textContent.includes('Guest') && document.getElementById('view-start').hidden === false && document.getElementById('tab-start').getAttribute('aria-selected') === 'true'"), "Look around as a guest puts the card away, says nothing is saved, and opens on Start");
   await click("#tab-state");
   await click("#goalform button[type=submit]");
   ok(await waitFor("[...document.querySelectorAll('#goallist .goal.st-open h3')].some(h => h.textContent === 'Get Mom to the eye doctor.')", 3000), "a guest puts a goal forth, and the empty box took its suggestion");
@@ -380,6 +380,35 @@ try {
   ok(await js("document.querySelectorAll('#docklines li.missed').length === 1 && document.querySelector('#docklines li.missed code').textContent.includes('Fix the car')"), "and marks the one that did not");
   ok(await js("document.getElementById('view-evidence').hidden === false && document.getElementById('evidencebody').textContent.includes('Nothing to count yet') && document.getElementById('streamsel').selectedOptions[0].textContent.includes('13 steps')"), "show evidence opens the Evidence view; a stream made by hand has no machine claims to count, and the checks added no step");
   await click("#dockclose");
+
+  /* Start: the inviting tab. One small good, a plank on the bridge, then one a little bigger if the person wants it. */
+  const planks = () => js("document.querySelectorAll('#bridge .br-plank').length");
+  const choices = () => js("[...document.querySelectorAll('#startbody .choice')].map(b => b.textContent).join('|')");
+  await click("#tab-start");
+  ok(await js("document.getElementById('view-start').hidden === false && getComputedStyle(document.querySelector('.streambar')).display === 'none' && document.querySelectorAll('#startbody .choice[data-gap]').length === 3 && document.querySelectorAll('#bridge .br-slot').length === 5") && (await planks()) === 0, "Start opens on three choices under the outline of a bridge, with the stream bar put away");
+  const stepsBefore = await js("document.getElementById('scrubout').textContent");
+  await click("#startbody .choice");
+  ok((await planks()) === 1 && (await choices()) === "For someone else|For me" && await js("document.getElementById('startsaid').hidden === false && document.getElementById('startsaid').textContent.length > 20"), "choosing the first one crosses it: a plank is laid, the page says what just happened, and asks who the next one is for");
+  await click("#startbody [data-to='in']");
+  ok(await js("document.querySelectorAll('#startbody .choice[data-gap]').length === 3 && !document.querySelector('#startbody .choice .for')"), "three a little bigger are offered, all for the person themselves");
+  await click("#startbody .choice");
+  ok((await choices()) === "I did it|Not just now. Keep it for later|Something smaller" && (await planks()) === 1, "a bigger one is done away from the page: it waits, and offers three answers");
+  await click("#startbody [data-outcome='smaller']");
+  ok((await planks()) === 1 && await js("document.querySelectorAll('#startbody .choice[data-gap]').length === 3 && document.getElementById('startsaid').textContent.includes('right size of step')"), "Something smaller offers smaller ones, and no plank is lost");
+  await click("#startbody .choice");
+  ok((await planks()) === 2, "a small one crossed lays the second plank");
+  await click("#startbody .choice");
+  await click("#startbody [data-outcome='later']");
+  ok((await planks()) === 2 && await js("document.getElementById('starttrail').textContent.includes('Kept for later') && document.querySelectorAll('#starttrail li').length === 3"), "Keep it for later keeps it on the person's own list, beside the two they did");
+  ok(await js("!/\\b(scores?|points?|levels?|streaks?|badges?|grades?|failed)\\b/i.test(document.getElementById('startbody').textContent + ' ' + document.getElementById('startsaid').textContent) && !/\\d/.test(document.getElementById('startbody').textContent)"), "nothing on Start grades the person, and no number is shown");
+  ok((await js("document.getElementById('scrubout').textContent")) === stepsBefore, "nothing done on Start is a step in any stream");
+  await click("#startbody [data-go='rest']");
+  ok((await choices()) === "Carry on|See how this app maps a person's world" && await js("document.getElementById('starttrail').open === true"), "That's enough for now stops, and shows what was crossed");
+  await click("#startbody [data-go='on']");
+  ok(await js("document.querySelectorAll('#startbody .choice[data-gap]').length === 3") && (await planks()) === 2, "Carry on picks it up where it was left");
+  ok(await js("(() => { const a = document.getElementById('startabout'); a.open = true; const h = [...a.querySelectorAll('h3')].map(x => x.textContent).join('|'); a.open = false; return h; })()") === "What this page is|How it goes|The bridge|What it keeps, and what it does not|What it will never do|Why it is here|What is not built yet", "the fold at the foot of Start is HELP-Start.md, section by section");
+  await click("#tab-map");
+  ok(await js("getComputedStyle(document.querySelector('.streambar')).display !== 'none' && document.getElementById('view-map').hidden === false"), "leaving Start brings the stream bar back");
 
   /* Help is in the page for everyone, built from HELP.md */
   await click("#tab-help");

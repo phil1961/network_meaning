@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/97-app.js
-   File Version: 0.7.1
+   File Version: 0.8.0
    ─────────────────────────────────────────────
    Views, sign-in, sign-up and looking around as a guest, changing your own
    password, and boot. Last module: everything above is defined. */
@@ -9,6 +9,8 @@ function showView(v) {
   if (v === "admin" && !(me && me.admin)) v = "map";
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
   document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
+  /* Start is the way in: it has no stream to choose and no step to rewind, so the stream bar is put away while it is open */
+  $(".shell").classList.toggle("quiet", v === "start");
   if (v === "map") fitMap();
   if (v === "timeline") renderTimeline();
   if (v === "evidence") renderEvidence();
@@ -42,7 +44,7 @@ function renderWho() {
   if (!(me && me.admin) && !$("#view-admin").hidden) showView("map");
 }
 /* Look around with no account. Everything that needs no AI works, in this tab only. */
-$("#loginguest").addEventListener("click", () => { visiting = true; hideLogin(); renderWho(); renderAll(); toast("You're looking around as a guest. Nothing you do is saved."); });
+$("#loginguest").addEventListener("click", () => { visiting = true; hideLogin(); renderWho(); renderAll(); showView("start"); toast("You're looking around as a guest. Nothing you do is saved."); });
 
 /* The AI is for registered users (Phil, 2026-09-30). A guest who presses an
    AI button gets this box instead of a call. */
@@ -66,7 +68,7 @@ $("#loginform").addEventListener("submit", async e => {
     const fresh = signingUp;
     $("#password").value = ""; $("#invite").value = ""; signingUp = false; visiting = false; hideLogin(); renderWho();
     await afterSignIn();
-    if (fresh) toast("Your account is ready. The samples are yours to try; acting on one starts your own copy.");
+    if (fresh) { showView("start"); toast("Your account is ready. The samples are yours to try; acting on one starts your own copy."); }
   } catch (err) { $("#loginstatus").textContent = err && err.message ? err.message : signingUp ? "Couldn't create the account." : "Couldn't sign in."; }
   btn.disabled = false;
 });
@@ -120,7 +122,7 @@ async function afterSignIn() {
 $("#buildpill").textContent = "v" + BUILD.version;
 renderSteps(0);
 { const last = lsGet("nm.lastStream"); if (last && SAMPLES[last] && last !== DEFAULT_SAMPLE) openSample(last); else rebuild(); }
-const h0 = (location.hash || "").slice(1); if (["map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "help"].includes(h0)) showView(h0);
+const h0 = (location.hash || "").slice(1); if (["start", "map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "help"].includes(h0)) showView(h0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderMap());
 (async () => {
   try { signupHow = (await api.auth()).signup; } catch (e) { /* the card just offers sign-in */ }

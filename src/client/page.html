@@ -1,11 +1,11 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.11.0
+  File Version: 0.13.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
-  the SCRIPT marker with the shared and client modules, in filename order, and
-  the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
-  never in public/.
+  the SCRIPT marker with the shared and client modules, in filename order, the
+  HELP marker with HELP.md as HTML, and the HELPSTART marker with HELP-Start.md
+  as HTML, and writes public/index.html. Edit here, never in public/.
 -->
 <html lang="en">
 <head>
@@ -25,6 +25,7 @@
   <header>
     <div class="brand"><h1>Network Meaning</h1><span class="pill" id="buildpill">v0</span></div>
     <nav role="tablist" aria-label="Views">
+      <button class="tab" role="tab" id="tab-start" data-view="start" aria-selected="false">Start</button>
       <button class="tab" role="tab" id="tab-map" data-view="map" aria-selected="true">Map</button>
       <button class="tab" role="tab" id="tab-state" data-view="state" aria-selected="false">State<span class="count" id="goalcount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
@@ -59,6 +60,23 @@
   </div>
 
   <main>
+    <!-- START: the inviting tab. One small good at a time, drawn and run by src/client/92-start.js.
+         The fold at the foot is HELP-Start.md, turned into HTML by build.js. Edit HELP-Start.md, never that. -->
+    <section class="view" id="view-start" role="tabpanel" aria-labelledby="tab-start" hidden>
+      <div class="start">
+        <p class="start-lead">One small good thing, right now. It takes a moment, and it feels good.</p>
+        <div id="startbridge"></div>
+        <p class="start-said" id="startsaid" role="status" aria-live="polite" hidden></p>
+        <div class="start-body" id="startbody"></div>
+        <details class="start-about" id="startabout">
+          <summary>About this page</summary>
+          <article class="helpdoc">
+@@HELPSTART@@
+          </article>
+        </details>
+      </div>
+    </section>
+
     <!-- MAP -->
     <section class="view" id="view-map" role="tabpanel" aria-labelledby="tab-map">
       <div class="mapgrid">
@@ -365,7 +383,7 @@
     </div>
     <div class="status" id="loginstatus" role="status"></div>
     <div class="actions" style="align-items:center"><button class="btn primary" type="submit" id="loginbtn">Sign in</button><button class="linkbtn" type="button" id="loginswap" hidden>Create an account</button><button class="linkbtn" type="button" id="loginguest">Look around as a guest</button></div>
-    <p class="small" style="margin:0">New here? Look around as a guest, then open the Help tab.</p>
+    <p class="small" style="margin:0">New here? Look around as a guest. It starts with one small thing, and the Help tab explains the rest.</p>
   </form>
 </div>
 <div class="scrim" id="pwscrim" hidden>

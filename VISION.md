@@ -659,6 +659,80 @@ What is Claude's in these, for Phil to correct:
   read. The help already quoted four at his request ("the help doc should
   contain something on the ultimate vision"); these two follow that.
 
+**2026-10-02, two more docs.** "There are two more docs in google drive
+network_meaning. Read"
+
+Two Google Docs made that morning in a browser session, after the help was
+built. They sit in the Drive folder `network_meaning`, not in
+`network_meaning-docs`, and not in this repo. The prose of both is the
+browser session's, so they are quoted as documents and not as Phil's words.
+
+*The Gap, the Bridge, and the Joy of Crossing — Design Thesis for the
+Meaning App* runs in eleven steps. Impact is "intelligence times leverage".
+Drive is "latent in many people and effective in few". The map is
+"external working memory for patterns too big to hold in one head".
+Bigness moves authority away from the point of contact, and equipping the
+edge can bring it back. The tool must be "genuinely sophisticated
+underneath, yet require no sophistication to benefit from", must read a
+person's level "from behavior, not a declared setting", and must bring
+them along "as they will", in "the user's own" direction. A gap "feels
+impassable not because it truly is, but because the crossing is
+invisible"; the tool "reveals the bridge — or helps construct one". The
+building has to be joyful or it is abandoned, and people who find it
+joyful "invent" new gaps, which is its answer to saturation. Its last
+step: "The onboarding is the philosophy, enacted."
+
+*Instructions for Terminal Claude — First Crack at the Inviting UI* is a
+build brief for that last step: a single page on which "a person feels a
+small 'gap' close and enjoys it, within the first minute". Three buttons,
+none wrong; a warm acknowledgement; then a slightly bigger gap, three to
+five deep; a choice between a good aimed outward and one aimed inward; a
+"reach" estimate kept inside and never shown as a score. No points, badges
+or streaks. Out of scope by its own words: the map, accounts, saving, and
+any scoring of the person.
+
+Read and not built. Phil's message asked for reading only.
+
+**2026-10-02, the inviting UI as a tab.** "Create a new top level tab that
+is our inviting UI. Lets see how far you get."
+
+And while it was being built: "And then update a separate help doc for this
+new UI Tab."
+
+("Lets" is as typed.)
+
+Built the same day (app 0.13.0). A **Start** tab, first in the row. It
+opens on one sentence, the outline of a bridge, and three choices, none of
+them wrong. Choosing one crosses it: a plank is laid, the page says what
+just happened, and asks whether the next is for someone else or for you.
+Each next one asks a little more, and for those the page waits and takes
+one of three answers, all of them fine: I did it, keep it for later,
+something smaller. Five planks is a bridge crossed. Nothing is counted
+against the person, no number is shown, and nothing done there is saved,
+sent, or made a step. Its help is a file of its own, `HELP-Start.md`, shown
+as the fold at the foot of the tab. The design record is E21 in §9.
+
+What the brief decided and what Claude did: the brief ("Instructions for
+Terminal Claude — First Crack at the Inviting UI") set the goal, the six
+principles, the three buttons, the outward or inward choice, the depth of
+three to five, and what is out of scope. Phil decided it is a tab of this
+app. Everything else is Claude's, for Phil to judge:
+- The name "Start", and putting it first in the row.
+- That a guest, and a person who has just made an account, land on it.
+  Someone signing in to an account they already have lands where they did
+  before.
+- The opening sentence: "One small good thing, right now. It takes a
+  moment, and it feels good."
+- The bridge as the picture of it, drawn in outline from the start so the
+  way across is seen before any of it is built.
+- The thirty small goods and every word said after one is crossed.
+- That the first three are thoughts, crossed in the choosing, so nobody can
+  fail the first one; and that anything bigger is taken on the person's
+  word.
+- That "keep it for later" lays no plank. The page never says a thing was
+  done that was not.
+- That the stream bar is put away while Start is open.
+
 ---
 
 ## 1. The experience in one paragraph
@@ -1106,7 +1180,8 @@ maps of one world with Bobby's world made up, E15 accounts and the three
 levels, and E16 the check before every call to the AI. E17 (evidence) and
 E18 (spendable resources) come from a parallel session the same night, and
 E19 is what was done about the two reviews. E20 (2026-10-02) is what the
-relationship labels could carry for the engine. Earlier experiments
+relationship labels could carry for the engine, and E21 is the Start tab
+built the same day. Earlier experiments
 are revised by a note that refers
 to them, never rewritten in place.
 
@@ -1988,6 +2063,37 @@ tells Phil something about the world that the diagram alone did not.
 *Against:* the walks give nothing a person would not see at a glance on a
 map this size, or the labels have to be made so strict that they stop
 being words the person would say.
+
+**E21. The Start tab: one small gap crossed in the first minute.**
+*Status: built and testing, 2026-10-02 (app 0.13.0). Phil asked for "a new
+top level tab that is our inviting UI". The brief and its thesis are two
+Drive documents from a browser session ("Instructions for Terminal Claude —
+First Crack at the Inviting UI" and "The Gap, the Bridge, and the Joy of
+Crossing"). The build, the picture and all the words are Claude's.*
+*What was built.* A person picks one of three small goods, each a thought
+that is done in the reading of it. A plank is laid on a bridge and the page
+says what just happened. The next offer is one step bigger, for someone
+else or for the person, as they choose. From the second on, the good is
+done away from the page, and the person says how it went: done, kept for
+later, or something smaller. Five planks is a bridge.
+*How the next one is sized.* A reach from 1 to 5, read from what the person
+does (`src/shared/gaps.js`). Done raises it by one. Kept for later holds
+it. Something smaller lowers it by one. It is never shown and never kept.
+*What it deliberately is not.* It has no points, marks or streaks; a test
+fails if any such word appears in what the page says. It makes no step,
+calls no server and no AI, and is not joined to the maps.
+*What is thin.* The thirty goods are written by hand and are the same for
+everyone. The page takes the person's word that a thing was done. The
+reach has two inputs. Nothing carries to another visit.
+*For:* a person who has never seen the app opens it, crosses the first gap
+inside a minute without being told how, and chooses to take a second.
+*Against:* people stop at the first one; or the goods read as chores or as
+advice; or "I did it" is pressed without doing, which would mean the page
+rewards pressing and not crossing.
+*Open, and Phil's to say:* whether Start should be where everyone lands,
+whether what a person does there should become part of their own world
+(a goal and its moves, in the State view's terms), and whether the goods
+should come from the person's own map instead of a list.
 
 **Open, and it changes E1 and E2:** whether the nesting is exactly three
 levels (idea, containing concept, perspective) or a concept can sit within

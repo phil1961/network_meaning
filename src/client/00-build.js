@@ -1,12 +1,14 @@
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.12.0
+   File Version: 0.13.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.12.0",
+  version: "0.13.0",
   corrections: [
+    ["The first thing a newcomer met was a map of someone else's world",
+     "A Start tab, first in the row, and where a guest or a new account lands. Pick one small good thing, do it, and a plank is laid on a bridge; then one a little bigger is offered, if you want it. Five planks is a bridge. Nothing is counted against you, and nothing you do there is saved or sent anywhere. Its own help is the fold at its foot."],
     ["The help said nothing about the words on the links, or about what the app is reaching for",
      "Two new sections in Help. The links lists every word a link can carry, 39 of them, with what each one says and what kind of relationship it is. The aspiration says what the app is for: seeing a world truly, your own and then someone else's. It says plainly that this part is not built yet."],
     ["The Map view was taller than the window, and its lower edge was out of sight",

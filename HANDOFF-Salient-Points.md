@@ -784,6 +784,38 @@ help, as well as data on the relationship model."
   whether his two statements of the day should be quoted in the public
   help.
 
+**2026-10-02, two more docs.** [Phil] "There are two more docs in google
+drive network_meaning. Read"
+
+- Two Google Docs from a browser session, in the Drive folder
+  `network_meaning`, not in the repo. The prose is the browser session's.
+- *The Gap, the Bridge, and the Joy of Crossing*: a gap feels like a chasm
+  until the bridge is seen; the tool reveals or helps build the bridge,
+  meets people where they are, brings them along "as they will", and makes
+  the building joyful, so that people come to make new gaps of their own.
+- *Instructions for Terminal Claude — First Crack at the Inviting UI*: a
+  brief for a single first-touch page where a person crosses one small gap
+  in the first minute and wants another. No scoring, no accounts, no map.
+- Read, not built. [lost] Not yet said: whether to build it, and whether
+  it is a page of its own or the front door of this app.
+
+**2026-10-02, the inviting UI as a tab.** [Phil] "Create a new top level
+tab that is our inviting UI. Lets see how far you get."
+
+- Then, while it was being built: [Phil] "And then update a separate help
+  doc for this new UI Tab."
+- Built the same day (app 0.13.0): a **Start** tab, first in the row. Three
+  small goods to choose from, a plank laid on a bridge for each one done,
+  the next a little bigger, five planks to cross. Its help is its own file,
+  `HELP-Start.md`, shown in a fold at the foot of the tab.
+- Nothing is graded, no number is shown, and nothing done there is saved or
+  sent.
+- Claude's, not Phil's words: the name Start, the bridge, the thirty goods
+  and everything the page says, and that a guest or a new account lands
+  there.
+- [lost] Not yet said: whether everyone should land on Start, and whether
+  what is done there should join the person's own map.
+
 ### What the corpus already says about the app
 
 **Input**

@@ -1039,3 +1039,56 @@ data on the relationship model."
 - **Not done.** The help has no contents list, and it is now long. The
   meanings of the idea words are in the help and not in the prompt or the
   code. Nothing in §10 of `RELATIONSHIP-LABELS.md` was built.
+
+## 22. The Start tab, the inviting UI (2026-10-02, app 0.13.0)
+
+Phil read two more Drive documents into the session (a design thesis, "The
+Gap, the Bridge, and the Joy of Crossing", and a build brief, "Instructions
+for Terminal Claude — First Crack at the Inviting UI"), then: "Create a new
+top level tab that is our inviting UI. Lets see how far you get." And:
+"update a separate help doc for this new UI Tab." The design record is
+`VISION.md` §9, E21.
+
+- **What it is.** A **Start** tab, first in the row. One sentence, a bridge
+  in outline, three choices. A choice crossed lays a plank; the next offer
+  is one step bigger; five planks is a bridge. A guest, and a person who
+  has just created an account, land on it. Signing in to an existing
+  account lands where it did before.
+- **Where the code is.**
+  - `src/shared/gaps.js`: the thirty small goods (three for someone else
+    and three for oneself at each reach, 1 to 5), the first offer, `offer`,
+    `settle`, `newBridge`, `trail`. Pure, like the other shared modules.
+    The server does not import it.
+  - `src/client/92-start.js`: draws the bridge and the choices and listens.
+    What is on screen is one of five phases: `offer`, `ask`, `doing`,
+    `across`, `rest`.
+  - `src/client/page.html`: the tab, the view, and the fold for its help.
+    `src/client/style.css`: the section "Start: the inviting tab".
+  - `src/client/97-app.js`: `showView` knows `start`, puts the stream bar
+    away while it is open (the class `quiet` on `.shell`), and the guest
+    button and a fresh sign-up open it.
+- **A second help document.** `HELP-Start.md` is the help for this tab
+  alone. `build.js` now takes a list of help documents (`HELP_DOCS`): each
+  has a marker in `page.html`, and `HELP-Start.md` goes in at the
+  `HELPSTART` marker, inside the fold "About this page". `HELP.md` points
+  at it in one paragraph under "Getting in".
+- **What it does not touch.** No step is made, no route is called, nothing
+  is stored, and the AI is not involved. Nothing in `src/server/` changed,
+  so no restart was needed; the page was live as soon as it was built.
+- **The rule that is tested.** Nothing the page says may grade the person.
+  `tests/gaps.test.js` fails if a word such as score, points, level or
+  streak appears in a good, in what is said after it, or in the page's own
+  sentences. The smoke test also checks that no digit is shown.
+- **Tests.** `npm run gate`: 94 tests, 77 pass, 17 skip without
+  `TEST_DATABASE_URL`; seven of the passing ones are new
+  (`tests/gaps.test.js`). `npm run smoke`: 140 checks pass, thirteen of
+  them new, walking Start as a guest: the first crossing, the choice of
+  who it is for, a bigger one waited on, something smaller, kept for
+  later, stopping and carrying on, and its help fold. Looked at in
+  screenshots at 1280 and 390 pixels wide.
+- **Not done.** Start is not joined to the rest of the app: a good done
+  there is not a goal, a move or an item on a map. Nothing carries to
+  another visit. The script language has no word for it (`show start` is
+  not a view a script can open). The goods are a fixed list. On a phone
+  the bridge runs off both sides by design, and the words on the banks are
+  hidden. Dark colours were not looked at.

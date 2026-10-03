@@ -1,11 +1,11 @@
 <!doctype html>
 <!--
   File: src/client/page.html
-  File Version: 0.11.0
+  File Version: 0.13.0
   The page shell. build.js replaces the STYLE marker with src/client/style.css,
-  the SCRIPT marker with the shared and client modules, in filename order, and
-  the HELP marker with HELP.md as HTML, and writes public/index.html. Edit here,
-  never in public/.
+  the SCRIPT marker with the shared and client modules, in filename order, the
+  HELP marker with HELP.md as HTML, and the HELPSTART marker with HELP-Start.md
+  as HTML, and writes public/index.html. Edit here, never in public/.
 -->
 <html lang="en">
 <head>
@@ -20,7 +20,7 @@
 /* ==== begin style.css ==== */
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.12.0
+   File Version: 0.13.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -399,6 +399,46 @@ form.inline .input{width:100%}
 .helpdoc td:first-child{white-space:nowrap;font-weight:600}
 .helpdoc td:last-child,.helpdoc th:last-child{padding-right:0}
 
+/* ---------- Start: the inviting tab ---------- */
+/* Calm and unhurried: one sentence, a bridge, and a few large buttons. No numbers anywhere. While it is open the stream bar is put away. */
+.shell.quiet .streambar,.shell.quiet .rewound{display:none}
+.start{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:8px 0 24px}
+.start-lead{margin:10px 0 0;font-family:var(--font-words);font-size:28px;line-height:1.25;font-weight:500;text-align:center;text-wrap:balance}
+.bridge{display:block;width:100%;height:auto}
+.br-bank{fill:var(--bar);stroke:var(--line);stroke-width:1.5}
+.br-slot,.br-rail{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 4;opacity:.6}
+.br-rail.built{stroke:var(--ink);stroke-dasharray:none;opacity:1}
+.br-post{fill:none;stroke:var(--muted);stroke-width:1.5}
+.br-plank{fill:var(--head-accent);stroke:var(--ink);stroke-width:1.2}
+.br-me{fill:var(--accent);stroke:var(--panel);stroke-width:2}
+.br-word{font-family:var(--font-data);font-size:11px;fill:var(--muted)}
+/* the one beat of movement: the new plank settles into place, and the person walks onto it */
+.br-plank.fresh{animation:plankin .7s ease-out both;transform-box:fill-box}
+.br-me.moved{animation:mewalk .9s ease-in-out both}
+@keyframes plankin{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+@keyframes mewalk{from{transform:translateX(var(--from))}}
+.start-said{margin:0;font-family:var(--font-words);font-size:20px;line-height:1.4;text-align:center;text-wrap:balance;animation:saidin .6s ease-out both}
+@keyframes saidin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.br-plank.fresh,.br-me.moved,.start-said{animation:none}}
+.start-body{display:flex;flex-direction:column;gap:12px}
+.start-ask{margin:4px 0 0;text-align:center;color:var(--muted);font-size:15px}
+.start-act{margin:0;font-family:var(--font-words);font-size:23px;line-height:1.35;text-align:center;text-wrap:balance}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.choices.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* on a narrow screen the bridge is drawn larger and the outer ends of the banks run off the sides, so the planks can still be seen */
+@media (max-width:640px){.choices,.choices.two{grid-template-columns:minmax(0,1fr)} .start-lead{font-size:23px} #startbridge{overflow:hidden} .bridge{width:136%;margin-left:-18%} .br-word{display:none}}
+.choice{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:center;text-align:left;min-height:86px;padding:14px 16px;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-size:16px;line-height:1.35;font-weight:500}
+.choice:hover{border-color:var(--accent);background:var(--accent-soft)}
+.choice.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.choice.primary:hover{background:var(--accent);filter:brightness(1.08)}
+.choice .for{font-family:var(--font-data);font-size:11px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.start-foot{margin:0;display:flex;flex-wrap:wrap;gap:6px 20px;justify-content:center;min-height:1.5em}
+.start-trail,.start-about{border-top:1px solid var(--line);padding-top:10px}
+.start-trail summary,.start-about summary{cursor:pointer;color:var(--muted);font-size:13px}
+.start-trail ul{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-family:var(--font-words);font-size:16px}
+.start-trail h4{margin:10px 0 0;font-size:13px;font-weight:500;color:var(--muted)}
+.start-about .helpdoc{margin-top:10px}
+
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .sw.kept{border:1.5px solid var(--reading);background:var(--accent-soft)}
@@ -458,6 +498,7 @@ form.inline .input{width:100%}
   <header>
     <div class="brand"><h1>Network Meaning</h1><span class="pill" id="buildpill">v0</span></div>
     <nav role="tablist" aria-label="Views">
+      <button class="tab" role="tab" id="tab-start" data-view="start" aria-selected="false">Start</button>
       <button class="tab" role="tab" id="tab-map" data-view="map" aria-selected="true">Map</button>
       <button class="tab" role="tab" id="tab-state" data-view="state" aria-selected="false">State<span class="count" id="goalcount" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-add" data-view="add" aria-selected="false">Add text</button>
@@ -492,6 +533,46 @@ form.inline .input{width:100%}
   </div>
 
   <main>
+    <!-- START: the inviting tab. One small good at a time, drawn and run by src/client/92-start.js.
+         The fold at the foot is HELP-Start.md, turned into HTML by build.js. Edit HELP-Start.md, never that. -->
+    <section class="view" id="view-start" role="tabpanel" aria-labelledby="tab-start" hidden>
+      <div class="start">
+        <p class="start-lead">One small good thing, right now. It takes a moment, and it feels good.</p>
+        <div id="startbridge"></div>
+        <p class="start-said" id="startsaid" role="status" aria-live="polite" hidden></p>
+        <div class="start-body" id="startbody"></div>
+        <details class="start-about" id="startabout">
+          <summary>About this page</summary>
+          <article class="helpdoc">
+<h2>The Start tab: Help</h2>
+<p>This page is the help for the <b>Start</b> tab. It is also the fold called <b>About this page</b> at the foot of that tab, built from this same file, so the two always say the same thing. The help for the rest of the app is <code>HELP.md</code>, which is the <b>Help</b> tab.</p>
+<h3>What this page is</h3>
+<p>A place to do one small good thing, and then, if you like, another one a little bigger.</p>
+<p>It opens with three choices. Pick any one. There is no wrong one, and none of them takes more than a moment. When you have done it, the page says what just happened, a plank is laid on the bridge at the top, and you are offered the next one.</p>
+<p>That is all it does. It is here so that the first thing you meet in this app is something you can do, and feel, in under a minute.</p>
+<h3>How it goes</h3>
+<ol><li><b>Pick one of three.</b> The first three are thoughts: someone you're glad to know, something near you that you like, something that went right. You have done it by the time you have read it.</li><li><b>For someone else, or for you?</b> After the first, the page asks who the next one is for. Both are good answers. You can change your mind at any time with the line under the choices.</li><li><b>A little bigger each time.</b> The next choices ask slightly more: a word said aloud, a glass of water, a one-line message, a real thank-you. Past the first, these are things you go and do. The page waits.</li><li><b>Say how it went.</b> There are three answers, and all three are fine.</li><li><b>Five planks is a bridge.</b> When the fifth is laid you are across. You can build another, or stop.</li></ol>
+<p>The three answers:</p>
+<ul><li><b>I did it</b> lays a plank and offers one a little bigger.</li><li><b>Not just now. Keep it for later</b> keeps that one for you and offers others about the same size.</li><li><b>Something smaller</b> offers smaller ones.</li></ul>
+<p><b>That's enough for now</b>, under the choices, stops at any point. What you built stays on the page, and <b>Carry on</b> picks it up where you left it.</p>
+<h3>The bridge</h3>
+<p>The picture at the top is two banks with the outline of a bridge between them. The outline is there from the start: the way across can be seen before any of it is built. Each small good you do lays one plank, and the dot, which is you, walks onto it.</p>
+<h3>What it keeps, and what it does not</h3>
+<ul><li><b>What you've crossed</b>, under the choices, lists the things you did and the ones you kept for later. It is your own list, shown only to you.</li><li>It lives on this page only. It is not saved, it is not sent anywhere, and it is gone when you close or reload the page. That is so whether you are a guest or signed in.</li><li>Nothing you do here becomes part of a stream or a map, and none of it reaches the AI.</li></ul>
+<h3>What it will never do</h3>
+<ul><li><b>It does not grade you.</b> There are no points, no marks, no streaks and nothing to lose. Stopping, choosing something smaller, and keeping something for later are all ordinary things to do.</li><li><b>It does not push.</b> Every next step is offered, never required, and it is one step bigger, not ten.</li><li><b>It does not decide what is good for you.</b> It offers small goods of two kinds and you pick. Which way you go is yours.</li></ul>
+<p>The page does keep one thing to itself: a rough sense of how big a step you have been taking, read from what you chose and how it went. It uses that only to size the next three choices. It is not a mark, it is never shown, and it is gone with the page.</p>
+<h3>Why it is here</h3>
+<p>The app is for the question "what is worth doing?" A question like that can feel like a chasm: the far side is plain enough, and the way across is not. What usually makes a gap impassable is not its width. It is that no bridge can be seen.</p>
+<p>So the first thing the app does is let you cross a very small gap and notice that it felt good. A crossing that feels good is one you will want to make again, and a slightly wider one next time. The rest of the app, the maps of a person's world and the words on their links, is for the wider gaps: seeing where you are, where you want to be, and what would get you there.</p>
+<h3>What is not built yet</h3>
+<p>This is a first version, and it is small on purpose.</p>
+<ul><li>The choices are a fixed list of thirty, written by hand. They do not yet come from your own world or your own words.</li><li>Nothing carries over to another visit.</li><li>It is not joined to the rest of the app. A small good you do here does not appear on a map or as a move toward a goal.</li><li>It reads how big a step to offer from two things only: what you picked, and what you said afterwards.</li></ul>
+          </article>
+        </details>
+      </div>
+    </section>
+
     <!-- MAP -->
     <section class="view" id="view-map" role="tabpanel" aria-labelledby="tab-map">
       <div class="mapgrid">
@@ -716,6 +797,7 @@ form.inline .input{width:100%}
 <ul><li><b>Look around as a guest.</b> No account. You can open the samples and try everything that does not use the AI. Nothing a guest does is saved; it lives in the browser tab and is gone when you close it.</li><li><b>Create an account.</b> Your email and a password of 8 or more characters. You become a registered user, with an area of your own.</li><li><b>Sign in</b>, if you already have an account or someone added you.</li></ul>
 <p>There are three levels of person:</p>
 <ul><li><b>Guest.</b> Can look and try. Nothing is stored. The AI buttons explain that they are for registered users.</li><li><b>User.</b> What you do is stored in your own area. Nobody else sees your streams. You can use the AI, up to a daily number of calls.</li><li><b>Admin.</b> A user who can also add people, set their level, give someone a new password, disable an account, and share a stream with everyone.</li></ul>
+<p>A guest, and anyone who has just created an account, lands on the <b>Start</b> tab: one small good thing to do, and then another a little bigger if you want it. It has help of its own, in the fold called <b>About this page</b> at its foot (<code>HELP-Start.md</code> in the repo). Everything below is about the other tabs.</p>
 <p>If you made something as a guest and then create an account or sign in as a user, the stream you were working on is saved for you.</p>
 <p>To change your password, press <b>Change password</b> beside <b>Sign out</b> at the top right. You give your current password and the new one.</p>
 <p>The app does not send email. If you forget your password, an admin sets a new one and tells you.</p>
@@ -903,7 +985,7 @@ expect no goal "walk the dog"</pre>
     </div>
     <div class="status" id="loginstatus" role="status"></div>
     <div class="actions" style="align-items:center"><button class="btn primary" type="submit" id="loginbtn">Sign in</button><button class="linkbtn" type="button" id="loginswap" hidden>Create an account</button><button class="linkbtn" type="button" id="loginguest">Look around as a guest</button></div>
-    <p class="small" style="margin:0">New here? Look around as a guest, then open the Help tab.</p>
+    <p class="small" style="margin:0">New here? Look around as a guest. It starts with one small thing, and the Help tab explains the rest.</p>
   </form>
 </div>
 <div class="scrim" id="pwscrim" hidden>
@@ -1065,6 +1147,130 @@ function evidence(steps) {
 /* True when there is nothing yet for the Evidence view to say. */
 function evidenceEmpty(e) {
   return !e.passes && !e.readings.made && !e.goals.read && !e.loose.raised && !e.help.analyses && !e.suppositions.made && !e.suppositions.given;
+}
+
+/* ==== module shared/gaps.js ==== */
+/* ─────────────────────────────────────────────
+   File: src/shared/gaps.js
+   File Version: 0.1.0
+   ─────────────────────────────────────────────
+   The Start tab's small goods, and the sizing of the next one (Phil,
+   2026-10-02: "Create a new top level tab that is our inviting UI"). The
+   brief is the Drive document "Instructions for Terminal Claude — First
+   Crack at the Inviting UI"; the thinking behind it is "The Gap, the Bridge,
+   and the Joy of Crossing".
+
+   A gap is one small good a person can do: for someone else ("out") or for
+   themselves ("in"). Each has a reach, 1 to 5: how far it asks the person
+   to stretch. Reach 1 is a thought, done in the reading of it. Reach 5 is a
+   real act that takes some nerve. A walk is one person's sitting: which
+   gaps were offered, which were chosen, how each came out, and the reach
+   the next offer is sized to.
+
+   The reach is read from what the person does, never asked for, and it is
+   calibration, not judgment: it sizes the next step and nothing else. It is
+   never shown. No outcome is a failure. "did" lays a plank and reaches one
+   further; "later" keeps the gap for the person and offers others the same
+   size; "smaller" offers smaller ones. The words of every gap are Claude's.
+
+   Pure: no DOM, no fetch, no imports. The client build inlines this file
+   and strips the exports. Nothing here is stored or sent anywhere. */
+
+const REACH = { min: 1, max: 5 };
+/* How many planks make a bridge: one crossing each. */
+const BRIDGE = 5;
+const OUTCOMES = ["did", "later", "smaller"];
+
+/* id | reach | to | act: the words on the button | done: what is said once it is crossed.
+   Three of each kind at each reach, so an offer of three is always possible. */
+const GAPS = [
+  { id: "o1a", reach: 1, to: "out", act: "Think of someone you're glad to know.", done: "For a moment they were in your thoughts, kindly. Everything done for another person starts there." },
+  { id: "o1b", reach: 1, to: "out", act: "Think of someone who could use a kind word.", done: "You noticed them. Most kindness never gets past that step, and you just took it." },
+  { id: "o1c", reach: 1, to: "out", act: "Picture someone who was good to you once.", done: "You remembered it. What they did is still doing its work." },
+  { id: "i1a", reach: 1, to: "in", act: "Notice one thing near you that you like.", done: "You went looking for something good and found it. That took a second, and it was yours." },
+  { id: "i1b", reach: 1, to: "in", act: "Remember one thing that went right lately.", done: "There it is. It happened, and now you have it twice." },
+  { id: "i1c", reach: 1, to: "in", act: "Let your shoulders drop.", done: "A little weight came off, and you were the one who put it down." },
+
+  { id: "o2a", reach: 2, to: "out", act: "Think of one thing you'd thank someone for, and say it out loud to the room.", done: "You said it. The words exist now, and saying them to the person is a shorter step than it was." },
+  { id: "o2b", reach: 2, to: "out", act: "Work out one small thing that would make someone's day easier.", done: "Now you know what it is. Half of helping is knowing what would help." },
+  { id: "o2c", reach: 2, to: "out", act: "Find a photo or a message from someone you care about, and look at it properly.", done: "You gave them a minute of your whole attention. That is rarer than it sounds." },
+  { id: "i2a", reach: 2, to: "in", act: "Drink a glass of water, slowly.", done: "You looked after yourself, on purpose, in the middle of a day. That counts." },
+  { id: "i2b", reach: 2, to: "in", act: "Name one thing you did lately that was harder than it looked.", done: "You saw it for what it was. Nobody else could have told you that." },
+  { id: "i2c", reach: 2, to: "in", act: "Say out loud one small thing you've been putting off. Only say it.", done: "It has a name now, and things with names are easier to walk up to." },
+
+  { id: "o3a", reach: 3, to: "out", act: "Send someone one line: “Thought of you today.”", done: "It's on its way. Somewhere a person is about to find out they were thought of." },
+  { id: "o3b", reach: 3, to: "out", act: "Do one small thing for someone before they ask.", done: "They didn't have to ask. That is a gift of its own, on top of the thing you did." },
+  { id: "o3c", reach: 3, to: "out", act: "Tell someone thank you, and say what for.", done: "You told them what it was for, so they know you really saw it." },
+  { id: "i3a", reach: 3, to: "in", act: "Spend two minutes on the thing you've been putting off. Only two.", done: "Two minutes in, it's a thing you've started. That is a different thing from the one you were avoiding." },
+  { id: "i3b", reach: 3, to: "in", act: "Step outside, or to a window, and stay there for one minute.", done: "You gave yourself a minute that wasn't for anything. It was still worth having." },
+  { id: "i3c", reach: 3, to: "in", act: "Tell yourself one true, kind thing, the way you'd say it to a friend.", done: "You spoke to yourself the way you'd speak to someone you like. It was true when you said it." },
+
+  { id: "o4a", reach: 4, to: "out", act: "Tell someone one particular thing they did that mattered to you.", done: "They know now. People rarely find out which of the things they did landed, and you told them." },
+  { id: "o4b", reach: 4, to: "out", act: "Ask someone how they are, and wait for the real answer.", done: "You waited, and they got to say it. Being asked properly is something people remember." },
+  { id: "o4c", reach: 4, to: "out", act: "Offer someone a hand with one particular thing: “Can I take that for you?”", done: "You offered something particular, so they could say yes. That is what makes an offer real." },
+  { id: "i4a", reach: 4, to: "in", act: "Ask someone for one small thing you need.", done: "You asked. That is hard, and it lets someone else do a small good too." },
+  { id: "i4b", reach: 4, to: "in", act: "Say no to one thing you don't have room for.", done: "You kept some room for yourself. The yeses you give now will be worth more." },
+  { id: "i4c", reach: 4, to: "in", act: "Name one small fear out loud, to yourself. Only name it.", done: "You said it and nothing fell down. It is the same size it was, and you are a little bigger beside it." },
+
+  { id: "o5a", reach: 5, to: "out", act: "Get back in touch with someone you've drifted from. One line is enough.", done: "The line is open again. Whatever comes back, you were the one who reached." },
+  { id: "o5b", reach: 5, to: "out", act: "Put right one small thing you left undone for someone.", done: "It's done, and it's off both your minds. That is two people lighter." },
+  { id: "o5c", reach: 5, to: "out", act: "Say sorry for one small thing, with no explaining.", done: "You said it plainly and left it there. That takes more than it looks like." },
+  { id: "i5a", reach: 5, to: "in", act: "Take the first real step on the thing you've been putting off.", done: "It's begun. Starting was the hard part, and it's behind you." },
+  { id: "i5b", reach: 5, to: "in", act: "Tell one person about something that's been weighing on you.", done: "You're not carrying it alone now. You let someone in, and that was the brave part." },
+  { id: "i5c", reach: 5, to: "in", act: "Do one small thing you've been a little afraid to do.", done: "You did it with the fear still there. That is courage, at a size that fits." }
+];
+
+/* The first offer is the same for everyone: one for someone else, two for
+   yourself, each a thought. Nobody can get it wrong. */
+const FIRST_OFFER = ["o1a", "i1a", "i1b"];
+
+function gapById(id) { return GAPS.find(g => g.id === id) || null; }
+/* A gap of reach 1 is crossed in the choosing of it. Anything bigger is
+   done away from the page, and the person says how it went. */
+function crossedByChoosing(g) { return !!g && g.reach <= REACH.min; }
+
+function newWalk() {
+  return { reach: REACH.min, to: null, planks: 0, bridges: 0, offered: [], log: [] };
+}
+
+/* The three gaps to offer now: at the walk's reach, toward `to` ("out",
+   "in", or null for either). Ones not yet shown come first, then ones shown
+   and not chosen, then the other direction, and last of all ones already
+   done, since a good thing can be done twice. Always three, never one twice. */
+function offer(walk, to = walk.to) {
+  if (!walk.log.length && !walk.offered.length) return noteOffer(walk, FIRST_OFFER.map(gapById));
+  const settled = new Set(walk.log.filter(x => x.outcome !== "smaller").map(x => x.id));
+  const shown = new Set(walk.offered.flat());
+  const at = GAPS.filter(g => g.reach === walk.reach);
+  const rank = g => (settled.has(g.id) ? 4 : 0) + (to && g.to !== to ? 2 : 0) + (shown.has(g.id) ? 1 : 0);
+  return noteOffer(walk, at.map((g, i) => ({ g, i })).sort((a, b) => rank(a.g) - rank(b.g) || a.i - b.i).slice(0, 3).map(x => x.g));
+}
+function noteOffer(walk, gaps) { walk.offered.push(gaps.map(g => g.id)); return gaps; }
+
+/* How one chosen gap came out. Returns { plank, across }: whether a plank
+   was laid, and whether that plank finished the bridge. */
+function settle(walk, id, outcome) {
+  const g = gapById(id);
+  if (!g || !OUTCOMES.includes(outcome)) return { plank: false, across: false };
+  walk.log.push({ id, outcome, reach: g.reach, to: g.to });
+  if (outcome === "smaller") { walk.reach = Math.max(REACH.min, g.reach - 1); return { plank: false, across: false }; }
+  if (outcome === "later") { walk.reach = g.reach; return { plank: false, across: false }; }
+  walk.planks++;
+  walk.reach = Math.min(REACH.max, g.reach + 1);
+  const across = walk.planks >= BRIDGE;
+  return { plank: true, across };
+}
+
+/* Start another bridge. The reach stays where the person showed it to be. */
+function newBridge(walk) { walk.planks = 0; walk.bridges++; return walk; }
+
+/* What the person has done and what they kept for later, for showing back
+   to them. It is theirs: a list of their own acts, never a count or a mark. */
+function trail(walk) {
+  const did = walk.log.filter(x => x.outcome === "did").map(x => gapById(x.id));
+  const didIds = new Set(did.map(g => g.id));
+  const later = [...new Set(walk.log.filter(x => x.outcome === "later" && !didIds.has(x.id)).map(x => x.id))].map(gapById);
+  return { did, later };
 }
 
 /* ==== module shared/replay.js ==== */
@@ -2087,13 +2293,15 @@ function spanLabel(sp) {
 /* ==== module client/00-build.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/00-build.js
-   File Version: 0.12.0
+   File Version: 0.13.0
    ─────────────────────────────────────────────
    Version and the "what changed" list, in the person's words. The app
    version also lives in package.json; build.js checks they agree. */
 const BUILD = {
-  version: "0.12.0",
+  version: "0.13.0",
   corrections: [
+    ["The first thing a newcomer met was a map of someone else's world",
+     "A Start tab, first in the row, and where a guest or a new account lands. Pick one small good thing, do it, and a plank is laid on a bridge; then one a little bigger is offered, if you want it. Five planks is a bridge. Nothing is counted against you, and nothing you do there is saved or sent anywhere. Its own help is the fold at its foot."],
     ["The help said nothing about the words on the links, or about what the app is reaching for",
      "Two new sections in Help. The links lists every word a link can carry, 39 of them, with what each one says and what kind of relationship it is. The aspiration says what the app is for: seeing a world truly, your own and then someone else's. It says plainly that this part is not built yet."],
     ["The Map view was taller than the window, and its lower edge was out of sight",
@@ -3852,6 +4060,108 @@ $("#mic").addEventListener("click", () => { if (talkState === "rec") stopRec(); 
 $("#qanswer").addEventListener("click", () => { openQuestion(sampleQ, "From the voice sample"); $("#qcard").hidden = true; showView("add"); });
 $("#qlater").addEventListener("click", () => { $("#qcard").hidden = true; toast("In the full app, this goes to Loose Ends."); });
 
+/* ==== module client/92-start.js ==== */
+/* ─────────────────────────────────────────────
+   File: src/client/92-start.js
+   File Version: 0.1.0
+   ─────────────────────────────────────────────
+   Start: the inviting tab (Phil, 2026-10-02: "Create a new top level tab
+   that is our inviting UI"). A person picks one small good, does it, and
+   feels a small gap close; then is offered one a little bigger, if they
+   want it. Each crossing lays a plank on a bridge drawn above the choices,
+   and five planks is a bridge crossed.
+
+   The gaps and the sizing of the next one are in src/shared/gaps.js. This
+   module only draws and listens. It makes no step in any stream and calls
+   no server: the walk lives in this page and is gone when the page closes.
+   Nothing here is a count shown to the person, a mark, or a streak. Every
+   button is a right answer.
+
+   What is on screen at any moment is one of:
+     offer   three gaps to choose from
+     ask     for someone else, or for you?
+     doing   one gap chosen, away being done; how did it go?
+     across  the bridge is built
+     rest    the person said that is enough for now */
+let walk = newWalk();
+let startAt = { phase: "offer", gaps: offer(walk), lead: "Pick whichever you like. There's no wrong one.", said: "", doing: null, back: null };
+let startFresh = false;   /* true for the one drawing after a plank is laid, so only the new plank moves */
+let startMeX = 78;        /* where the person stood in the last drawing, in the drawing's units */
+const forWhom = { out: "for someone else", in: "for you" };
+
+/* The bridge: two banks, the planks laid so far, the ones still to lay drawn faint, and the person. */
+function bridgeSVG() {
+  const n = walk.planks, across = n >= BRIDGE, x0 = 112, span = 416 / BRIDGE, w = span - 7;
+  const at = across ? 566 : n ? x0 + (n - 0.5) * span : 78;
+  let s = `<path class="br-bank" d="M0,150 L0,84 Q58,72 112,86 L112,150 Z"/><path class="br-bank" d="M640,150 L640,84 Q582,72 528,86 L528,150 Z"/>`;
+  s += `<path class="br-rail${across ? " built" : ""}" d="M112,54 Q320,82 528,54"/><path class="br-post" d="M112,88 L112,52 M528,88 L528,52"/>`;
+  for (let i = 0; i < BRIDGE; i++) s += `<rect class="${i < n ? "br-plank" + (startFresh && i === n - 1 ? " fresh" : "") : "br-slot"}" x="${(x0 + i * span + 3.5).toFixed(1)}" y="86" width="${w.toFixed(1)}" height="12" rx="3"/>`;
+  /* the person walks from where they stood to the new plank; only on the drawing that follows a crossing */
+  const walked = startFresh && startMeX !== at;
+  s += `<circle class="br-me${walked ? " moved" : ""}" r="9" cy="${n && !across ? 77 : 68}" style="--from:${startMeX.toFixed(1)}px;transform:translateX(${at.toFixed(1)}px)"/>`;
+  startMeX = at;
+  s += `<text class="br-word" x="56" y="126" text-anchor="middle">where you are</text><text class="br-word" x="584" y="126" text-anchor="middle">further on</text>`;
+  const say = across ? "A bridge, built all the way across. You are on the far side." : n ? `A bridge part built: ${n === 1 ? "one plank is" : n + " planks are"} laid, and you are standing on the newest.` : "Two banks and the outline of a bridge between them. Nothing is laid yet.";
+  return `<svg class="bridge" id="bridge" viewBox="0 40 640 110" role="img" aria-label="${esc(say)}">${s}</svg>`;
+}
+function choiceHTML(g, mixed) { return `<button class="choice" type="button" data-gap="${esc(g.id)}">${mixed ? `<span class="for">${forWhom[g.to]}</span>` : ""}${esc(g.act)}</button>`; }
+function trailHTML(open) {
+  const t = trail(walk); if (!t.did.length && !t.later.length) return "";
+  const list = gs => `<ul>${gs.map(g => `<li>${esc(g.act)}</li>`).join("")}</ul>`;
+  return `<details class="start-trail" id="starttrail"${open ? " open" : ""}><summary>What you've crossed</summary>${t.did.length ? list(t.did) : `<p class="small">Nothing yet.</p>`}${t.later.length ? `<h4>Kept for later</h4>${list(t.later)}` : ""}<p class="small">This is yours. It lives on this page only: it is not saved, it is not sent anywhere, and it is gone when you close the page.</p></details>`;
+}
+function renderStart() {
+  const a = startAt, enough = `<button class="linkbtn" type="button" data-go="rest">That's enough for now</button>`;
+  let h = "";
+  if (a.phase === "offer") {
+    const mixed = new Set(a.gaps.map(g => g.to)).size > 1;
+    h = `<p class="start-ask">${esc(a.lead)}</p><div class="choices">${a.gaps.map(g => choiceHTML(g, mixed)).join("")}</div>`;
+    h += `<p class="start-foot">${walk.to ? `<button class="linkbtn" type="button" data-to="${walk.to === "out" ? "in" : "out"}">${walk.to === "out" ? "Something for me instead" : "Something for someone else instead"}</button>` : ""}${walk.log.length ? enough : ""}</p>`;
+  } else if (a.phase === "ask") {
+    h = `<p class="start-ask">The next one can be for someone else, or for you. Which would you like?</p><div class="choices two"><button class="choice" type="button" data-to="out">For someone else</button><button class="choice" type="button" data-to="in">For me</button></div><p class="start-foot">${enough}</p>`;
+  } else if (a.phase === "doing") {
+    h = `<p class="start-ask">Take your time. This page will wait.</p><p class="start-act">${esc(a.doing.act)}</p><div class="choices"><button class="choice primary" type="button" data-outcome="did">I did it</button><button class="choice" type="button" data-outcome="later">Not just now. Keep it for later</button><button class="choice" type="button" data-outcome="smaller">Something smaller</button></div>`;
+  } else if (a.phase === "across") {
+    h = `<p class="start-act">You're across.</p><p class="start-ask">Five small goods, one plank each. You built this, and you walked it.</p><div class="choices two"><button class="choice primary" type="button" data-go="again">Build another bridge</button><button class="choice" type="button" data-go="map">See how this app maps a person's world</button></div>`;
+  } else {
+    h = `<div class="choices two"><button class="choice primary" type="button" data-go="on">Carry on</button><button class="choice" type="button" data-go="map">See how this app maps a person's world</button></div>`;
+  }
+  $("#startbridge").innerHTML = bridgeSVG();
+  $("#startsaid").textContent = a.said; $("#startsaid").hidden = !a.said;
+  $("#startbody").innerHTML = h + trailHTML(a.phase === "across" || a.phase === "rest");
+  startFresh = false;
+}
+/* A gap crossed: lay the plank, say what just happened, and size the next offer. */
+function crossGap(g) {
+  const r = settle(walk, g.id, "did"); startFresh = r.plank;
+  if (r.across) startAt = { phase: "across", said: g.done };
+  else if (!walk.to) startAt = { phase: "ask", said: g.done };
+  else startAt = { phase: "offer", gaps: offer(walk), lead: g.reach < REACH.max ? "Here's one a little bigger, if you'd like it." : "Here's another, about the same size.", said: g.done };
+}
+$("#view-start").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || !b.closest("#startbody")) return;
+  const a = startAt;
+  if (b.dataset.gap) {
+    const g = gapById(b.dataset.gap); if (!g) return;
+    if (crossedByChoosing(g)) crossGap(g); else startAt = { phase: "doing", doing: g, said: "" };
+  } else if (b.dataset.to) {
+    const first = !walk.to; walk.to = b.dataset.to;
+    startAt = { phase: "offer", gaps: offer(walk), lead: (walk.to === "out" ? "For someone else, then." : "For you, then.") + (first ? " These are a little bigger. Pick one." : " Pick one."), said: first ? a.said : "" };
+  } else if (b.dataset.outcome === "did") crossGap(a.doing);
+  else if (b.dataset.outcome === "later" || b.dataset.outcome === "smaller") {
+    const later = b.dataset.outcome === "later"; settle(walk, a.doing.id, b.dataset.outcome);
+    startAt = { phase: "offer", gaps: offer(walk), lead: later ? "Here are some others, about the same size." : "Here are some smaller ones.", said: later ? "Then it waits for you. Picking it was a step of its own, and it stays yours." : "Good. The right size of step is the one you can take today." };
+  } else if (b.dataset.go === "rest") startAt = { phase: "rest", said: "That's a good place to stop. What you built stays here until you close this page.", back: a };
+  else if (b.dataset.go === "on") startAt = a.back || startAt;
+  else if (b.dataset.go === "again") { newBridge(walk); startAt = { phase: "offer", gaps: offer(walk), lead: "A new bridge. Pick whichever you like.", said: "" }; }
+  else if (b.dataset.go === "map") { showView("map"); return; }
+  else return;
+  renderStart();
+  /* the keyboard goes where the eye goes: to the first thing that can be pressed next */
+  const next = $("#startbody .choice"); if (next) next.focus({ preventScroll: true });
+});
+renderStart();
+
 /* ==== module client/95-admin.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/95-admin.js
@@ -3952,7 +4262,7 @@ $("#userlist").addEventListener("submit", async e => {
 /* ==== module client/97-app.js ==== */
 /* ─────────────────────────────────────────────
    File: src/client/97-app.js
-   File Version: 0.7.1
+   File Version: 0.8.0
    ─────────────────────────────────────────────
    Views, sign-in, sign-up and looking around as a guest, changing your own
    password, and boot. Last module: everything above is defined. */
@@ -3961,6 +4271,8 @@ function showView(v) {
   if (v === "admin" && !(me && me.admin)) v = "map";
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
   document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
+  /* Start is the way in: it has no stream to choose and no step to rewind, so the stream bar is put away while it is open */
+  $(".shell").classList.toggle("quiet", v === "start");
   if (v === "map") fitMap();
   if (v === "timeline") renderTimeline();
   if (v === "evidence") renderEvidence();
@@ -3994,7 +4306,7 @@ function renderWho() {
   if (!(me && me.admin) && !$("#view-admin").hidden) showView("map");
 }
 /* Look around with no account. Everything that needs no AI works, in this tab only. */
-$("#loginguest").addEventListener("click", () => { visiting = true; hideLogin(); renderWho(); renderAll(); toast("You're looking around as a guest. Nothing you do is saved."); });
+$("#loginguest").addEventListener("click", () => { visiting = true; hideLogin(); renderWho(); renderAll(); showView("start"); toast("You're looking around as a guest. Nothing you do is saved."); });
 
 /* The AI is for registered users (Phil, 2026-09-30). A guest who presses an
    AI button gets this box instead of a call. */
@@ -4018,7 +4330,7 @@ $("#loginform").addEventListener("submit", async e => {
     const fresh = signingUp;
     $("#password").value = ""; $("#invite").value = ""; signingUp = false; visiting = false; hideLogin(); renderWho();
     await afterSignIn();
-    if (fresh) toast("Your account is ready. The samples are yours to try; acting on one starts your own copy.");
+    if (fresh) { showView("start"); toast("Your account is ready. The samples are yours to try; acting on one starts your own copy."); }
   } catch (err) { $("#loginstatus").textContent = err && err.message ? err.message : signingUp ? "Couldn't create the account." : "Couldn't sign in."; }
   btn.disabled = false;
 });
@@ -4072,7 +4384,7 @@ async function afterSignIn() {
 $("#buildpill").textContent = "v" + BUILD.version;
 renderSteps(0);
 { const last = lsGet("nm.lastStream"); if (last && SAMPLES[last] && last !== DEFAULT_SAMPLE) openSample(last); else rebuild(); }
-const h0 = (location.hash || "").slice(1); if (["map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "help"].includes(h0)) showView(h0);
+const h0 = (location.hash || "").slice(1); if (["start", "map", "state", "add", "loose", "timeline", "evidence", "talk", "script", "help"].includes(h0)) showView(h0);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderMap());
 (async () => {
   try { signupHow = (await api.auth()).signup; } catch (e) { /* the card just offers sign-in */ }

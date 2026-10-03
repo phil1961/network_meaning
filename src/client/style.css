@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.12.0
+   File Version: 0.13.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -378,6 +378,46 @@ form.inline .input{width:100%}
 .helpdoc th{font-family:var(--font-data);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .helpdoc td:first-child{white-space:nowrap;font-weight:600}
 .helpdoc td:last-child,.helpdoc th:last-child{padding-right:0}
+
+/* ---------- Start: the inviting tab ---------- */
+/* Calm and unhurried: one sentence, a bridge, and a few large buttons. No numbers anywhere. While it is open the stream bar is put away. */
+.shell.quiet .streambar,.shell.quiet .rewound{display:none}
+.start{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:8px 0 24px}
+.start-lead{margin:10px 0 0;font-family:var(--font-words);font-size:28px;line-height:1.25;font-weight:500;text-align:center;text-wrap:balance}
+.bridge{display:block;width:100%;height:auto}
+.br-bank{fill:var(--bar);stroke:var(--line);stroke-width:1.5}
+.br-slot,.br-rail{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 4;opacity:.6}
+.br-rail.built{stroke:var(--ink);stroke-dasharray:none;opacity:1}
+.br-post{fill:none;stroke:var(--muted);stroke-width:1.5}
+.br-plank{fill:var(--head-accent);stroke:var(--ink);stroke-width:1.2}
+.br-me{fill:var(--accent);stroke:var(--panel);stroke-width:2}
+.br-word{font-family:var(--font-data);font-size:11px;fill:var(--muted)}
+/* the one beat of movement: the new plank settles into place, and the person walks onto it */
+.br-plank.fresh{animation:plankin .7s ease-out both;transform-box:fill-box}
+.br-me.moved{animation:mewalk .9s ease-in-out both}
+@keyframes plankin{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+@keyframes mewalk{from{transform:translateX(var(--from))}}
+.start-said{margin:0;font-family:var(--font-words);font-size:20px;line-height:1.4;text-align:center;text-wrap:balance;animation:saidin .6s ease-out both}
+@keyframes saidin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.br-plank.fresh,.br-me.moved,.start-said{animation:none}}
+.start-body{display:flex;flex-direction:column;gap:12px}
+.start-ask{margin:4px 0 0;text-align:center;color:var(--muted);font-size:15px}
+.start-act{margin:0;font-family:var(--font-words);font-size:23px;line-height:1.35;text-align:center;text-wrap:balance}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.choices.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* on a narrow screen the bridge is drawn larger and the outer ends of the banks run off the sides, so the planks can still be seen */
+@media (max-width:640px){.choices,.choices.two{grid-template-columns:minmax(0,1fr)} .start-lead{font-size:23px} #startbridge{overflow:hidden} .bridge{width:136%;margin-left:-18%} .br-word{display:none}}
+.choice{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:center;text-align:left;min-height:86px;padding:14px 16px;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-size:16px;line-height:1.35;font-weight:500}
+.choice:hover{border-color:var(--accent);background:var(--accent-soft)}
+.choice.primary{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.choice.primary:hover{background:var(--accent);filter:brightness(1.08)}
+.choice .for{font-family:var(--font-data);font-size:11px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.start-foot{margin:0;display:flex;flex-wrap:wrap;gap:6px 20px;justify-content:center;min-height:1.5em}
+.start-trail,.start-about{border-top:1px solid var(--line);padding-top:10px}
+.start-trail summary,.start-about summary{cursor:pointer;color:var(--muted);font-size:13px}
+.start-trail ul{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-family:var(--font-words);font-size:16px}
+.start-trail h4{margin:10px 0 0;font-size:13px;font-weight:500;color:var(--muted)}
+.start-about .helpdoc{margin-top:10px}
 
 /* ---------- additions for the real app ---------- */
 .who{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}

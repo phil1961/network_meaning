@@ -40,6 +40,12 @@ There are three levels of person:
 - **Admin.** A user who can also add people, set their level, give someone
   a new password, disable an account, and share a stream with everyone.
 
+A guest, and anyone who has just created an account, lands on the **Start**
+tab: one small good thing to do, and then another a little bigger if you
+want it. It has help of its own, in the fold called **About this page** at
+its foot (`HELP-Start.md` in the repo). Everything below is about the other
+tabs.
+
 If you made something as a guest and then create an account or sign in as a
 user, the stream you were working on is saved for you.
 

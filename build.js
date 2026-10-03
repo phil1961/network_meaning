@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 /* ─────────────────────────────────────────────
    File: build.js
-   File Version: 0.3.0
+   File Version: 0.4.0
    ─────────────────────────────────────────────
    Assembles public/index.html from src/client and src/shared. The same
    idea as the Markdown Editor's build: straight concatenation in filename
-   order, three substitutions into the page shell (the style, the script,
-   and HELP.md turned into the Help tab), no dependencies.
+   order, and substitutions into the page shell (the style, the script,
+   HELP.md turned into the Help tab, and HELP-Start.md turned into the
+   fold at the foot of the Start tab), no dependencies.
 
      node build.js            write public/index.html
      node build.js --check    build in memory and fail if it differs
@@ -24,6 +25,8 @@ const CLIENT = path.join(ROOT, "src", "client");
 const SHARED = path.join(ROOT, "src", "shared");
 const TARGET = path.join(ROOT, "public", "index.html");
 const CHECK = process.argv.includes("--check");
+/* The help documents that become part of the page: [marker in page.html, file, what it becomes]. */
+const HELP_DOCS = [["@@HELP@@", "HELP.md", "the Help tab"], ["@@HELPSTART@@", "HELP-Start.md", "the fold at the foot of the Start tab"]];
 
 function fail(msg) { console.error("build: " + msg); process.exit(2); }
 const mark = label => "/* ==== " + label + " ==== */";
@@ -37,8 +40,9 @@ function modules() {
   const client = fs.readdirSync(CLIENT).filter(f => f.endsWith(".js")).sort().map(f => ({ name: "client/" + f, text: fs.readFileSync(path.join(CLIENT, f), "utf8") }));
   return shared.concat(client);
 }
-/* HELP.md to HTML for the Help tab, so the repo's help and the app's help
-   are one file. A small subset on purpose: # headings, paragraphs, - and
+/* A help document to HTML, so the repo's help and the app's help are one
+   file: HELP.md for the Help tab, HELP-Start.md for the Start tab. A small
+   subset on purpose: # headings, paragraphs, - and
    1. lists (with wrapped lines), > quotes, ``` fences, | tables | with a
    header row, **bold**, *italic*, `code`. Anything else in HELP.md shows
    as plain text. */
@@ -82,20 +86,25 @@ function mdToHtml(md) {
 
 function assemble() {
   const page = fs.readFileSync(path.join(CLIENT, "page.html"), "utf8");
-  const helpFile = path.join(ROOT, "HELP.md");
-  if (!fs.existsSync(helpFile)) fail("HELP.md is missing; the Help tab is built from it");
-  const help = mdToHtml(fs.readFileSync(helpFile, "utf8"));
-  if (help.includes("@@")) fail("HELP.md contains @@, which the build uses for its own markers");
+  const helps = {};
+  for (const [marker, name, where] of HELP_DOCS) {
+    const file = path.join(ROOT, name);
+    if (!fs.existsSync(file)) fail(`${name} is missing; ${where} is built from it`);
+    helps[marker] = mdToHtml(fs.readFileSync(file, "utf8"));
+    if (helps[marker].includes("@@")) fail(name + " contains @@, which the build uses for its own markers");
+  }
   const css = fs.readFileSync(path.join(CLIENT, "style.css"), "utf8");
   const mods = modules();
-  for (const m of ["@@STYLE@@", "@@SCRIPT@@", "@@HELP@@"]) if (page.indexOf(m) < 0) fail("src/client/page.html has no " + m + " marker");
+  for (const m of ["@@STYLE@@", "@@SCRIPT@@", ...Object.keys(helps)]) if (page.indexOf(m) < 0) fail("src/client/page.html has no " + m + " marker");
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
   const bm = /version:\s*"([^"]+)"/.exec(fs.readFileSync(path.join(CLIENT, "00-build.js"), "utf8"));
   if (!bm || bm[1] !== pkg.version) fail(`BUILD.version in src/client/00-build.js (${bm && bm[1]}) must match package.json (${pkg.version})`);
   const js = '(function(){\n"use strict";\n' + mods.map(m => mark("module " + m.name) + "\n" + m.text).join("\n") + "\n" + mark("end script") + "\n})();";
   if (js.includes("</script")) fail("a module contains the text </script, which would end the page's script tag");
   const style = mark("begin style.css") + "\n" + css + "\n" + mark("end style.css");
-  const out = page.replace("@@STYLE@@", () => style).replace("@@HELP@@", () => help).replace("@@SCRIPT@@", () => js);
+  let out = page.replace("@@STYLE@@", () => style);
+  for (const [marker, html] of Object.entries(helps)) out = out.replace(marker, () => html);
+  out = out.replace("@@SCRIPT@@", () => js);
   const leftover = out.replace(/@@GARBLE/g, "").indexOf("@@");
   if (leftover >= 0) fail("an unsubstituted @@MARKER@@ survived into the output");
   return { text: out, mods };

@@ -276,11 +276,12 @@ both.
 |---|---|
 | `server.js` | HTTP entry point: the page, `/health`, and the JSON API |
 | `HELP.md` | The help. `build.js` turns it into the Help tab |
+| `HELP-Start.md` | The help for the Start tab alone. `build.js` turns it into the fold at the foot of that tab |
 | `METHOD-Deriving-the-Maps.md` | How the four maps of a world are derived, with a change log |
 | `RELATIONSHIP-LABELS.md` | The words a link can carry: what the code has, how each came to be, and what they could be used for. The help's section "The links" is the short form |
 | `src/server/` | `db.js` (pool), `migrate.js` (numbered SQL), `auth.js` (sign-in, sign-up, levels, signed cookie), `screen.js` (the check before every AI call), `owner-sample.js` (the owner's own sample stream, never in the page), `ideaify.js` (prompt + Claude call), `normalize.js` (validate the answer), `analyze.js` (help analysis: prompt + validation), `streams.js` (append-only store) |
-| `src/shared/` | `replay.js` (steps → map), `spans.js` (text → spans), `script.js` (the scripting language: parse, plan and check), `evidence.js` (steps → counts of what became of the machine's claims); ESM for the server and tests, inlined for the page |
-| `src/client/` | `page.html`, `style.css`, numbered modules in load order (`65-statelayer.js` is the State view, `77-evidence.js` the Evidence view, `85-script.js` the Script view and the stepper, `95-admin.js` the Admin tab) |
+| `src/shared/` | `replay.js` (steps → map), `spans.js` (text → spans), `script.js` (the scripting language: parse, plan and check), `evidence.js` (steps → counts of what became of the machine's claims), `gaps.js` (the Start tab's small goods, and how the next one is sized); ESM for the server and tests, inlined for the page |
+| `src/client/` | `page.html`, `style.css`, numbered modules in load order (`65-statelayer.js` is the State view, `77-evidence.js` the Evidence view, `85-script.js` the Script view and the stepper, `92-start.js` the Start tab, `95-admin.js` the Admin tab) |
 | `sql/` | `001-init.sql`, `002-users.sql` (levels, passwords, shared streams), `003-settings.sql` (what an admin sets from the Admin tab), `004-logins.sql` (how often each person signed in, first and last) and later migrations |
 | `tests/` | `node --test` suites and `smoke.browser.js` |
 | `build.js` | Assembler and `--check` gate |
