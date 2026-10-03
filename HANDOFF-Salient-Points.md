@@ -876,6 +876,42 @@ the google drive network_meaning-docs. Read"
 - [lost] Not yet said: whether the person sees their own profile, and
   whether to build this.
 
+**2026-10-03, the five questions answered.** [Phil] "Do you understand what
+we want you to build from the two most recent google docs we gave you?"
+then "write is into a doc and I'll have cell phone claude read and
+comment" then "cell phone claude has answered these questions in a new
+doc. Read and prepare for a second doc soon."
+
+- Claude's reading and five questions went into a Google Doc in
+  `network_meaning-docs`; the answer is *Browser Claude — Concurrence &
+  Answers*, "Decisions are Phil's, reached in conversation."
+- Decided: the person never sees numbers, only warm two-ended language;
+  the small-goods bridge stays and Bobby's arc is a third way in; a guest
+  stores nothing, a member's profile is a step in their own stream; Claude
+  drafts the first five-plank arc as hypotheses; build to the routing
+  output and stop before passages. "The Vue bridge" was a mistake in the
+  specs. New data to author: a pair of honourable descriptions per aspect.
+  The mid-point threshold is left open for tuning.
+- Read and recorded; not built, a second document is coming first.
+
+**2026-10-03, the why of the bridge.** [Phil] "Read two new docs in
+network_meaning-docs"
+
+- One had arrived: *Meaning Guide — The Philosophy of the Bridge (the
+  Why)*, from a long conversation between Phil and browser Claude. The
+  bridge is built by participation, not correctness; it is stored effort;
+  each plank is hard and built on faith; sight comes by inspiration or
+  borrowed from those who crossed before (the state names the gap, the
+  passages are those who faced it); the app aims to grow people out of
+  needing it; the gap pulls; fear and the pull are the same voltage, so
+  the app must not read trembling as refusal; and the design sizes the
+  gap to the person: "Mercy built into the mechanism."
+- Claude's notes in `VISION.md`: "every honest answer lays a plank" fits
+  Bobby's arc; on the small-goods walk "later" lays none, and the two can
+  differ; "don't read trembling as refusal" asks more of "Not just now"
+  than one kind sentence, and wants passages that do not exist yet.
+- [lost] The second of the two documents was not yet in the folder.
+
 ### What the corpus already says about the app
 
 **Input**

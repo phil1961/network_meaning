@@ -875,6 +875,103 @@ Claude's notes, for Phil, before anything is built from these:
 - *The IPIP items are a download away* and public domain; the spec's own
   next step is to fetch them before authoring.
 
+**2026-10-03, the five questions answered.** Phil: "Do you understand what
+we want you to build from the two most recent google docs we gave you?"
+Claude said its reading back with five questions; Phil: "write is into a
+doc and I'll have cell phone claude read and comment". The doc is
+*Terminal Claude — Reading of the Bridge Scenario Spec, with Questions*,
+in `network_meaning-docs`. The answer came as *Browser Claude —
+Concurrence & Answers to Terminal Claude's Five Questions*, which says
+"Decisions are Phil's, reached in conversation." Phil: "cell phone claude
+has answered these questions in a new doc. Read and prepare for a second
+doc soon."
+
+("write is into a doc" is as typed.)
+
+The decisions, as that document gives them:
+- *Q1, who sees the profile:* "The person NEVER sees aspect numbers or
+  anything resembling a grade." Numbers are "translated into warm, plain
+  language, and BOTH ends of every aspect are regarded honourably": low
+  Openness is "finds footing in what's solid and tested," not
+  "unimaginative." The full numbers are for the admin view only. "Warm is
+  not flattery": descriptions "stay kind AND true."
+- *Q2, the small-goods bridge:* "Yes. Keep it." Bobby's arc is "a third
+  way in beside 'start from where you are.'" "Revisit only once the arc
+  proves itself."
+- *Q3, where the profile lives:* a guest, in the page only; a signed-in
+  user, "stored as a step in the person's own stream, like everything
+  else, so it rewinds and is theirs. Treated as tender data."
+- *Q4, who authors the arc:* "Terminal Claude drafts the first five-plank
+  arc — words and weights as hypotheses." "Tuning beats a blank page."
+- *Q5, passages:* "Build the routing OUTPUT (profile + ranked states) and
+  stop there."
+- *A correction:* "the Vue bridge" in the earlier specs was wrong; the
+  app's own description of itself is "authoritative over the earlier
+  docs."
+- *Three additions:* each of the ten aspects needs a pair of honourable
+  descriptions, one for each end, as new data in the shared module (A1);
+  the "authored hypotheses, not measurements" caveat goes on the admin
+  page itself (A2); and the threshold for when a lean is strong enough to
+  describe at all is left open, "a tuning decision to settle in the admin
+  view with real data" (A3).
+
+Read and recorded. Not yet built: Phil asked for a second document to be
+read first.
+
+**2026-10-03, the why of the bridge.** "Read two new docs in
+network_meaning-docs"
+
+One was there when Claude looked: *Meaning Guide — The Philosophy of the
+Bridge (the Why)*, "from a long conversation between Phil and browser
+Claude", the prose the browser session's. Its claims, in its words:
+- *The metaphor, resolved:* "the bridge is built by PARTICIPATION, not
+  correctness. Every honest answer lays a plank; there is no way to
+  answer that fails to build it. What varies is not whether the bridge
+  completes, but what it is MADE OF."
+- *Stored effort:* "the bridge is stored effort." Taking action is laying
+  the plank; improvement is the next gap offered slightly wider; "the far
+  bank is not the point. The CROSSING is."
+- *Each plank is hard, and built on faith:* "the belief that YOU can
+  create the plank" and "trust in the system / the ground to help build
+  your capability." "The onboarding ENACTS the theology rather than merely
+  stating it."
+- *Two sources of vision:* "Pure inspiration — given, unearned" and
+  "Borrowed sight — your question is almost never new. Someone stood at
+  this exact gap, laid a plank, it held." The character cultivated is "the
+  humility to receive that." The app is "a machine for exactly this
+  transmission across time: name the gap honestly (the STATE), find those
+  who faced it (the PASSAGES across traditions), and … trust them, lay
+  their plank, cross on their faith until yours catches up."
+- *The developmental aim:* grow the capacity to trust others and the
+  person's own sight at once; "the scaffolding teaches the hand that will
+  one day build without it. The app aims to grow people OUT of needing
+  it."
+- *It serves the whole:* "A gap is potential energy"; "the gap PULLS";
+  "Attention is the thing that grows."
+- *The spark and the trembling:* the capacitor that arcs; "the rising
+  charge and the rising fear are the SAME voltage." Design consequence:
+  "the app must not read the trembling as refusal, nor rush to discharge
+  it. … Stay with the person in the charged moment — name it, honour it,
+  surface the words of those who crossed WHILE afraid."
+- *The promise:* "we start small, at a gap you can handle, a plank you can
+  actually lay"; "the design SIZES the gap to you"; "Mercy built into the
+  mechanism."
+
+Claude's notes, for Phil:
+- The Start tab as built already sizes the gap to the person and offers
+  one step more, never ten. Two things in this document bear on it
+  directly. *"Every honest answer lays a plank"* fits Bobby's arc, where
+  an answer is the plank; on the small-goods walk a plank is a good done,
+  and "keep it for later" lays none. Those can stay different, since the
+  two are different bridges, but the help should say so. *"Do not read
+  the trembling as refusal"* bears on "Not just now" and "Something
+  smaller": today each gets one kind sentence; this asks the page to stay
+  a moment longer with the person, and to have the words of someone who
+  crossed while afraid to offer, which needs the passages that do not yet
+  exist.
+- The second document had not appeared in the folder when Claude looked;
+  only this one was newer than the Concurrence.
+
 ---
 
 ## 1. The experience in one paragraph
