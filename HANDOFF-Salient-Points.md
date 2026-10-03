@@ -854,6 +854,28 @@ pages."
 - Built the same night (app 0.14.0): the header stays at the top of the
   window while any page scrolls.
 
+**2026-10-03, two more Meaning Guide docs.** [Phil] "read two new docs on
+the google drive network_meaning-docs. Read"
+
+- *Bridge, Scenarios & Big Five Integration*: the bridge becomes a
+  scenario about Bobby that the person answers for him, not about
+  themselves ("we don't want to ask people to enter information about
+  themselves into an AI"); the answers read off an entry state and a Big
+  Five profile (IPIP, public domain), and the two together pick the
+  passage and tradition offered.
+- *Mapping Mechanism & Admin Review Spec*: every option is authored with
+  aspect loadings (ten aspects, two per trait) and state signals; tallies
+  accumulate across the bridge; an admin item table and coverage summary
+  to audit and tune. Weights are "AUTHORED HYPOTHESES, not calibrated
+  measurements".
+- Read, not built. Claude's notes for Phil are in `VISION.md` under the
+  same date: a plank changes from a good done to an answer given; the
+  first brief put scoring the person out of scope and these build a
+  profile kept from the person; a guest has nowhere to keep one; no store
+  of passages yet.
+- [lost] Not yet said: whether the person sees their own profile, and
+  whether to build this.
+
 ### What the corpus already says about the app
 
 **Input**

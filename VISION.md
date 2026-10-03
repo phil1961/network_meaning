@@ -815,6 +815,66 @@ Built the same night (app 0.14.0). The header, banner and tabs together,
 stays at the top of the window while any page scrolls. It sits above the
 stepper and below the sign-in card and the other modals.
 
+**2026-10-03, two more Meaning Guide docs.** "read two new docs on the
+google drive network_meaning-docs. Read"
+
+Two Google Docs from a browser session that morning, in
+`network_meaning-docs`. Their prose is the browser session's. Read and
+recorded; nothing built.
+
+*Meaning Guide — Bridge, Scenarios & Big Five Integration.* It takes the
+bridge of the Start tab and makes it the place where two things are read
+at once: "the person's entry STATE" and "the person's PERSONALITY profile
+(where they sit on the Big Five)". Its "key decision": "move away from
+direct self-report", because "we don't want to ask people to enter
+information about themselves into an AI." Instead "the bridge presents a
+SCENARIO with a character. The person answers FOR the character", and
+"personality is read off how the person projects onto the character."
+The character is Bobby, "a single running character … across all planks",
+with more characters later. The personality model is the Big Five on the
+public-domain IPIP items, "without a visible questionnaire". State and
+profile together "shape which passage, and which tradition, is surfaced".
+
+*Meaning Guide — Mapping Mechanism & Admin Review Spec.* The build spec
+for that. "Metrics are authored IN, not inferred OUT": each option a
+person can choose is written with its trait loadings and state signals
+attached. The Big Five is taken to ten aspects (two per trait), because
+"two people can score the same on a trait for opposite reasons" and "want
+different words surfaced". A data model: scenario, choice point, choice
+option with `aspectLoadings[]`, `stateSignals[]` and an author's note;
+running tallies as the person crosses; on completion "a personality
+profile (10 aspects / 5 traits) + a ranked state list." A new component
+on the Admin tab: an item table, one row per option with its loadings and
+signals, and a coverage summary that shows which aspects and states are
+over- or under-reached. Its own caveat, in capitals: the weights are
+"AUTHORED HYPOTHESES, not calibrated measurements"; "treat scores as a
+meaningful routing signal, not a clinical Big Five result."
+
+Claude's notes, for Phil, before anything is built from these:
+- *What the bridge is changes.* Today a plank is a small good done; in
+  these documents a plank is an answer about Bobby. The two can be joined
+  (a scenario can end in a small good to do), but the first brief's
+  promise, "the user should click, see a response, feel a tiny sense of 'I
+  just did that'", is about doing, and the new one is about answering.
+- *The first brief put scoring the person out of scope.* "Any real
+  scoring, analytics, or evaluation of the user as a person" was out, and
+  "the user must NEVER feel graded." These documents build a personality
+  profile from the answers, kept from the person and shown to the admin.
+  The projective method keeps the person from confessing, and the
+  documents' caveat is honest; still, a profile read off someone without
+  their seeing it is the kind of thing the app's own rules (what a person
+  reveals "is theirs, serves them, and is visible to them") would have it
+  show them. That is Phil's call, and it should be made before the admin
+  table exists.
+- *A guest is stored nowhere.* A profile and a ranked state list are
+  state across a sitting; for a guest they can live in the page as the
+  walk does, and for a user they would need a place on the server that
+  does not exist.
+- *Passages still have no store,* and the app is not Vue (the spec says
+  "the Vue bridge").
+- *The IPIP items are a download away* and public domain; the spec's own
+  next step is to fetch them before authoring.
+
 ---
 
 ## 1. The experience in one paragraph
