@@ -406,7 +406,31 @@ try {
   ok((await choices()) === "Carry on|See how this app maps a person's world" && await js("document.getElementById('starttrail').open === true"), "That's enough for now stops, and shows what was crossed");
   await click("#startbody [data-go='on']");
   ok(await js("document.querySelectorAll('#startbody .choice[data-gap]').length === 3") && (await planks()) === 2, "Carry on picks it up where it was left");
-  ok(await js("(() => { const a = document.getElementById('startabout'); a.open = true; const h = [...a.querySelectorAll('h3')].map(x => x.textContent).join('|'); a.open = false; return h; })()") === "What this page is|How it goes|The bridge|What it keeps, and what it does not|What it will never do|Why it is here|What is not built yet", "the fold at the foot of Start is HELP-Start.md, section by section");
+  ok(await js("(() => { const a = document.getElementById('startabout'); a.open = true; const h = [...a.querySelectorAll('h3')].map(x => x.textContent).join('|'); a.open = false; return h; })()") === "What this page is|How it goes|Starting from where you are|The bridge|What it keeps, and what it does not|What it will never do|Why it is here|What is not built yet", "the fold at the foot of Start is HELP-Start.md, section by section");
+  /* a way in from where the person stands: their own words placed against the states, or the states chosen from a list */
+  await js("document.getElementById('startbody').querySelector('[data-go=\"on\"]') && null");
+  await js("location.reload()"); await pause(1500);
+  await js("document.getElementById('loginscrim').hidden = true"); await click("#tab-start");
+  ok(await js("!!document.querySelector('#startbody [data-go=\"where\"]')") && (await planks()) === 0, "a fresh Start offers a way in from where you are");
+  await click("#startbody [data-go='where']");
+  ok(await js("document.activeElement.id === 'wheretext' && document.querySelectorAll('#startbody .choice').length === 2"), "the way in is a box for your own words, with the keyboard already in it");
+  await js("document.getElementById('wheretext').value = 'I feel lost and I do not know which way to go.'");
+  await click("#startbody [data-go='place']");
+  ok(await js("[...document.querySelectorAll('#startbody .choice[data-state]')].map(b => b.textContent).join('|')") === "Path and choiceFeeling lost or without direction" && await js("!document.getElementById('wheretext')"), "the words are placed on the state they point at, and the box with them in it is gone");
+  await click("#startbody [data-state='lost']");
+  ok(await js("document.getElementById('startsaid').textContent.startsWith('You do not know which way to go.') && document.querySelectorAll('#startbody .choice[data-gap]').length === 3 && !document.querySelector('#startbody [data-go=\"where\"]')"), "choosing it says a sentence that meets you there and offers three small goods that fit");
+  await click("#startbody .choice");
+  ok((await planks()) === 1 && await js("document.getElementById('starttrail').textContent.includes('Where you began: feeling lost')"), "and from there it goes as before, with where you began on your own list");
+  await js("location.reload()"); await pause(1500);
+  await js("document.getElementById('loginscrim').hidden = true"); await click("#tab-start");
+  await click("#startbody [data-go='where']");
+  await js("document.getElementById('wheretext').value = 'I feel like a ship with no harbour'");
+  await click("#startbody [data-go='place']");
+  ok(await js("document.getElementById('startsaid').textContent.startsWith(\"I couldn't place that from the words alone, and I won't guess\") && document.querySelectorAll('#startbody .choice[data-family]').length === 5"), "words it cannot place are not guessed at: it says so and offers the five families");
+  await click("#startbody [data-family='relational']");
+  ok(await js("document.querySelectorAll('#startbody .choice[data-state]').length === 5 && document.querySelector('#startbody [data-go=\"browse\"]').textContent === 'None of these'"), "a family opens onto its states, with a way to say none of these");
+  await click("#startbody [data-go='back']");
+  ok(await js("document.querySelectorAll('#startbody .choice[data-gap]').length === 3 && document.getElementById('startsaid').hidden"), "Back to the three goes back to the three");
   await click("#tab-map");
   ok(await js("getComputedStyle(document.querySelector('.streambar')).display !== 'none' && document.getElementById('view-map').hidden === false"), "leaving Start brings the stream bar back");
 
@@ -417,6 +441,10 @@ try {
   /* the link words are tables in the help: three lists and the count by kind */
   ok(await js("(() => { const t = [...document.querySelectorAll('#helpdoc table')]; return t.length + ':' + t.map(x => x.querySelectorAll('tbody tr').length).join(',') + ':' + t.map(x => x.querySelectorAll('thead th').length).join(','); })()") === "4:15,16,10,11:3,3,4,3", "the help lists the link words in tables: 15 between ideas, 16 within a map, 10 across maps, and 11 kinds");
   ok(await js("(() => { const d = document.getElementById('helpdoc'); return !d.textContent.includes('|') && [...d.querySelectorAll('table')].every(t => t.getBoundingClientRect().right <= d.getBoundingClientRect().right + 1); })()"), "no table in the help is left as raw text, and none is wider than the page");
+  /* the banner and the tabs stay in view while a long page scrolls */
+  await js("window.scrollTo(0, 1200)"); await pause(200);
+  ok(await js("(() => { const h = document.querySelector('header').getBoundingClientRect(); const t = document.getElementById('tab-help').getBoundingClientRect(); return window.scrollY > 1000 && h.top === 0 && t.top >= 0 && t.bottom <= h.bottom && document.elementFromPoint(t.left + 4, t.top + 4) === document.getElementById('tab-help'); })()"), "scrolled far down the help, the banner and the tabs are still at the top of the window, and the tabs can be pressed");
+  await js("window.scrollTo(0, 0)");
   ok(errors.length === 0, "no script errors during the walkthrough", errors.join(" | "));
 } catch (e) {
   fail++; console.log("  FAIL  " + (e && e.message ? e.message : e));

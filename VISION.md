@@ -760,6 +760,61 @@ states of a person, where the Mental state map holds items a person puts
 forth and the State view holds facts. A family of states that a map could
 be read against is new; nothing in the code has a place for it yet.
 
+*(Note, the same night: built on after all. See the next entry.)*
+
+**2026-10-03, the taxonomy as a way in from Start.** Claude had offered
+three readings of what the taxonomy is for: a way to read a person's map
+against, a way in from the Start tab, or a list the AI matches a question
+to. Phil: "Make the state taxonomy a way in from the Start tab: Yes, but
+their is a new doc dropped just now". Then: "Its called Meaning Guide —
+Classification Step.gdoc"
+
+("their" and "Its" are as typed.)
+
+The new document is *Meaning Guide — Classification Step*, a Google Doc
+from a browser session. It is "the bridge between a person's free-text
+inquiry and the state taxonomy": a person "types something in their own
+words; the system must decide which of the twenty-five anchor states
+… that inquiry belongs to, so the right passages can be surfaced." It
+weighs three ways (keywords, embeddings, an LLM) and chooses "Embeddings +
+semantic similarity as the primary classifier, with a keyword layer as a
+fast, transparent fallback", because "people describe inner states
+obliquely"; the keyword layer's weakness is its own example, "I feel like a
+ship with no harbour" matches nothing. Its flow ends in "passage retrieval
+across traditions". It names the "meaning enhancement generator" as the
+step that normalises the inquiry first.
+
+Built the same night (app 0.14.0). Under the first three choices on Start:
+"Or start from where you are". A box for a few words of the person's own,
+and **Find where I am**; or a list, the five families opening onto their
+states. The words are placed by the keyword layer alone, in the page, with
+no model and nothing sent. The nearest states, up to three, are offered
+with "None of these". Choosing a state says a sentence that meets the
+person there and offers three small goods that fit it; from there Start
+goes as before. When nothing can be placed, the page says so and shows the
+five families: it never guesses. The words themselves are read and let go;
+only the state chosen is kept, and only until the page closes. The design
+record is E22 in §9.
+
+What is the documents' and what is Claude's: the twenty-five states, the
+five families and their names are the taxonomy document's. The keyword
+layer, and that it must say when it fails, are the classification
+document's. Claude's, for Phil to judge: the doorway sentence for each
+state; the words each state is found by; which three small goods each
+state leads to; that the page goes by words alone, because embeddings
+would need a model this app does not have and the AI is not for guests;
+and the plain names for the five families ("The big questions", "Path and
+choice", "The self among others", "The self with itself", "Reaching beyond
+the self"). Not built: the layer that goes by meaning, and the passages
+from many traditions, since the app has no store of passages.
+
+**2026-10-03, the banner stays put.** "I want the tab bar and banner at the
+top to be visible at all times while I scroll down the various pages."
+
+Built the same night (app 0.14.0). The header, banner and tabs together,
+stays at the top of the window while any page scrolls. It sits above the
+stepper and below the sign-in card and the other modals.
+
 ---
 
 ## 1. The experience in one paragraph
@@ -1207,8 +1262,9 @@ maps of one world with Bobby's world made up, E15 accounts and the three
 levels, and E16 the check before every call to the AI. E17 (evidence) and
 E18 (spendable resources) come from a parallel session the same night, and
 E19 is what was done about the two reviews. E20 (2026-10-02) is what the
-relationship labels could carry for the engine, and E21 is the Start tab
-built the same day. Earlier experiments
+relationship labels could carry for the engine, E21 is the Start tab
+built the same day, and E22 (2026-10-03) the state taxonomy as a way in
+from it. Earlier experiments
 are revised by a note that refers
 to them, never rewritten in place.
 
@@ -2121,6 +2177,39 @@ rewards pressing and not crossing.
 whether what a person does there should become part of their own world
 (a goal and its moves, in the State view's terms), and whether the goods
 should come from the person's own map instead of a list.
+
+**E22. A way in from where the person stands: the state taxonomy on
+Start.**
+*Status: built and testing, 2026-10-03 (app 0.14.0). Phil: "Make the state
+taxonomy a way in from the Start tab: Yes". The states are the Drive
+document "Meaning Guide — State Taxonomy"; the placing follows "Meaning
+Guide — Classification Step". The doorway lines, the trigger words and the
+goods each state leads to are Claude's.*
+*What was built.* A box for a few words of the person's own, placed
+against the twenty-five states by their words (`src/shared/states.js`), or
+the states chosen from five families. A state chosen says a sentence that
+meets the person there and picks the first three small goods. The words
+are read and let go. Nothing matched is said plainly, and the families are
+offered instead.
+*What it deliberately is not.* It does not guess: no match, no state. It
+uses no model, so a guest has it, and nothing leaves the page. A state is
+"a doorway, not a diagnosis", and a test fails if a doorway line uses a
+word of diagnosis.
+*What is thin.* Words alone, as the classification document says, miss
+what is said sideways. Common words ("love", "trust", "change") will
+sometimes point at a state the person did not mean; the choice and "None
+of these" are the guard. The three goods a state leads to are all of reach
+1, from a pool of six, so the fit is coarse.
+*For:* a person who writes a line about where they are is offered the
+state they would have chosen themselves, and takes a first good from it.
+*Against:* the states offered read as wrong or presumptuous often enough
+that people stop trusting the box; or people write what they would not
+want kept and do not believe that it is not kept.
+*Open, and Phil's to say:* whether registered users should get the layer
+that goes by meaning (which needs an embedding model the app does not
+have, or the AI, with its screening); whether passages should be offered
+for a state, and from where; and whether the state a person chose should
+be remembered across visits, which today it is not.
 
 **Open, and it changes E1 and E2:** whether the nesting is exactly three
 levels (idea, containing concept, perspective) or a concept can sit within

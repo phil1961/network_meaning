@@ -829,6 +829,31 @@ network_manager_docs"
   the app: a way to read a person's map, a way in from Start, or a list
   the AI matches a question to.
 
+**2026-10-03, the taxonomy as a way in from Start.** [Phil] "Make the state
+taxonomy a way in from the Start tab: Yes, but their is a new doc dropped
+just now" and "Its called Meaning Guide — Classification Step.gdoc"
+
+- The new doc chooses embeddings with a keyword fallback to place a
+  person's free text on one of the twenty-five states, ending in "passage
+  retrieval across traditions".
+- Built the same night (app 0.14.0): under the first three choices on
+  Start, "Or start from where you are". A few words of the person's own,
+  placed by the keyword layer in the page, or the five families to choose
+  from. A state chosen meets the person with a sentence and picks the
+  first three small goods. Nothing matched is said plainly; it never
+  guesses. The words are read and let go.
+- Claude's, not Phil's words: the doorway sentences, the trigger words,
+  the goods each state leads to, and the plain family names.
+- [lost] Not built, not yet asked for: the layer that goes by meaning, and
+  the passages.
+
+**2026-10-03, the banner stays put.** [Phil] "I want the tab bar and banner
+at the top to be visible at all times while I scroll down the various
+pages."
+
+- Built the same night (app 0.14.0): the header stays at the top of the
+  window while any page scrolls.
+
 ### What the corpus already says about the app
 
 **Input**

@@ -1092,3 +1092,48 @@ top level tab that is our inviting UI. Lets see how far you get." And:
   not a view a script can open). The goods are a fixed list. On a phone
   the bridge runs off both sides by design, and the words on the banks are
   hidden. Dark colours were not looked at.
+
+## 23. The state taxonomy as a way in from Start, and a banner that stays (2026-10-03, app 0.14.0)
+
+Two more Drive documents from a browser session ("Meaning Guide — State
+Taxonomy", "Meaning Guide — Classification Step"), then Phil: "Make the
+state taxonomy a way in from the Start tab: Yes". And: "I want the tab bar
+and banner at the top to be visible at all times while I scroll down the
+various pages." The design record is `VISION.md` §9, E22.
+
+- **`src/shared/states.js`.** The five families and twenty-five states,
+  each with a doorway line, the words it is found by, the kind of good to
+  offer first and three gaps of reach 1 to lead to. `placeWords(text)` is
+  the keyword layer: a single word matches as a whole word with a plain
+  ending, a phrase matches anywhere and counts double; up to three states,
+  most pointed-at first, ties in the document's order; nothing matched
+  returns an empty list. It keeps nothing. Pure; the server does not
+  import it.
+- **`src/shared/gaps.js`** gained `offerThese(walk, ids)` for an offer a
+  state chooses, and `walk.state`.
+- **`src/client/92-start.js`** gained three phases: `where` (the words
+  box), `families`, `states`. The link "Or start from where you are" shows
+  on the first offer only, until something is crossed or a state chosen.
+  The words box is never kept: the walk holds the state id alone. The
+  trail says "Where you began".
+- **The header is sticky** (`src/client/style.css`, `header`):
+  `position:sticky; top:0; z-index:15`, above the stepper (10) and below
+  the modals (20). `fitMap()` measures from the document, so the Map view
+  is unaffected.
+- **Help.** `HELP-Start.md` has a new section, "Starting from where you
+  are", and says what is not built: the layer that goes by meaning, and
+  the passages.
+- **Tests.** `npm run gate`: 99 tests, 82 pass, 17 skip; five new in
+  `tests/states.test.js` (the taxonomy's shape, ten plain sentences placed
+  on the state they point at, the document's own "ship with no harbour"
+  left unplaced, "made" not matching "mad", and a state picking the first
+  offer). The grading-word test caught a button label ("See where that
+  points") and it was renamed. `npm run smoke`: 149 checks, nine new
+  (the way in by words and by list, the no-match path, Back to the three,
+  and the sticky header scrolled 1200 pixels down the help).
+- **Not done.** Embeddings (no embedding model in this stack; the
+  classification document's first choice). Passages for a state (no store
+  of passages). Remembering a state across visits. An LLM placing for
+  registered users, through `screen.js`. The common-word false positives
+  ("my mother" points at love as well as grief) are left to the person's
+  choice.

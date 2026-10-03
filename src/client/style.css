@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/client/style.css
-   File Version: 0.13.0
+   File Version: 0.14.0
    ───────────────────────────────────────────── */
 /* Layout: an app shell. Header with tabs, a stream bar (which stream, which step), then views. Your words in a book face; the machine's readings in italic sans. */
 /* Colour (Phil, 2026-09-30: "provide some colors to the app. Either matte
@@ -54,7 +54,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 button:disabled{opacity:.5;cursor:not-allowed}
 
 .shell{display:flex;flex-direction:column;min-height:100%}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 16px;border-bottom:3px solid var(--head-accent);background:var(--head);color:var(--head-ink)}
+/* The banner and the tabs stay in view while a page scrolls (Phil, 2026-10-03: "I want the tab bar and banner at the top to be visible at all times while I scroll down the various pages"). Above the stepper (10) and below the modals (20). */
+header{position:sticky;top:0;z-index:15;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 16px;border-bottom:3px solid var(--head-accent);background:var(--head);color:var(--head-ink)}
 /* on the header band: light words on the deep colour, gold for what is chosen */
 header .pill{color:var(--head-muted);border-color:var(--head-muted)}
 header .tab{color:var(--head-muted)}
@@ -413,6 +414,9 @@ form.inline .input{width:100%}
 .choice.primary:hover{background:var(--accent);filter:brightness(1.08)}
 .choice .for{font-family:var(--font-data);font-size:11px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .start-foot{margin:0;display:flex;flex-wrap:wrap;gap:6px 20px;justify-content:center;min-height:1.5em}
+/* the words box on the way in: the person's own words, in the words face, read and let go */
+.start textarea.where{width:100%;resize:vertical;min-height:84px;padding:12px 14px;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;font-family:var(--font-words);font-size:18px;line-height:1.4}
+.start textarea.where:focus{border-color:var(--accent);outline:none}
 .start-trail,.start-about{border-top:1px solid var(--line);padding-top:10px}
 .start-trail summary,.start-about summary{cursor:pointer;color:var(--muted);font-size:13px}
 .start-trail ul{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-family:var(--font-words);font-size:16px}

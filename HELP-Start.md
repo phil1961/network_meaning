@@ -43,6 +43,36 @@ The three answers:
 **That's enough for now**, under the choices, stops at any point. What you
 built stays on the page, and **Carry on** picks it up where you left it.
 
+## Starting from where you are
+
+Under the first three choices there is a second way in: **Or start from
+where you are**. It is for when the three do not fit the day you are
+having.
+
+- **Say it in your own words.** A few words in the box, such as "I don't
+  know which way to go" or "my mother died in March", and **Find where I
+  am**. The page looks for words in what you wrote that point at one of
+  twenty-five places a person can stand, and offers the nearest, up to
+  three, for you to choose from. You can always say **None of these**.
+- **Or choose from a list.** Five families of where a person can stand:
+  the big questions; path and choice; the self among others; the self with
+  itself; reaching beyond the self. Each opens onto its states, in plain
+  words: feeling lost, a hard decision, loneliness, grief, guilt, fear,
+  gratitude, doubt and faith, and the rest.
+- **A doorway, not a diagnosis.** When you choose one, the page says a
+  sentence that meets you there, and offers three small goods that fit it.
+  From then on it goes as before.
+
+What you write in the box is read on this page, in this browser, and let
+go. It is not saved, it is not sent to the server or to the AI, and it is
+not kept in the list of what you crossed. Only the place you chose is kept,
+and only until the page closes.
+
+The page finds a place only by the words themselves. It misses what is
+said sideways: "I feel like a ship with no harbour" matches nothing. When
+it finds nothing it says so and shows you the five families to choose from.
+It never guesses.
+
 ## The bridge
 
 The picture at the top is two banks with the outline of a bridge between
@@ -100,3 +130,8 @@ This is a first version, and it is small on purpose.
   not appear on a map or as a move toward a goal.
 - It reads how big a step to offer from two things only: what you picked,
   and what you said afterwards.
+- Finding where you are works by words alone. The design behind it calls
+  for a second layer that goes by meaning rather than words, and for
+  passages from many traditions to be offered for each place a person can
+  stand. Neither is built: the app has no store of passages yet, and
+  nothing on this page uses the AI.

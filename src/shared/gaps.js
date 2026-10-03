@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
    File: src/shared/gaps.js
-   File Version: 0.1.0
+   File Version: 0.2.0
    ─────────────────────────────────────────────
    The Start tab's small goods, and the sizing of the next one (Phil,
    2026-10-02: "Create a new top level tab that is our inviting UI"). The
@@ -78,7 +78,8 @@ export function gapById(id) { return GAPS.find(g => g.id === id) || null; }
 export function crossedByChoosing(g) { return !!g && g.reach <= REACH.min; }
 
 export function newWalk() {
-  return { reach: REACH.min, to: null, planks: 0, bridges: 0, offered: [], log: [] };
+  /* state: the id of the state the person said they stand in (src/shared/states.js), or null */
+  return { reach: REACH.min, to: null, state: null, planks: 0, bridges: 0, offered: [], log: [] };
 }
 
 /* The three gaps to offer now: at the walk's reach, toward `to` ("out",
@@ -94,6 +95,10 @@ export function offer(walk, to = walk.to) {
   return noteOffer(walk, at.map((g, i) => ({ g, i })).sort((a, b) => rank(a.g) - rank(b.g) || a.i - b.i).slice(0, 3).map(x => x.g));
 }
 function noteOffer(walk, gaps) { walk.offered.push(gaps.map(g => g.id)); return gaps; }
+/* An offer chosen from outside, by a state the person said they stand in
+   (src/shared/states.js). The ids are kept in order, unknown ones dropped,
+   and the offer is noted like any other. */
+export function offerThese(walk, ids) { return noteOffer(walk, [...new Set(ids)].map(gapById).filter(Boolean).slice(0, 3)); }
 
 /* How one chosen gap came out. Returns { plank, across }: whether a plank
    was laid, and whether that plank finished the bridge. */
